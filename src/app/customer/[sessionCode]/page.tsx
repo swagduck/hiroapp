@@ -119,7 +119,8 @@ export default function CustomerOrderPage() {
     return <div className="min-h-screen bg-stone-950 text-white flex flex-col justify-center items-center"><p>Phiên không tồn tại hoặc đã kết thúc.</p></div>;
   }
 
-  const expireTime = session?.package?.duration ? new Date(session.startTime).getTime() + session.package.duration * 60000 : null;
+  const duration = session?.savedMinutesUsed || session?.package?.duration;
+  const expireTime = duration ? new Date(session.startTime).getTime() + duration * 60000 : null;
   const remainingMs = expireTime ? expireTime - now.getTime() : null;
   const remainingMinutes = remainingMs ? Math.ceil(remainingMs / 60000) : null;
   const showWarning = remainingMinutes !== null && remainingMinutes <= 15 && remainingMinutes > 0;
