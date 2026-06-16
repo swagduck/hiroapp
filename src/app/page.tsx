@@ -807,22 +807,33 @@ export default function Dashboard() {
               </div>
 
               <div className="flex gap-3 print-hidden">
-                <button 
-                  onClick={() => {
-                    handleApproveSession(receiptData.id);
-                    window.print(); // Auto print when confirmed
-                    setReceiptData(null);
-                  }}
-                  className="flex-1 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold hover:from-emerald-500 hover:to-emerald-400 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] text-sm"
-                >
-                  Xác nhận Tiền & Bắt đầu
-                </button>
-                <button 
-                  onClick={() => setReceiptData(null)}
-                  className="flex-1 py-3 rounded-lg bg-[#141c16] text-white font-bold hover:bg-gray-800 transition-colors border border-white/10 text-sm"
-                >
-                  Khách chuyển khoản (Chờ)
-                </button>
+                {receiptData.status === 'PENDING' ? (
+                  <>
+                    <button 
+                      onClick={() => {
+                        handleApproveSession(receiptData.id);
+                        window.print(); // Auto print when confirmed
+                        setReceiptData(null);
+                      }}
+                      className="flex-1 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold hover:from-emerald-500 hover:to-emerald-400 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] text-sm"
+                    >
+                      Xác nhận Tiền & Bắt đầu
+                    </button>
+                    <button 
+                      onClick={() => setReceiptData(null)}
+                      className="flex-1 py-3 rounded-lg bg-[#141c16] text-white font-bold hover:bg-gray-800 transition-colors border border-white/10 text-sm"
+                    >
+                      Khách chuyển khoản (Chờ)
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    onClick={() => setReceiptData(null)}
+                    className="w-full py-3 rounded-lg bg-[#141c16] text-white font-bold hover:bg-gray-800 transition-colors border border-white/10 text-sm"
+                  >
+                    Đóng
+                  </button>
+                )}
               </div>
             </div>
           </div>
