@@ -1,14 +1,46 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 export default function OrdersTab() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const prevPendingCount = useRef(0);
+
+  const playDing = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(1046.50, audioCtx.currentTime); // C6
+      oscillator.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.1); // E6
+      gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchOrders = async () => {
     try {
       const res = await fetch(`/api/orders?t=${new Date().getTime()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
+        const newPendingCount = data.filter((o: any) => o.status === "PENDING").length;
+        
+        if (newPendingCount > prevPendingCount.current && prevPendingCount.current !== -1) {
+          // Prevent alerting on initial load
+          if (orders.length > 0) {
+            toast.success(`Có ${newPendingCount - prevPendingCount.current} đơn pha chế mới!`);
+            playDing();
+          }
+        }
+        prevPendingCount.current = newPendingCount;
         setOrders(data);
       }
     } catch (error) {
