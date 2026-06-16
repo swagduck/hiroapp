@@ -11,6 +11,10 @@ export async function middleware(request: NextRequest) {
     path.startsWith('/api/auth') || 
     path.startsWith('/api/seed') || 
     path.startsWith('/customer') ||
+    (path.startsWith('/api/packages') && request.method === 'GET') ||
+    (path.startsWith('/api/menu') && request.method === 'GET') ||
+    (path.startsWith('/api/sessions/') && request.method === 'GET') ||
+    (path === '/api/orders' && request.method === 'POST') ||
     path.includes('.'); // Bỏ qua file tĩnh
 
   const token = request.cookies.get('auth_token')?.value;
