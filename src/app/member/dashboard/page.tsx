@@ -18,22 +18,22 @@ export default function MemberDashboard() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Lấy thông tin từ localStorage
-    const saved = localStorage.getItem("member_info");
-    if (saved) {
-      setMember(JSON.parse(saved));
-    } else {
-      router.push("/customer");
-      return;
-    }
-
     const fetchData = async () => {
       try {
-        const [sessionRes, pkgRes, menuRes] = await Promise.all([
+        const [meRes, sessionRes, pkgRes, menuRes] = await Promise.all([
+          fetch("/api/auth/me"),
           fetch("/api/member/orders"),
           fetch("/api/packages"),
           fetch("/api/menu")
         ]);
+
+        if (meRes.ok) {
+          const userData = await meRes.json();
+          setMember(userData);
+        } else {
+          router.push("/customer");
+          return;
+        }
 
         if (sessionRes.ok) {
           const s = await sessionRes.json();
@@ -126,7 +126,7 @@ export default function MemberDashboard() {
             <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(16,185,129,0.5)]">
               {member?.name?.charAt(0) || "U"}
             </div>
-            <div>
+            <div className="flex-1">
               <h2 className="font-bold text-lg">{member?.name}</h2>
               <div className="flex items-center gap-2 text-sm text-emerald-400">
                 <span className="font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
@@ -136,6 +136,15 @@ export default function MemberDashboard() {
                 <span>Bảo lưu: {member?.savedMinutes || 0} phút</span>
               </div>
             </div>
+            <button
+              onClick={async () => {
+                await fetch("/api/auth/logout", { method: "POST" });
+                router.push("/customer");
+              }}
+              className="px-3 py-1.5 text-xs font-bold bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors"
+            >
+              Đăng xuất
+            </button>
           </div>
         </div>
 

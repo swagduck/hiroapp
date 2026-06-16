@@ -28,8 +28,8 @@ export async function middleware(request: NextRequest) {
     verifiedToken = await verifyJwtToken(token).catch(() => null);
   }
 
-  // Nếu truy cập trang /login nhưng đã đăng nhập -> Chuyển về đúng Dashboard
-  if (path === '/login') {
+  // Nếu truy cập trang /login hoặc /customer nhưng đã đăng nhập -> Chuyển về đúng Dashboard
+  if (path === '/login' || path === '/customer') {
     if (verifiedToken) {
       if (verifiedToken.role === 'ADMIN' || verifiedToken.role === 'STAFF') {
         return NextResponse.redirect(new URL('/', request.url));
