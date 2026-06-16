@@ -47,8 +47,8 @@ export async function POST(request: Request) {
             packageId,
             accessCode,
             startTime: new Date(),
-            status: "ACTIVE",
-            paymentStatus: "PAID",
+            status: "PENDING", // Wait for payment confirmation
+            paymentStatus: "UNPAID",
             totalAmount,
             freeDrinkClaimed: true // Đã lấy ly nước ngay tại quầy
           },
@@ -81,8 +81,8 @@ export async function POST(request: Request) {
           packageId,
           accessCode,
           startTime: new Date(),
-          status: "ACTIVE",
-          paymentStatus: "PAID",
+          status: "PENDING", // Wait for payment confirmation
+          paymentStatus: "UNPAID",
           totalAmount
         },
         include: {

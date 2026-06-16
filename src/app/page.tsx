@@ -791,12 +791,23 @@ export default function Dashboard() {
                 <span className="font-medium">{new Date(receiptData.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
 
-              <button 
-                onClick={() => setReceiptData(null)}
-                className="w-full py-3 rounded-lg bg-[#141c16] text-white font-bold hover:bg-gray-800 transition-colors"
-              >
-                In Biên Lai & Đóng
-              </button>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => {
+                    handleApproveSession(receiptData.id);
+                    setReceiptData(null);
+                  }}
+                  className="flex-1 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold hover:from-emerald-500 hover:to-emerald-400 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] text-sm"
+                >
+                  Xác nhận Tiền & Bắt đầu
+                </button>
+                <button 
+                  onClick={() => setReceiptData(null)}
+                  className="flex-1 py-3 rounded-lg bg-[#141c16] text-white font-bold hover:bg-gray-800 transition-colors border border-white/10 text-sm"
+                >
+                  Khách chuyển khoản (Chờ)
+                </button>
+              </div>
             </div>
           </div>
         </div>
