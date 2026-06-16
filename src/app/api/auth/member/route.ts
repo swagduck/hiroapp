@@ -68,8 +68,8 @@ export async function POST(request: Request) {
 
     return response;
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Member Auth Error:", error);
-    return NextResponse.json({ error: "Lỗi hệ thống" }, { status: 500 });
+    return NextResponse.json({ error: "Lỗi hệ thống", details: error?.message, stack: error?.stack }, { status: 500 });
   }
 }

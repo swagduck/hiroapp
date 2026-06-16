@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, context: { params: Promise<{ sessionCode: string }> }) {
   try {
-    const { id } = await context.params;
+    const { sessionCode } = await context.params;
     
     // Tìm session PENDING
     const session = await prisma.session.findUnique({
-      where: { id }
+      where: { id: sessionCode }
     });
 
     if (!session || session.status !== "PENDING") {
@@ -16,7 +16,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
     // Cập nhật lại startTime và chuyển sang ACTIVE
     const updatedSession = await prisma.session.update({
-      where: { id },
+      where: { id: sessionCode },
       data: {
         status: "ACTIVE",
         startTime: new Date(), // Reset thời gian bắt đầu tính từ lúc Thu Ngân bấm duyệt

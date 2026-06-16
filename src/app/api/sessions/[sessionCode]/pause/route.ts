@@ -3,19 +3,22 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ sessionCode: string }> }
 ) {
   try {
     const { phone } = await request.json();
-    const resolvedParams = await params;
-    const { id } = resolvedParams;
+    const { sessionCode } = await context.params;
+
+    if (!sessionCode) {
+      return NextResponse.json({ error: "Thiếu ID phiên" }, { status: 400 });
+    }
 
     if (!phone || phone.trim().length < 9) {
       return NextResponse.json({ error: "Số điện thoại không hợp lệ" }, { status: 400 });
     }
 
     const session = await prisma.session.findUnique({
-      where: { id },
+      where: { id: sessionCode },
       include: { package: true }
     });
 
@@ -49,7 +52,7 @@ export async function POST(
 
     await prisma.$transaction(async (tx) => {
       // 1. Tìm hoặc tạo User với SĐT này
-      let user = await tx.user.findUnique({ where: { phone } });
+      let user = await tx.user.findFirst({ where: { phone } });
       
       if (user) {
         await tx.user.update({
@@ -68,7 +71,7 @@ export async function POST(
 
       // 2. Kết thúc phiên và lưu userId để tracking
       await tx.session.update({
-        where: { id },
+        where: { id: sessionCode },
         data: { 
           status: "COMPLETED", 
           endTime: new Date(),
