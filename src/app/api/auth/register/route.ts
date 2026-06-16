@@ -33,6 +33,7 @@ export async function POST(request: Request) {
         name,
         password: hashedPassword,
         role: "CUSTOMER",
+        customerCode: "KH" + Math.floor(10000 + Math.random() * 90000).toString(),
       },
     });
 

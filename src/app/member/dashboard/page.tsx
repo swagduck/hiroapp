@@ -130,7 +130,7 @@ export default function MemberDashboard() {
               <h2 className="font-bold text-lg">{member?.name}</h2>
               <div className="flex items-center gap-2 text-sm text-emerald-400">
                 <span className="font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
-                  {member?.customerCode}
+                  {member?.customerCode || "KH MỚI"}
                 </span>
                 <span className="text-stone-400">|</span>
                 <span>Bảo lưu: {member?.savedMinutes || 0} phút</span>
