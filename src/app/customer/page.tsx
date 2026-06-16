@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const QrScanner = dynamic(() => import("@/components/QRScanner"), {
   ssr: false,
@@ -35,14 +36,15 @@ export default function CustomerPortal() {
     try {
       const res = await fetch(`/api/sessions/${cleanCode}`);
       if (res.ok) {
+        toast.success("Tham gia thành công!");
         router.push(`/customer/${cleanCode}`);
       } else {
-        alert("Mã phiên không tồn tại hoặc đã kết thúc! Vui lòng kiểm tra lại.");
+        toast.error("Mã phiên không tồn tại hoặc đã kết thúc! Vui lòng kiểm tra lại.");
         setGuestLoading(false);
       }
     } catch (error) {
       console.error(error);
-      alert("Lỗi kết nối mạng");
+      toast.error("Lỗi kết nối mạng");
       setGuestLoading(false);
     }
   };

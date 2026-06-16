@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -175,7 +176,7 @@ export default function LoginPage() {
                   <label className="block text-sm font-medium text-gray-300">Mật khẩu</label>
                   <button 
                     type="button"
-                    onClick={() => alert("Để bảo mật thông tin, tính năng khôi phục mật khẩu trực tuyến đang bảo trì. Quý khách vui lòng cung cấp Số điện thoại hoặc Email cho nhân viên thu ngân tại quán để được hỗ trợ cấp lại mật khẩu mới. Xin cảm ơn!")}
+                    onClick={() => toast.error("Để bảo mật thông tin, tính năng khôi phục mật khẩu trực tuyến đang bảo trì. Quý khách vui lòng cung cấp Số điện thoại hoặc Email cho nhân viên thu ngân tại quán để được hỗ trợ cấp lại mật khẩu mới. Xin cảm ơn!", { duration: 6000 })}
                     className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
                   >
                     Quên mật khẩu?

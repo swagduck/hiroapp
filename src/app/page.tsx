@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { QRCodeCanvas } from 'qrcode.react';
 
@@ -110,7 +111,7 @@ export default function Dashboard() {
         fetchData();
         setSessionToEnd(null);
       } else {
-        alert("Có lỗi khi kết thúc phiên!");
+        toast.error("Có lỗi khi kết thúc phiên!");
       }
     } catch (error) {
       console.error(error);
@@ -128,14 +129,14 @@ export default function Dashboard() {
       });
       const data = await res.json();
       if (res.ok) {
-        alert(`Bảo lưu thành công ${data.savedMinutes} phút!`);
+        toast.success(`Bảo lưu thành công ${data.savedMinutes} phút!`);
         setSessionToPause(null);
         fetchData();
       } else {
-        alert(data.error || "Có lỗi xảy ra");
+        toast.error(data.error || "Có lỗi xảy ra");
       }
     } catch (error) {
-      alert("Lỗi hệ thống khi bảo lưu");
+      toast.error("Lỗi hệ thống khi bảo lưu");
     } finally {
       setIsPausing(false);
     }
@@ -150,10 +151,10 @@ export default function Dashboard() {
       if (res.ok) {
         setSavedTimeResult({ minutes: data.savedMinutes, name: data.name });
       } else {
-        alert(data.error || "Có lỗi xảy ra");
+        toast.error(data.error || "Có lỗi xảy ra");
       }
     } catch (e) {
-      alert("Lỗi kiểm tra giờ bảo lưu");
+      toast.error("Lỗi kiểm tra giờ bảo lưu");
     } finally {
       setIsCheckingSavedTime(false);
     }
@@ -163,13 +164,13 @@ export default function Dashboard() {
     try {
       const res = await fetch(`/api/sessions/${id}/approve`, { method: "POST" });
       if (res.ok) {
-        alert("Đã duyệt đơn và bắt đầu tính giờ!");
+        toast.success("Đã duyệt đơn và bắt đầu tính giờ!");
         fetchData();
       } else {
-        alert("Có lỗi xảy ra khi duyệt");
+        toast.error("Có lỗi xảy ra khi duyệt");
       }
     } catch (e) {
-      alert("Lỗi kết nối");
+      toast.error("Lỗi kết nối");
     }
   };
 
@@ -183,16 +184,16 @@ export default function Dashboard() {
       });
       const data = await res.json();
       if (res.ok) {
-        alert(`Tạo phiên thành công bằng giờ bảo lưu! Mã truy cập: ${data.accessCode}`);
+        toast.success(`Tạo phiên thành công bằng giờ bảo lưu! Mã truy cập: ${data.accessCode}`);
         setIsPosOpen(false);
         setSavedTimePhone("");
         setSavedTimeResult(null);
         fetchData();
       } else {
-        alert(data.error || "Có lỗi xảy ra");
+        toast.error(data.error || "Có lỗi xảy ra");
       }
     } catch (e) {
-      alert("Lỗi khi tạo phiên bằng giờ bảo lưu");
+      toast.error("Lỗi khi tạo phiên bằng giờ bảo lưu");
     }
   };
 
@@ -730,7 +731,7 @@ export default function Dashboard() {
                             setReceiptData(data);
                             fetchData();
                           } else {
-                            alert("Có lỗi tạo phiên");
+                            toast.error("Có lỗi tạo phiên");
                           }
                         } catch(e) {
                           console.error(e);

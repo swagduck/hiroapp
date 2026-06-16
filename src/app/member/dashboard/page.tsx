@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
+import { toast } from "sonner";
 
 export default function MemberDashboard() {
   const router = useRouter();
@@ -23,53 +24,54 @@ export default function MemberDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [useFreeDrink, setUseFreeDrink] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [meRes, sessionRes, historyRes, pkgRes, menuRes] = await Promise.all([
-          fetch("/api/auth/me"),
-          fetch("/api/member/orders"),
-          fetch("/api/member/orders?history=true"),
-          fetch("/api/packages"),
-          fetch("/api/menu")
-        ]);
+  const fetchData = async () => {
+    try {
+      const [meRes, sessionRes, historyRes, pkgRes, menuRes] = await Promise.all([
+        fetch("/api/auth/me"),
+        fetch("/api/member/orders"),
+        fetch("/api/member/orders?history=true"),
+        fetch("/api/packages"),
+        fetch("/api/menu")
+      ]);
 
-        if (meRes.ok) {
-          const userData = await meRes.json();
-          setMember(userData);
-          if (userData.dob) setDobInput(userData.dob);
-        } else {
-          router.push("/customer");
-          return;
-        }
-
-        if (sessionRes.ok) {
-          const s = await sessionRes.json();
-          if (s && (s.status === "ACTIVE" || s.status === "PENDING")) {
-            setActiveSession(s);
-          }
-        }
-
-        if (historyRes.ok) {
-          const hs = await historyRes.json();
-          setHistorySessions(Array.isArray(hs) ? hs : []);
-        }
-        
-        if (pkgRes.ok) {
-          const p = await pkgRes.json();
-          setPackages(p.filter((x: any) => x.isActive));
-        }
-
-        if (menuRes.ok) {
-          const m = await menuRes.json();
-          setMenuItems(m.filter((x: any) => x.isAvailable));
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
+      if (meRes.ok) {
+        const userData = await meRes.json();
+        setMember(userData);
+        if (userData.dob) setDobInput(userData.dob);
+      } else {
+        router.push("/customer");
+        return;
       }
-    };
+
+      if (sessionRes.ok) {
+        const s = await sessionRes.json();
+        if (s && (s.status === "ACTIVE" || s.status === "PENDING")) {
+          setActiveSession(s);
+        }
+      }
+
+      if (historyRes.ok) {
+        const hs = await historyRes.json();
+        setHistorySessions(Array.isArray(hs) ? hs : []);
+      }
+      
+      if (pkgRes.ok) {
+        const p = await pkgRes.json();
+        setPackages(p.filter((x: any) => x.isActive));
+      }
+
+      if (menuRes.ok) {
+        const m = await menuRes.json();
+        setMenuItems(m.filter((x: any) => x.isAvailable));
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [router]);
 
@@ -84,7 +86,7 @@ export default function MemberDashboard() {
 
   const submitOrder = async () => {
     if (!selectedPkg) {
-      alert("Vui lòng chọn 1 Gói giờ!");
+      toast.error("Vui lòng chọn 1 Gói giờ!");
       return;
     }
     
@@ -121,13 +123,13 @@ export default function MemberDashboard() {
       });
 
       if (res.ok) {
-        alert("Gửi đơn thành công! Vui lòng ra quầy hoặc đợi thu ngân duyệt.");
-        window.location.reload();
+        toast.success("Gửi đơn thành công! Vui lòng ra quầy hoặc đợi thu ngân duyệt.");
+        setTimeout(() => window.location.reload(), 1500);
       } else {
-        alert("Lỗi tạo đơn");
+        toast.error("Lỗi tạo đơn");
       }
     } catch (e) {
-      alert("Lỗi kết nối");
+      toast.error("Lỗi kết nối");
     } finally {
       setSubmitting(false);
     }
@@ -186,13 +188,13 @@ export default function MemberDashboard() {
                       try {
                         const res = await fetch("/api/users/redeem-points", { method: "POST" });
                         if (res.ok) {
-                          alert("Đổi điểm thành công!");
-                          window.location.reload();
+                          toast.success("Đổi điểm thành công!");
+                          fetchData();
                         } else {
-                          alert("Lỗi đổi điểm!");
+                          toast.error("Lỗi đổi điểm!");
                         }
                       } catch (e) {
-                        alert("Lỗi kết nối");
+                        toast.error("Lỗi kết nối");
                       }
                     }}
                     className="ml-1 px-2 py-0.5 bg-amber-500/20 border border-amber-500/50 text-amber-400 rounded hover:bg-amber-500/40 transition-colors text-xs font-bold"
@@ -471,15 +473,14 @@ export default function MemberDashboard() {
                         body: JSON.stringify({ dob: dobInput })
                       });
                       if (res.ok) {
-                        alert("Cập nhật thành công!");
-                        const userData = await res.json();
-                        setMember(userData.user);
+                        toast.success("Cập nhật thành công!");
+                        fetchData();
                       } else {
                         const err = await res.json();
-                        alert(err.error || "Lỗi cập nhật");
+                        toast.error(err.error || "Lỗi cập nhật");
                       }
                     } catch(e) {
-                      alert("Lỗi kết nối");
+                      toast.error("Lỗi kết nối");
                     }
                     setUpdatingProfile(false);
                   }}

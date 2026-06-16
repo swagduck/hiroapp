@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
 export default function CustomerOrderPage() {
   const params = useParams();
@@ -162,17 +163,18 @@ export default function CustomerOrderPage() {
       });
 
       if (res.ok) {
-        alert("Order thành công! Nhân viên sẽ mang nước ra cho bạn.");
+        toast.success("Order thành công! Nhân viên sẽ mang nước ra cho bạn.");
         setCart([]);
         setActiveTab("account");
         // refresh session to see orders
         const resSession = await fetch(`/api/sessions/${sessionCode}`);
         if (resSession.ok) setSession(await resSession.json());
       } else {
-        alert("Có lỗi xảy ra, vui lòng thử lại.");
+        toast.error("Có lỗi xảy ra, vui lòng thử lại.");
       }
     } catch (error) {
       console.error(error);
+      toast.error("Lỗi kết nối");
     }
   };
 
