@@ -26,6 +26,16 @@ export default function Dashboard() {
   const [posLoading, setPosLoading] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
 
+  // Pause Session States
+  const [sessionToPause, setSessionToPause] = useState<string | null>(null);
+  const [pausePhone, setPausePhone] = useState("");
+  const [isPausing, setIsPausing] = useState(false);
+
+  // Use Saved Time States
+  const [savedTimePhone, setSavedTimePhone] = useState("");
+  const [savedTimeResult, setSavedTimeResult] = useState<{minutes: number, name?: string} | null>(null);
+  const [isCheckingSavedTime, setIsCheckingSavedTime] = useState(false);
+
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -78,8 +88,13 @@ export default function Dashboard() {
     setPosSelectedPackage(null);
   };
 
-  const handleEndSession = (sessionId: string) => {
-    setSessionToEnd(sessionId);
+  const handleEndSession = (id: string) => {
+    setSessionToEnd(id);
+  };
+
+  const handlePauseSession = (id: string) => {
+    setSessionToPause(id);
+    setPausePhone("");
   };
 
   const confirmEndSession = async () => {
@@ -102,8 +117,73 @@ export default function Dashboard() {
     }
   };
 
+  const confirmPauseSession = async () => {
+    if (!sessionToPause || !pausePhone) return;
+    setIsPausing(true);
+    try {
+      const res = await fetch(`/api/sessions/${sessionToPause}/pause`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: pausePhone })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`Bảo lưu thành công ${data.savedMinutes} phút!`);
+        setSessionToPause(null);
+        fetchData();
+      } else {
+        alert(data.error || "Có lỗi xảy ra");
+      }
+    } catch (error) {
+      alert("Lỗi hệ thống khi bảo lưu");
+    } finally {
+      setIsPausing(false);
+    }
+  };
+
+  const handleCheckSavedTime = async () => {
+    if (!savedTimePhone) return;
+    setIsCheckingSavedTime(true);
+    try {
+      const res = await fetch(`/api/users/check-saved-time?phone=${savedTimePhone}`);
+      const data = await res.json();
+      if (res.ok) {
+        setSavedTimeResult({ minutes: data.savedMinutes, name: data.name });
+      } else {
+        alert(data.error || "Có lỗi xảy ra");
+      }
+    } catch (e) {
+      alert("Lỗi kiểm tra giờ bảo lưu");
+    } finally {
+      setIsCheckingSavedTime(false);
+    }
+  };
+
+  const handleUseSavedTime = async () => {
+    if (!savedTimePhone || !savedTimeResult || savedTimeResult.minutes <= 0) return;
+    try {
+      const res = await fetch(`/api/sessions/use-saved-time`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: savedTimePhone, minutesToUse: savedTimeResult.minutes })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`Tạo phiên thành công bằng giờ bảo lưu! Mã truy cập: ${data.accessCode}`);
+        setIsPosOpen(false);
+        setSavedTimePhone("");
+        setSavedTimeResult(null);
+        fetchData();
+      } else {
+        alert(data.error || "Có lỗi xảy ra");
+      }
+    } catch (e) {
+      alert("Lỗi khi tạo phiên bằng giờ bảo lưu");
+    }
+  };
+
   return (
-    <div className="flex h-screen overflow-hidden pb-16 md:pb-0">
+    <div className="flex h-screen bg-[#0a0f0d] overflow-hidden text-stone-200">
       {/* Sidebar (Desktop only) */}
       <aside className="hidden md:flex w-64 glass border-r border-white/10 flex-col transition-all duration-300">
         <div className="h-16 flex items-center justify-center border-b border-white/10">
@@ -211,13 +291,17 @@ export default function Dashboard() {
                         const startTime = new Date(session.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                         
                         let timeStatus: React.ReactNode = "Không giới hạn";
-                        if (session.package?.duration) {
-                          const expireTime = new Date(session.startTime).getTime() + session.package.duration * 60000;
+                        const duration = session.savedMinutesUsed || session.package?.duration;
+                        
+                        let canPause = false;
+                        if (duration) {
+                          const expireTime = new Date(session.startTime).getTime() + duration * 60000;
                           const remaining = expireTime - now.getTime();
                           
                           if (remaining <= 0) {
                             timeStatus = <span className="text-red-500 font-bold bg-red-500/10 px-2 py-1 rounded">Đã hết giờ</span>;
                           } else {
+                            canPause = true;
                             const hours = Math.floor(remaining / 3600000);
                             const minutes = Math.floor((remaining % 3600000) / 60000);
                             timeStatus = <span className="text-green-400">Còn {hours}h {minutes}m</span>;
@@ -237,9 +321,16 @@ export default function Dashboard() {
                             </td>
                             <td className="p-4 font-medium text-white">{(session.package?.price || 0).toLocaleString('vi-VN')}đ</td>
                             <td className="p-4 text-right">
-                              <button onClick={() => handleEndSession(session.id)} className="text-sm px-3 py-1.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-colors opacity-0 group-hover:opacity-100">
-                                Kết thúc
-                              </button>
+                              <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {canPause && (
+                                  <button onClick={() => handlePauseSession(session.id)} className="text-sm px-3 py-1.5 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/40 transition-colors">
+                                    Bảo lưu
+                                  </button>
+                                )}
+                                <button onClick={() => handleEndSession(session.id)} className="text-sm px-3 py-1.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-colors">
+                                  Kết thúc
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         )
@@ -287,6 +378,45 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Pause Session Modal */}
+      {sessionToPause && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c16]/60 backdrop-blur-sm">
+          <div className="bg-stone-950 border border-amber-500/30 rounded-2xl p-6 w-[400px] shadow-2xl transform transition-all animate-page-transition">
+            <h3 className="text-xl font-bold text-amber-500 mb-2 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Bảo lưu thời gian
+            </h3>
+            <p className="text-stone-400 mb-4 text-sm">Nhập số điện thoại của khách hàng để lưu lại số phút chưa sử dụng. Phiên hiện tại sẽ được kết thúc ngay lập tức.</p>
+            
+            <input 
+              type="tel"
+              placeholder="Nhập SĐT (VD: 0901234567)"
+              value={pausePhone}
+              onChange={e => setPausePhone(e.target.value)}
+              className="w-full bg-stone-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 mb-6"
+              autoFocus
+            />
+
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setSessionToPause(null)} 
+                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors"
+                disabled={isPausing}
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                onClick={confirmPauseSession} 
+                disabled={!pausePhone || isPausing}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-bold shadow-[0_0_15px_rgba(217,119,6,0.4)] transition-colors disabled:opacity-50"
+              >
+                {isPausing ? "Đang xử lý..." : "Bảo lưu & Kết thúc"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* POS Modal */}
       {isPosOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c16]/90 backdrop-blur-md p-2 md:p-6 pb-20 md:pb-6">
@@ -317,7 +447,63 @@ export default function Dashboard() {
               {/* STEP 1: CHỌN GÓI CƯỚC */}
               {posStep === 1 && (
                 <div className="p-6 h-full overflow-y-auto animate-fade-in flex flex-col">
-                  <h3 className="text-2xl font-bold text-white mb-8 text-center mt-4">Khách hàng chọn gói cước nào?</h3>
+                  
+                  {/* Khu vực Sử dụng Giờ bảo lưu */}
+                  <div className="max-w-5xl mx-auto w-full mb-8 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6">
+                    <h4 className="text-amber-500 font-bold mb-4 flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      Tra cứu & Sử dụng Giờ bảo lưu
+                    </h4>
+                    <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+                      <div className="flex-1 w-full">
+                        <label className="block text-xs text-stone-400 mb-1">Số điện thoại khách hàng</label>
+                        <div className="flex gap-2">
+                          <input 
+                            type="tel"
+                            placeholder="Nhập SĐT..."
+                            value={savedTimePhone}
+                            onChange={e => setSavedTimePhone(e.target.value)}
+                            className="flex-1 bg-stone-900 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                          />
+                          <button 
+                            onClick={handleCheckSavedTime}
+                            disabled={!savedTimePhone || isCheckingSavedTime}
+                            className="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-white rounded-xl transition-colors disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {isCheckingSavedTime ? "Đang tra..." : "Kiểm tra"}
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {savedTimeResult && (
+                        <div className="flex-1 w-full bg-stone-950 rounded-xl p-3 border border-white/5 flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-stone-400">Kết quả tra cứu</p>
+                            <p className="text-sm">
+                              Khách có: <span className="text-amber-500 font-bold text-lg">{savedTimeResult.minutes} phút</span>
+                            </p>
+                          </div>
+                          {savedTimeResult.minutes > 0 ? (
+                            <button 
+                              onClick={handleUseSavedTime}
+                              className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors text-sm shadow-[0_0_10px_rgba(217,119,6,0.3)]"
+                            >
+                              Tạo phiên ngay
+                            </button>
+                          ) : (
+                            <span className="text-xs text-stone-500 italic">Không khả dụng</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-4 mb-8">
+                    <div className="h-px bg-white/10 flex-1 max-w-xs"></div>
+                    <h3 className="text-xl font-bold text-stone-300">Hoặc chọn Mua gói cước mới</h3>
+                    <div className="h-px bg-white/10 flex-1 max-w-xs"></div>
+                  </div>
+
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full">
                     {packages.map(pkg => (
                       <div 

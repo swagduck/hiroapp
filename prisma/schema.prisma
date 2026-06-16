@@ -22,6 +22,7 @@ model User {
   password  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  savedMinutes Int @default(0)
 
   sessions  Session[]
   orders    Order[]
@@ -67,7 +68,7 @@ model Session {
   
   accessCode  String   @unique // Access code for Wi-Fi / tracking
   freeDrinkClaimed Boolean @default(false) // Trạng thái đã lấy ly nước miễn phí chưa (nếu gói là combo)
-  
+  savedMinutesUsed Int? // Số phút bảo lưu được dùng cho phiên này (nếu có)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
