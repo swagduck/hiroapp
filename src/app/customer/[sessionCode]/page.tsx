@@ -185,8 +185,8 @@ export default function CustomerOrderPage() {
   useEffect(() => {
     if (remainingMinutes === null) return;
     
-    if (remainingMinutes === 15 && !hasNotifiedWarning) {
-      playAlert("Sắp hết giờ!", "Bạn còn 15 phút nữa, vui lòng chú ý thời gian nhé!", false);
+    if (remainingMinutes <= 15 && remainingMinutes > 0 && !hasNotifiedWarning) {
+      playAlert("Sắp hết giờ!", "Bạn còn chưa tới 15 phút, vui lòng chú ý thời gian nhé!", false);
       setHasNotifiedWarning(true);
     }
     
@@ -219,6 +219,17 @@ export default function CustomerOrderPage() {
           </button>
         </div>
       )}
+
+      {/* Nút Test Thông Báo (Chỉ để trải nghiệm thử) */}
+      <div className="bg-indigo-500/10 border-b border-indigo-500/30 p-2 flex justify-between items-center px-4">
+        <span className="text-indigo-400 text-xs font-medium">Bấm để thử nghiệm âm thanh & thông báo 👉</span>
+        <button 
+          onClick={() => playAlert("Sắp hết giờ (Thử nghiệm)!", "Đây là cách thông báo sẽ hiện ra khi bạn sắp hết thời gian.", false)} 
+          className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/50 text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 active:bg-indigo-500/40 transition-colors"
+        >
+          Test Thử
+        </button>
+      </div>
 
       {/* Header */}
       <header className="glass sticky top-0 z-10 px-4 py-4 border-b border-white/10 shadow-lg">
