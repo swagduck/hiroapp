@@ -334,9 +334,14 @@ export default function Dashboard() {
                               {session.status === 'PENDING' ? <span className="text-amber-500 animate-pulse">Chờ duyệt</span> : timeStatus}
                             </td>
                             <td className="p-4 text-blue-400">
-                              <a href={`/customer/${session.accessCode}`} target="_blank" rel="noreferrer" className="hover:underline">
-                                Mở Menu KH
-                              </a>
+                              <div className="flex flex-col gap-2">
+                                <a href={`/customer/${session.accessCode}`} target="_blank" rel="noreferrer" className="hover:underline text-sm">
+                                  Mở Menu KH
+                                </a>
+                                <button onClick={() => setReceiptData(session)} className="text-left text-sm text-stone-400 hover:text-white transition-colors">
+                                  🖨️ Xem/In Biên Lai
+                                </button>
+                              </div>
                             </td>
                             <td className="p-4 font-medium text-white">{(session.totalAmount || session.package?.price || 0).toLocaleString('vi-VN')}đ</td>
                             <td className="p-4 text-right">
@@ -805,6 +810,7 @@ export default function Dashboard() {
                 <button 
                   onClick={() => {
                     handleApproveSession(receiptData.id);
+                    window.print(); // Auto print when confirmed
                     setReceiptData(null);
                   }}
                   className="flex-1 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold hover:from-emerald-500 hover:to-emerald-400 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] text-sm"
