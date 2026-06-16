@@ -87,7 +87,18 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
             Hiro Coffee
           </h1>
-          <p className="text-gray-400 text-sm">Cổng Đăng Nhập Hệ Thống</p>
+          <p className="text-gray-400 text-sm mb-8">Chào mừng bạn đến với hệ thống</p>
+
+          <Link href="/customer" className="inline-block w-full py-5 rounded-2xl border border-white/20 bg-gradient-to-r from-blue-600/40 to-indigo-600/40 hover:from-blue-500/50 hover:to-indigo-500/50 text-white font-bold text-lg shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all">
+            🚶 Khách Vãng Lai (Vào Đây)
+          </Link>
+          <p className="text-xs text-slate-400 mt-3">Không cần tài khoản. Nhấn vào đây để xem Menu và Gọi nước trực tiếp.</p>
+        </div>
+
+        <div className="flex items-center justify-center gap-4 mt-8 mb-8">
+          <div className="h-px bg-white/10 flex-1"></div>
+          <span className="text-xs text-slate-400 uppercase font-bold tracking-widest text-center">Hoặc<br/>Dành cho Hội Viên</span>
+          <div className="h-px bg-white/10 flex-1"></div>
         </div>
 
         {/* Tab Selector */}
@@ -217,18 +228,6 @@ export default function LoginPage() {
             </button>
           </form>
         )}
-
-        <div className="flex items-center justify-center gap-4 mt-8 mb-4">
-          <div className="h-px bg-white/10 flex-1"></div>
-          <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Hoặc</span>
-          <div className="h-px bg-white/10 flex-1"></div>
-        </div>
-
-        <div className="text-center">
-          <Link href="/customer" className="inline-block w-full py-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-medium transition-all">
-            Chỉ muốn quét mã gọi nước? <span className="text-white font-bold underline">Vào đây</span>
-          </Link>
-        </div>
       </div>
     </div>
   );
