@@ -19,11 +19,22 @@ export default function CustomerOrderPage() {
     return () => clearInterval(interval);
   }, []);
 
+  const fetchSession = async () => {
+    try {
+      const res = await fetch(`/api/sessions/${sessionCode}?t=${new Date().getTime()}`, { cache: 'no-store' });
+      if (res.ok) {
+        setSession(await res.json());
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       try {
         const [resSession, resMenu] = await Promise.all([
-          fetch(`/api/sessions/${sessionCode}`),
+          fetch(`/api/sessions/${sessionCode}?t=${new Date().getTime()}`, { cache: 'no-store' }),
           fetch(`/api/menu`)
         ]);
         
@@ -43,7 +54,9 @@ export default function CustomerOrderPage() {
       }
     };
     
-    fetchData();
+    fetchInitialData();
+    const intervalId = setInterval(fetchSession, 10000); // Auto refresh orders status every 10s
+    return () => clearInterval(intervalId);
   }, [sessionCode]);
 
   const addToCart = (item: any) => {
