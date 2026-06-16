@@ -139,8 +139,16 @@ export default function Dashboard() {
       <main className="flex-1 flex flex-col overflow-hidden relative">
         <header className="h-16 glass border-b border-white/10 flex items-center justify-between px-6 z-10 relative">
           <h2 className="text-lg font-semibold text-white capitalize">{activeTab === "overview" ? "Tổng quan hoạt động" : activeTab}</h2>
-          <div className="flex items-center gap-4">
-            <button onClick={handleCreateSession} className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors shadow-[0_0_15px_rgba(4,120,87,0.4)]">
+          <div className="flex items-center gap-3">
+            <a href="/staff/check-in" target="_blank" rel="noreferrer" className="px-4 py-2 bg-stone-900 border border-white/10 hover:bg-stone-800 text-stone-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+              Máy quét vé
+            </a>
+            <a href="/customer" target="_blank" rel="noreferrer" className="px-4 py-2 bg-stone-900 border border-white/10 hover:bg-stone-800 text-stone-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+              App Khách hàng
+            </a>
+            <button onClick={handleCreateSession} className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors shadow-[0_0_15px_rgba(4,120,87,0.4)] ml-2">
               + Tạo Phiên Mới
             </button>
           </div>
