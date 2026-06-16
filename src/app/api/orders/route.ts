@@ -7,6 +7,7 @@ export async function GET() {
   try {
     const orders = await prisma.order.findMany({
       orderBy: { createdAt: 'desc' },
+      take: 50,
       include: {
         items: {
           include: {
