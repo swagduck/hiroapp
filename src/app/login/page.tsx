@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -204,6 +205,18 @@ export default function LoginPage() {
             </button>
           </form>
         )}
+
+        <div className="flex items-center justify-center gap-4 mt-8 mb-4">
+          <div className="h-px bg-white/10 flex-1"></div>
+          <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">Hoặc</span>
+          <div className="h-px bg-white/10 flex-1"></div>
+        </div>
+
+        <div className="text-center">
+          <Link href="/customer" className="inline-block w-full py-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-medium transition-all">
+            Chỉ muốn quét mã gọi nước? <span className="text-white font-bold underline">Vào đây</span>
+          </Link>
+        </div>
       </div>
     </div>
   );
