@@ -255,7 +255,9 @@ export default function CustomerOrderPage() {
                   <div key={idx} className="bg-white/5 p-4 rounded-lg border border-white/10">
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-stone-400">Đơn #{idx+1}</span>
-                      <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-400">{order.status}</span>
+                      <span className={`text-xs px-2 py-1 rounded ${order.status === 'SERVED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                        {order.status === 'SERVED' ? 'ĐÃ XONG' : order.status}
+                      </span>
                     </div>
                     {order.items.map((oi: any, i: number) => (
                       <div key={i} className="flex justify-between text-sm py-1">

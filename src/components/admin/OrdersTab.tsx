@@ -43,7 +43,7 @@ export default function OrdersTab() {
   };
 
   const pendingOrders = orders.filter(o => o.status === "PENDING");
-  const completedOrders = orders.filter(o => o.status === "COMPLETED" || o.status === "CANCELLED");
+  const completedOrders = orders.filter(o => o.status === "SERVED" || o.status === "CANCELLED");
 
   if (loading) {
     return <div className="p-6 text-white text-center">Đang tải đơn hàng...</div>;
@@ -95,7 +95,7 @@ export default function OrdersTab() {
                       <p className="text-xs text-stone-500 mt-1">{new Date(order.createdAt).toLocaleTimeString('vi-VN')}</p>
                     </div>
                     <button 
-                      onClick={() => updateOrderStatus(order.id, "COMPLETED")}
+                      onClick={() => updateOrderStatus(order.id, "SERVED")}
                       className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-[0_0_15px_rgba(5,150,105,0.3)]"
                     >
                       ✓ Hoàn thành
@@ -141,8 +141,8 @@ export default function OrdersTab() {
                       {order.items.map((i: any) => `${i.quantity}x ${i.menuItem.name}`).join(', ')}
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded font-medium ${order.status === 'COMPLETED' ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10'}`}>
-                    {order.status === 'COMPLETED' ? 'Đã xong' : 'Đã hủy'}
+                  <span className={`text-xs px-2 py-1 rounded font-medium ${order.status === 'SERVED' ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10'}`}>
+                    {order.status === 'SERVED' ? 'Đã xong' : 'Đã hủy'}
                   </span>
                 </div>
               ))
