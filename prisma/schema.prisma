@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String?  @unique
+  phone     String?  @unique
+  name      String?
+  role      Role     @default(CUSTOMER)
+  password  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions  Session[]
+  orders    Order[]
+}
+
+enum PackageType {
+  HOURLY
+  DAILY
+  FIXED
+}
+
+model Package {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  price       Float
+  type        PackageType @default(HOURLY)
+  duration    Int?     // Duration in minutes (if applicable)
+  includesDrink Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions    Session[]
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Session {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String?  @db.ObjectId
+  user        User?    @relation(fields: [userId], references: [id])
+  packageId   String   @db.ObjectId
+  package     Package  @relation(fields: [packageId], references: [id])
+  
+  startTime   DateTime @default(now())
+  endTime     DateTime?
+  status      SessionStatus @default(ACTIVE)
+  
+  accessCode  String   @unique // Access code for Wi-Fi / tracking
+  freeDrinkClaimed Boolean @default(false) // Trạng thái đã lấy ly nước miễn phí chưa (nếu gói là combo)
+  
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders      Order[]
+}
+
+model Category {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  items       MenuItem[]
+}
+
+model MenuItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?
+  isAvailable Boolean  @default(true)
+  categoryId  String?  @db.ObjectId
+  category    Category? @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  SERVED
+  CANCELLED
+}
+
+model Order {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId   String?  @db.ObjectId
+  session     Session? @relation(fields: [sessionId], references: [id])
+  userId      String?  @db.ObjectId // Optional, if they order outside a session
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  status      OrderStatus @default(PENDING)
+  totalAmount Float
+  
+  items       OrderItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OrderItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId     String   @db.ObjectId
+  order       Order    @relation(fields: [orderId], references: [id])
+  menuItemId  String   @db.ObjectId
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
+  quantity    Int      @default(1)
+  price       Float    // Price at the time of order
+}
