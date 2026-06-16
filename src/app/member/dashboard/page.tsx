@@ -23,7 +23,7 @@ export default function MemberDashboard() {
     if (saved) {
       setMember(JSON.parse(saved));
     } else {
-      router.push("/member/login");
+      router.push("/customer");
       return;
     }
 
