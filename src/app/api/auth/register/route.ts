@@ -5,43 +5,45 @@ import { signJwtToken } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, name } = await request.json();
 
-    if (!email || !password) {
+    if (!email || !password || !name) {
       return NextResponse.json(
-        { error: "Vui lòng nhập email và mật khẩu" },
+        { error: "Vui lòng nhập đầy đủ thông tin (Email, Tên, Mật khẩu)" },
         { status: 400 }
       );
     }
 
-    const user = await prisma.user.findFirst({
+    const existingUser = await prisma.user.findFirst({
       where: { email },
     });
 
-    if (!user || !user.password) {
+    if (existingUser) {
       return NextResponse.json(
-        { error: "Tài khoản hoặc mật khẩu không đúng" },
-        { status: 401 }
+        { error: "Email này đã được sử dụng" },
+        { status: 400 }
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (!isPasswordValid) {
-      return NextResponse.json(
-        { error: "Tài khoản hoặc mật khẩu không đúng" },
-        { status: 401 }
-      );
-    }
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        password: hashedPassword,
+        role: "CUSTOMER",
+      },
+    });
 
-    // Đăng nhập thành công, tạo JWT
+    // Đăng ký thành công, tự động đăng nhập và tạo JWT
     const token = await signJwtToken({
       userId: user.id,
       role: user.role,
     });
 
     const response = NextResponse.json(
-      { success: true, message: "Đăng nhập thành công", role: user.role },
+      { success: true, message: "Đăng ký thành công", role: user.role },
       { status: 200 }
     );
 
@@ -52,12 +54,12 @@ export async function POST(request: Request) {
       httpOnly: true,
       path: "/",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24, // 1 ngày
+      maxAge: 60 * 60 * 24 * 30, // 30 ngày cho member
     });
 
     return response;
   } catch (error) {
-    console.error("Login Error:", error);
+    console.error("Register Error:", error);
     return NextResponse.json(
       { error: "Đã có lỗi xảy ra" },
       { status: 500 }

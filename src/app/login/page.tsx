@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState(""); // For register
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -27,11 +29,43 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // Chuyển hướng tới Dashboard khi đăng nhập thành công
-        router.push("/");
-        router.refresh(); // Cập nhật lại state của app
+        if (data.role === "CUSTOMER") {
+          router.push("/member/dashboard");
+        } else {
+          router.push("/");
+        }
+        router.refresh();
       } else {
         setError(data.error || "Đăng nhập thất bại");
+      }
+    } catch (err) {
+      setError("Có lỗi kết nối tới server");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, name }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        router.push("/member/dashboard");
+        router.refresh();
+      } else {
+        setError(data.error || "Đăng ký thất bại");
       }
     } catch (err) {
       setError("Có lỗi kết nối tới server");
@@ -49,63 +83,127 @@ export default function LoginPage() {
       <div className="glass-card w-full max-w-md p-8 relative z-10 shadow-2xl border border-white/10 rounded-2xl bg-slate-900/50 backdrop-blur-xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
-            SpaceManager
+            Hiro Coffee
           </h1>
-          <p className="text-gray-400 text-sm">Hệ thống quản lý Co-working Space</p>
+          <p className="text-gray-400 text-sm">Cổng Đăng Nhập Hệ Thống</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          {error && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Email / Tài khoản</label>
-            <input
-              type="text"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
-              placeholder="admin@space.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Mật khẩu</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
-              placeholder="••••••••"
-            />
-          </div>
-
+        {/* Tab Selector */}
+        <div className="flex w-full bg-black/20 p-1 rounded-2xl mb-8 border border-white/5">
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+            onClick={() => { setActiveTab("login"); setError(""); }}
+            className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${
+              activeTab === "login" 
+                ? "bg-purple-600/50 border border-purple-500/50 text-white shadow-lg" 
+                : "text-slate-400 hover:text-slate-200"
+            }`}
           >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Đang xử lý...
-              </span>
-            ) : (
-              "Đăng nhập Hệ thống"
-            )}
+            Đăng Nhập
           </button>
-        </form>
-
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500">
-            Chỉ dành cho Ban Quản Trị & Nhân viên. <br/> Khách hàng vui lòng quét mã QR tại bàn.
-          </p>
+          <button
+            onClick={() => { setActiveTab("register"); setError(""); }}
+            className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${
+              activeTab === "register" 
+                ? "bg-pink-600/50 border border-pink-500/50 text-white shadow-lg" 
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Đăng Ký
+          </button>
         </div>
+
+        {error && (
+          <div className="p-3 mb-5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+            {error}
+          </div>
+        )}
+
+        {/* Login Form */}
+        {activeTab === "login" && (
+          <form onSubmit={handleLogin} className="space-y-5 animate-slide-up">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+                placeholder="VD: user@email.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Mật khẩu</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+            >
+              {loading ? "Đang xử lý..." : "Vào Hệ Thống"}
+            </button>
+          </form>
+        )}
+
+        {/* Register Form */}
+        {activeTab === "register" && (
+          <form onSubmit={handleRegister} className="space-y-5 animate-slide-up">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Tên hiển thị (Username)</label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
+                placeholder="VD: Nguyễn Văn A"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
+                placeholder="VD: user@email.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Mật khẩu</label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
+                placeholder="Ít nhất 6 ký tự"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold shadow-[0_0_20px_rgba(236,72,153,0.4)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+            >
+              {loading ? "Đang xử lý..." : "Tạo Tài Khoản"}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

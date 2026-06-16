@@ -1,0 +1,1 @@
+import { PrismaClient } from "@prisma/client"; const prisma = new PrismaClient(); async function main() { const res = await prisma.user.deleteMany({ where: { role: "CUSTOMER" } }); console.log(`Deleted ${res.count} customers`); } main().catch(console.error).finally(() => prisma.$disconnect());
