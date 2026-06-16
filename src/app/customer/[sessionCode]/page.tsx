@@ -211,18 +211,38 @@ export default function CustomerOrderPage() {
                 {cart.map((item, idx) => {
                   const isFree = session?.package?.includesDrink && !session?.freeDrinkClaimed && idx === 0;
                   return (
-                  <div key={idx} className="flex justify-between items-center bg-white/5 p-3 rounded-lg border border-white/10">
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-emerald-500">
-                        {isFree && item.quantity === 1 ? "Miễn phí" : item.price.toLocaleString('vi-VN') + "đ x " + item.quantity}
-                      </p>
+                  <div key={idx} className="flex flex-col bg-white/5 p-3 rounded-lg border border-white/10 gap-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-emerald-500">
+                          {isFree && item.quantity === 1 ? "Miễn phí (Combo)" : item.price.toLocaleString('vi-VN') + "đ/ly"}
+                        </p>
+                      </div>
+                      <div className="font-bold text-lg">
+                        {isFree 
+                          ? (item.price * (item.quantity - 1)).toLocaleString('vi-VN') + "đ" 
+                          : (item.price * item.quantity).toLocaleString('vi-VN') + "đ"
+                        }
+                      </div>
                     </div>
-                    <div className="font-bold">
-                      {isFree 
-                        ? (item.price * (item.quantity - 1)).toLocaleString('vi-VN') + "đ" 
-                        : (item.price * item.quantity).toLocaleString('vi-VN') + "đ"
-                      }
+                    <div className="flex justify-between items-center mt-1">
+                      {isFree ? (
+                        <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded">Tặng kèm (1 ly)</span>
+                      ) : (
+                        <span></span>
+                      )}
+                      <div className="flex items-center gap-3 bg-stone-900 rounded-lg px-2 py-1 border border-white/5">
+                        <button onClick={() => {
+                            if (item.quantity > 1) {
+                              setCart(cart.map(c => c.id === item.id ? { ...c, quantity: c.quantity - 1 } : c));
+                            } else {
+                              setCart(cart.filter(c => c.id !== item.id));
+                            }
+                        }} className="w-6 h-6 flex items-center justify-center text-stone-400 hover:text-white hover:bg-white/10 rounded transition-colors">-</button>
+                        <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
+                        <button onClick={() => setCart(cart.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c))} className="w-6 h-6 flex items-center justify-center text-stone-400 hover:text-white hover:bg-white/10 rounded transition-colors">+</button>
+                      </div>
                     </div>
                   </div>
                 )})}
