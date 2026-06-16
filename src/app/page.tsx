@@ -101,9 +101,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 glass border-r border-white/10 flex flex-col transition-all duration-300">
+    <div className="flex h-screen overflow-hidden pb-16 md:pb-0">
+      {/* Sidebar (Desktop only) */}
+      <aside className="hidden md:flex w-64 glass border-r border-white/10 flex-col transition-all duration-300">
         <div className="h-16 flex items-center justify-center border-b border-white/10">
           <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-amber-600">
             SpaceManager
@@ -136,20 +136,25 @@ export default function Dashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-16 glass border-b border-white/10 flex items-center justify-between px-6 z-10 relative">
-          <h2 className="text-lg font-semibold text-white capitalize">{activeTab === "overview" ? "Tổng quan hoạt động" : activeTab}</h2>
-          <div className="flex items-center gap-3">
-            <a href="/staff/check-in" target="_blank" rel="noreferrer" className="px-4 py-2 bg-stone-900 border border-white/10 hover:bg-stone-800 text-stone-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+      <main className="flex-1 flex flex-col overflow-hidden relative w-full">
+        <header className="h-auto py-3 md:h-16 glass border-b border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 z-10 relative gap-3 md:gap-0">
+          <div className="w-full md:w-auto flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-white capitalize">{activeTab === "overview" ? "Tổng quan hoạt động" : activeTab}</h2>
+            <button onClick={handleLogout} className="md:hidden text-red-400 text-sm">Đăng xuất</button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <a href="/staff/check-in" target="_blank" rel="noreferrer" className="px-3 md:px-4 py-2 bg-stone-900 border border-white/10 hover:bg-stone-800 text-stone-300 rounded-lg text-xs md:text-sm font-medium transition-colors flex items-center gap-1 md:gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
-              Máy quét vé
+              <span className="hidden md:inline">Máy quét vé</span>
+              <span className="md:hidden">Quét vé</span>
             </a>
-            <a href="/customer" target="_blank" rel="noreferrer" className="px-4 py-2 bg-stone-900 border border-white/10 hover:bg-stone-800 text-stone-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+            <a href="/customer" target="_blank" rel="noreferrer" className="px-3 md:px-4 py-2 bg-stone-900 border border-white/10 hover:bg-stone-800 text-stone-300 rounded-lg text-xs md:text-sm font-medium transition-colors flex items-center gap-1 md:gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-              App Khách hàng
+              <span className="hidden md:inline">App Khách hàng</span>
+              <span className="md:hidden">Khách</span>
             </a>
-            <button onClick={handleCreateSession} className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors shadow-[0_0_15px_rgba(4,120,87,0.4)] ml-2">
-              + Tạo Phiên Mới
+            <button onClick={handleCreateSession} className="px-3 md:px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs md:text-sm font-medium transition-colors shadow-[0_0_15px_rgba(4,120,87,0.4)] ml-auto md:ml-2">
+              + Tạo Phiên
             </button>
           </div>
         </header>
@@ -272,31 +277,31 @@ export default function Dashboard() {
 
       {/* POS Modal */}
       {isPosOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c16]/80 backdrop-blur-sm p-4">
-          <div className="bg-stone-950 border border-white/10 rounded-2xl w-full max-w-6xl h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-page-transition">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c16]/80 backdrop-blur-sm p-2 md:p-4 pb-20 md:pb-4">
+          <div className="bg-stone-950 border border-white/10 rounded-2xl w-full max-w-6xl h-full md:h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-page-transition">
             {/* Header */}
-            <div className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-white/5">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            <div className="h-14 md:h-16 border-b border-white/10 flex items-center justify-between px-4 md:px-6 bg-white/5">
+              <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
                 Tạo Đơn (POS)
               </h2>
               <button onClick={() => setIsPosOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-stone-300 transition-colors">✕</button>
             </div>
             
             {/* Body */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
               {/* Left Column: Packages */}
-              <div className="w-1/4 border-r border-white/10 p-6 overflow-y-auto bg-[#141c16]/20">
-                <h3 className="text-sm font-medium text-stone-400 mb-4 uppercase tracking-wider">1. Gói Thời Gian (*)</h3>
-                <div className="space-y-3">
+              <div className="w-full md:w-1/4 h-32 md:h-auto border-b md:border-b-0 md:border-r border-white/10 p-3 md:p-6 overflow-y-auto bg-[#141c16]/20 shrink-0">
+                <h3 className="text-xs md:text-sm font-medium text-stone-400 mb-2 md:mb-4 uppercase tracking-wider">1. Gói Thời Gian (*)</h3>
+                <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
                   {packages.map(pkg => (
                     <div 
                       key={pkg.id} 
                       onClick={() => setPosSelectedPackage(pkg)}
-                      className={`p-4 rounded-xl cursor-pointer border transition-all ${posSelectedPackage?.id === pkg.id ? 'border-emerald-600 bg-emerald-600/20 shadow-[0_0_15px_rgba(5,150,105,0.2)]' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+                      className={`p-3 md:p-4 min-w-[140px] md:min-w-0 rounded-xl cursor-pointer border transition-all ${posSelectedPackage?.id === pkg.id ? 'border-emerald-600 bg-emerald-600/20 shadow-[0_0_15px_rgba(5,150,105,0.2)]' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
                     >
-                      <h4 className="font-medium text-white">{pkg.name}</h4>
-                      <p className="text-emerald-500 font-bold mt-1">{pkg.price.toLocaleString('vi-VN')}đ</p>
+                      <h4 className="font-medium text-white text-sm md:text-base">{pkg.name}</h4>
+                      <p className="text-emerald-500 font-bold mt-1 text-sm md:text-base">{pkg.price.toLocaleString('vi-VN')}đ</p>
                     </div>
                   ))}
                   {packages.length === 0 && <p className="text-stone-500 text-sm">Chưa có gói cước nào.</p>}
@@ -304,7 +309,7 @@ export default function Dashboard() {
               </div>
               
               {/* Middle Column: Menu */}
-              <div className="flex-1 p-6 overflow-y-auto">
+              <div className="flex-1 p-3 md:p-6 overflow-y-auto">
                 <h3 className="text-sm font-medium text-stone-400 mb-4 uppercase tracking-wider">2. Nước uống gọi thêm</h3>
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {menuItems.map(item => (
@@ -330,10 +335,10 @@ export default function Dashboard() {
               </div>
 
               {/* Right Column: Cart & Checkout */}
-              <div className="w-80 bg-[#141c16]/40 p-6 flex flex-col border-l border-white/10">
-                <h3 className="text-sm font-medium text-stone-400 mb-4 uppercase tracking-wider">Hóa Đơn</h3>
+              <div className="w-full md:w-80 h-1/3 md:h-auto bg-[#141c16]/40 p-4 md:p-6 flex flex-col border-t md:border-t-0 md:border-l border-white/10 shrink-0">
+                <h3 className="text-xs md:text-sm font-medium text-stone-400 mb-2 md:mb-4 uppercase tracking-wider">Hóa Đơn</h3>
                 
-                <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto space-y-2 md:space-y-4 pr-2 custom-scrollbar">
                   {posSelectedPackage ? (
                     <div className="flex justify-between items-start pb-4 border-b border-white/10">
                       <div>
@@ -379,10 +384,10 @@ export default function Dashboard() {
                   )})}
                 </div>
 
-                <div className="pt-6 mt-4">
-                  <div className="flex justify-between items-end mb-6 bg-white/5 p-4 rounded-xl border border-white/10">
-                    <span className="text-stone-400 font-medium">Tổng thanh toán</span>
-                    <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-amber-500">
+                <div className="pt-2 md:pt-6 mt-2 md:mt-4">
+                  <div className="flex justify-between items-end mb-3 md:mb-6 bg-white/5 p-3 md:p-4 rounded-xl border border-white/10">
+                    <span className="text-stone-400 font-medium text-sm md:text-base">Tổng thanh toán</span>
+                    <span className="text-xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-amber-500">
                       {(() => {
                         let drinkTotal = posCart.reduce((acc, item) => acc + item.price * item.quantity, 0);
                         if (posSelectedPackage?.includesDrink && posCart.length > 0) {
@@ -496,6 +501,26 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 w-full glass border-t border-white/10 flex justify-around p-2 z-50 pb-6 bg-stone-950/90 backdrop-blur-md">
+        <button onClick={() => setActiveTab("overview")} className={`flex flex-col items-center p-2 transition-colors ${activeTab === "overview" ? "text-emerald-500" : "text-stone-500 hover:text-stone-400"}`}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          <span className="text-[10px] font-bold tracking-wide uppercase">POS</span>
+        </button>
+        <button onClick={() => setActiveTab("sessions")} className={`flex flex-col items-center p-2 transition-colors ${activeTab === "sessions" ? "text-emerald-500" : "text-stone-500 hover:text-stone-400"}`}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span className="text-[10px] font-bold tracking-wide uppercase">Phiên</span>
+        </button>
+        <button onClick={() => setActiveTab("menu")} className={`flex flex-col items-center p-2 transition-colors ${activeTab === "menu" ? "text-emerald-500" : "text-stone-500 hover:text-stone-400"}`}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
+          <span className="text-[10px] font-bold tracking-wide uppercase">Menu</span>
+        </button>
+        <button onClick={() => setActiveTab("settings")} className={`flex flex-col items-center p-2 transition-colors ${activeTab === "settings" ? "text-emerald-500" : "text-stone-500 hover:text-stone-400"}`}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span className="text-[10px] font-bold tracking-wide uppercase">Cài đặt</span>
+        </button>
+      </nav>
 
     </div>
   );

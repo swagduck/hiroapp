@@ -147,7 +147,7 @@ export default function PackagesTab() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#141c16]/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#141c16]/60 backdrop-blur-sm p-4 overflow-x-auto">
           <div className="bg-stone-950 border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-white">{editingItem ? "Sửa gói cước" : "Thêm gói cước mới"}</h3>

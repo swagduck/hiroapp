@@ -32,8 +32,8 @@ export default function HistoryTab() {
         </h3>
         <p className="text-sm text-stone-400">Tổng số: {history.length} phiên</p>
       </div>
-      <div className="flex-1 overflow-auto p-4 custom-scrollbar">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden mt-6 overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[800px]">
           <thead>
             <tr className="bg-white/5 text-stone-400 text-sm border-b border-white/10">
               <th className="p-4 font-medium">Mã Phiên</th>
