@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function PackagesTab() {
   const [packages, setPackages] = useState<any[]>([]);
@@ -13,6 +14,19 @@ export default function PackagesTab() {
   const [price, setPrice] = useState("");
   const [duration, setDuration] = useState("");
   const [includesDrink, setIncludesDrink] = useState(false);
+
+  const qrRef = useRef<HTMLDivElement>(null);
+
+  const downloadQR = () => {
+    if (!qrRef.current) return;
+    const canvas = qrRef.current.querySelector('canvas');
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'QR_Khach_Hang.png';
+    a.click();
+  };
 
   const fetchPackages = async () => {
     try {
@@ -116,6 +130,30 @@ export default function PackagesTab() {
       </div>
       
       <div className="flex-1 overflow-auto p-6 custom-scrollbar">
+        
+        {/* QR Code Section */}
+        <div className="mb-8 bg-white/5 border border-white/10 rounded-2xl p-6 flex items-center justify-between">
+          <div>
+            <h4 className="text-xl font-bold text-white mb-2">Mã QR Khách Hàng (Dán Bàn)</h4>
+            <p className="text-stone-400 text-sm mb-4 max-w-md">Hãy in mã QR này và dán lên các bàn. Khách hàng sẽ quét mã này để vào Cổng Thông Tin (Đăng nhập hoặc gọi nước vãng lai).</p>
+            <button onClick={downloadQR} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-colors shadow-lg flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              Tải ảnh QR về máy
+            </button>
+          </div>
+          <div className="p-3 bg-white rounded-xl shadow-lg" ref={qrRef}>
+            <QRCodeCanvas 
+              value={typeof window !== 'undefined' ? `${window.location.origin}/customer` : 'https://hiroapp.com/customer'} 
+              size={120}
+              level={"H"}
+              includeMargin={true}
+              fgColor={"#000000"} 
+              bgColor={"#ffffff"} 
+            />
+          </div>
+        </div>
+
+        <h4 className="text-lg font-bold text-white mb-4">Danh sách Gói Cước</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {packages.map(pkg => (
             <div key={pkg.id} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col relative group hover:bg-white/10 transition-colors">
