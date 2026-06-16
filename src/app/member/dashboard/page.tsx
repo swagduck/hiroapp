@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function MemberDashboard() {
   const router = useRouter();
@@ -149,10 +150,23 @@ export default function MemberDashboard() {
                 </span>
                 {session.status === 'ACTIVE' && (
                   <button onClick={() => router.push(`/customer/${session.accessCode}`)} className="text-emerald-400 text-sm font-medium hover:underline">
-                    Xem thời gian &gt;
+                    Gọi Nước &gt;
                   </button>
                 )}
               </div>
+              {session.status === 'ACTIVE' && (
+                <div className="mt-6 flex flex-col items-center bg-white p-4 rounded-xl max-w-[200px] mx-auto">
+                  <QRCodeCanvas 
+                    value={session.accessCode} 
+                    size={160} 
+                    level={"H"} 
+                    includeMargin={true}
+                    fgColor={"#000000"} 
+                    bgColor={"#ffffff"} 
+                  />
+                  <p className="text-stone-900 font-bold mt-2 text-sm text-center">Quét QR tại cổng</p>
+                </div>
+              )}
             </div>
           </div>
         ) : (
