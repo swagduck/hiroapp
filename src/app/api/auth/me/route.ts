@@ -43,10 +43,10 @@ export async function GET(request: Request) {
     const currentMonth = new Date().getMonth() + 1;
 
     if (user.dob) {
-      // Assuming dob is in YYYY-MM-DD or similar format that can be parsed
-      const dobDate = new Date(user.dob);
-      if (!isNaN(dobDate.getTime())) {
-        const birthMonth = dobDate.getMonth() + 1;
+      // Expecting DD/MM/YYYY format
+      const parts = user.dob.split("/");
+      if (parts.length === 3) {
+        const birthMonth = parseInt(parts[1], 10);
         
         // If it's birth month and hasn't claimed this year
         if (birthMonth === currentMonth && user.lastBirthdayClaimYear !== currentYear) {

@@ -451,12 +451,13 @@ export default function MemberDashboard() {
                 <div>
                   <label className="block text-sm font-medium text-stone-400 mb-1">Ngày sinh (Để nhận quà sinh nhật)</label>
                   <input 
-                    type="date" 
+                    type="text" 
+                    placeholder="DD/MM/YYYY (Ví dụ: 25/12/1999)"
                     value={dobInput} 
                     onChange={(e) => setDobInput(e.target.value)}
                     className="w-full bg-black/20 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50" 
                   />
-                  <p className="text-xs text-stone-500 mt-2">Ngày sinh chỉ được nhập một lần hoặc phải liên hệ nhân viên để đổi lại nhằm tránh gian lận.</p>
+                  <p className="text-xs text-stone-500 mt-2">Nhập đúng định dạng DD/MM/YYYY. Ngày sinh chỉ được nhập một lần hoặc phải liên hệ nhân viên để đổi lại nhằm tránh gian lận.</p>
                 </div>
 
                 <button 
