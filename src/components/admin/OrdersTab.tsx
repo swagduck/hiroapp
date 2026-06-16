@@ -6,7 +6,7 @@ export default function OrdersTab() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("/api/orders");
+      const res = await fetch(`/api/orders?t=${new Date().getTime()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setOrders(data);
@@ -25,6 +25,8 @@ export default function OrdersTab() {
   }, []);
 
   const updateOrderStatus = async (id: string, status: string) => {
+    // Optimistic update
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
     try {
       const res = await fetch(`/api/orders/${id}`, {
         method: "PUT",
@@ -36,6 +38,7 @@ export default function OrdersTab() {
       }
     } catch (error) {
       console.error("Error updating order:", error);
+      fetchOrders(); // Rollback if error
     }
   };
 
