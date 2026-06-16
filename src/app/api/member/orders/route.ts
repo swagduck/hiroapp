@@ -88,6 +88,23 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
+    const url = new URL(request.url);
+    const history = url.searchParams.get("history") === "true";
+
+    if (history) {
+      const allSessions = await prisma.session.findMany({
+        where: { userId: payload.userId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          package: true,
+          orders: {
+            include: { items: { include: { menuItem: true } } }
+          }
+        }
+      });
+      return NextResponse.json(allSessions);
+    }
+
     // Lấy phiên gần nhất của khách
     const sessions = await prisma.session.findMany({
       where: { userId: payload.userId },

@@ -7,8 +7,12 @@ import { QRCodeCanvas } from "qrcode.react";
 export default function MemberDashboard() {
   const router = useRouter();
   const [member, setMember] = useState<any>(null);
-  const [session, setSession] = useState<any>(null);
+  const [activeSession, setActiveSession] = useState<any>(null);
+  const [historySessions, setHistorySessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Tabs
+  const [activeTab, setActiveTab] = useState<"menu" | "cart" | "history">("menu");
 
   // Mua hàng
   const [packages, setPackages] = useState<any[]>([]);
@@ -20,9 +24,10 @@ export default function MemberDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [meRes, sessionRes, pkgRes, menuRes] = await Promise.all([
+        const [meRes, sessionRes, historyRes, pkgRes, menuRes] = await Promise.all([
           fetch("/api/auth/me"),
           fetch("/api/member/orders"),
+          fetch("/api/member/orders?history=true"),
           fetch("/api/packages"),
           fetch("/api/menu")
         ]);
@@ -37,10 +42,14 @@ export default function MemberDashboard() {
 
         if (sessionRes.ok) {
           const s = await sessionRes.json();
-          // Chỉ lấy phiên Active hoặc Pending
           if (s && (s.status === "ACTIVE" || s.status === "PENDING")) {
-            setSession(s);
+            setActiveSession(s);
           }
+        }
+
+        if (historyRes.ok) {
+          const hs = await historyRes.json();
+          setHistorySessions(Array.isArray(hs) ? hs : []);
         }
         
         if (pkgRes.ok) {
@@ -114,14 +123,25 @@ export default function MemberDashboard() {
     }
   };
 
+  const getCartTotal = () => {
+    const pkg = packages.find(p => p.id === selectedPkg);
+    let totalDrinks = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    let pkgPrice = pkg ? pkg.price : 0;
+
+    if (pkg?.includesDrink && cart.length > 0) {
+      totalDrinks -= cart[0].price;
+    }
+    return pkgPrice + totalDrinks;
+  };
+
   if (loading) return <div className="min-h-screen bg-stone-950 flex justify-center items-center"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-500"></div></div>;
 
   return (
-    <div className="min-h-screen bg-slate-950 flex justify-center pb-20">
-      <div className="w-full max-w-md bg-stone-950 min-h-screen border-x border-white/5 text-white">
+    <div className="min-h-screen bg-slate-950 flex justify-center pb-24">
+      <div className="w-full max-w-md bg-stone-950 min-h-screen border-x border-white/5 text-white relative">
         
         {/* Header User */}
-        <div className="p-5 bg-gradient-to-b from-emerald-900/40 to-transparent border-b border-white/5">
+        <div className="p-5 bg-gradient-to-b from-emerald-900/40 to-transparent border-b border-white/5 sticky top-0 z-10 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(16,185,129,0.5)]">
               {member?.name?.charAt(0) || "U"}
@@ -148,103 +168,241 @@ export default function MemberDashboard() {
           </div>
         </div>
 
-        {session ? (
-          <div className="p-4 space-y-4">
-            <div className={`p-4 rounded-2xl border ${session.status === 'PENDING' ? 'bg-amber-900/20 border-amber-500/30' : 'bg-emerald-900/20 border-emerald-500/30'}`}>
-              <h3 className="font-bold mb-2">Đơn hàng hiện tại</h3>
-              <p className="text-sm text-stone-300">Gói: <span className="text-white font-medium">{session.package?.name}</span></p>
-              <div className="mt-4 flex justify-between items-center">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${session.status === 'PENDING' ? 'bg-amber-500 text-stone-900' : 'bg-emerald-500 text-white'}`}>
-                  {session.status === 'PENDING' ? 'Chờ thu ngân duyệt' : 'Đang hoạt động'}
-                </span>
-                {session.status === 'ACTIVE' && (
-                  <button onClick={() => router.push(`/customer/${session.accessCode}`)} className="text-emerald-400 text-sm font-medium hover:underline">
-                    Gọi Nước &gt;
-                  </button>
+        {/* Content based on Tab */}
+        <div className="p-4 animate-page-transition">
+          {activeTab === "menu" && (
+            <div className="space-y-6">
+              {/* Active Session Banner */}
+              {activeSession && (
+                <div className={`p-4 rounded-2xl border ${activeSession.status === 'PENDING' ? 'bg-amber-900/20 border-amber-500/30' : 'bg-emerald-900/20 border-emerald-500/30'} cursor-pointer`} onClick={() => setActiveTab("history")}>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-bold text-sm text-stone-300">Bạn đang có 1 phiên {activeSession.status === 'PENDING' ? 'chờ duyệt' : 'hoạt động'}</h3>
+                      <p className="text-xs text-stone-500 mt-1">Nhấn vào Lịch sử để xem chi tiết QR thanh toán/check-in.</p>
+                    </div>
+                    <span className="text-xl">👉</span>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h3 className="font-bold text-lg mb-4 text-emerald-400">1. Chọn Gói Thời Gian</h3>
+                <div className="space-y-3">
+                  {packages.map(pkg => (
+                    <div 
+                      key={pkg.id} 
+                      onClick={() => setSelectedPkg(pkg.id)}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedPkg === pkg.id ? 'bg-emerald-900/40 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{pkg.name}</span>
+                        <span className="text-emerald-400 font-bold">{pkg.price.toLocaleString('vi-VN')}đ</span>
+                      </div>
+                      {pkg.includesDrink && <p className="text-xs text-amber-400 mt-1">✨ Tặng 1 ly nước bất kỳ</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-lg mb-4 text-emerald-400">2. Chọn Đồ Uống (Tùy chọn)</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {menuItems.map(item => (
+                    <div key={item.id} onClick={() => {addToCart(item); alert(`Đã thêm ${item.name} vào giỏ!`);}} className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col items-center text-center cursor-pointer hover:bg-white/10 hover:border-white/30 active:scale-95 transition-all">
+                      <div className="text-4xl mb-3">{item.imageUrl || "🍹"}</div>
+                      <span className="text-sm font-medium mb-1 line-clamp-2 min-h-[40px]">{item.name}</span>
+                      <span className="text-xs text-emerald-400 font-bold">{item.price.toLocaleString('vi-VN')}đ</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "cart" && (
+            <div className="space-y-6">
+              <h3 className="font-bold text-2xl text-white mb-2">Giỏ hàng của bạn</h3>
+              
+              <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-4">
+                <div className="pb-4 border-b border-white/10">
+                  <h4 className="text-sm text-stone-400 font-medium mb-2">Gói thời gian</h4>
+                  {selectedPkg ? (
+                    <div className="flex justify-between items-center text-emerald-400 font-bold">
+                      <span>{packages.find(p => p.id === selectedPkg)?.name}</span>
+                      <span>{packages.find(p => p.id === selectedPkg)?.price.toLocaleString('vi-VN')}đ</span>
+                    </div>
+                  ) : (
+                    <p className="text-stone-500 text-sm italic">Chưa chọn gói</p>
+                  )}
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-sm text-stone-400 font-medium">Đồ uống</h4>
+                    <button onClick={() => setCart([])} className="text-xs text-stone-500 hover:text-white">Xóa tất cả</button>
+                  </div>
+                  {cart.length > 0 ? (
+                    <div className="space-y-3 mt-3">
+                      {cart.map((c, i) => (
+                        <div key={i} className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 bg-stone-800 text-xs flex items-center justify-center rounded text-stone-300">{c.quantity}x</span>
+                            <span className="text-sm text-stone-200">{c.name}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-stone-300">{(c.price * c.quantity).toLocaleString('vi-VN')}đ</span>
+                            <button onClick={() => setCart(cart.filter(x => x.id !== c.id))} className="text-red-400/50 hover:text-red-400">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-stone-500 text-sm italic">Chưa chọn đồ uống</p>
+                  )}
+                </div>
+              </div>
+
+              {packages.find(p => p.id === selectedPkg)?.includesDrink && cart.length > 0 && (
+                <div className="bg-emerald-900/20 text-emerald-400 text-xs p-3 rounded-lg border border-emerald-500/30 flex items-center gap-2">
+                  <span>🎁</span>
+                  <span>Đã trừ tiền 1 ly nước (Áp dụng theo gói Combo)</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center pt-4">
+                <span className="text-stone-400">Tổng thanh toán:</span>
+                <span className="text-2xl font-black text-emerald-400">{getCartTotal().toLocaleString('vi-VN')}đ</span>
+              </div>
+
+              <button 
+                onClick={submitOrder}
+                disabled={submitting || !selectedPkg || !!activeSession}
+                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-50 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all mt-4"
+              >
+                {activeSession ? "Đang có phiên hoạt động" : (submitting ? "Đang xử lý..." : "Gửi Đơn Order")}
+              </button>
+            </div>
+          )}
+
+          {activeTab === "history" && (
+            <div className="space-y-6">
+              <h3 className="font-bold text-2xl text-white mb-4">Lịch sử & Hoạt động</h3>
+              
+              {activeSession && (
+                <div className={`p-5 rounded-2xl border mb-6 ${activeSession.status === 'PENDING' ? 'bg-amber-900/20 border-amber-500' : 'bg-emerald-900/20 border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.1)]'}`}>
+                  <h4 className="font-bold text-lg mb-1 flex items-center gap-2">
+                    Phiên hiện tại 
+                    <span className="flex h-3 w-3 relative">
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${activeSession.status === 'PENDING' ? 'bg-amber-400' : 'bg-emerald-400'}`}></span>
+                      <span className={`relative inline-flex rounded-full h-3 w-3 ${activeSession.status === 'PENDING' ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
+                    </span>
+                  </h4>
+                  <p className="text-sm text-stone-300 mb-4">Gói: <span className="text-white font-medium">{activeSession.package?.name}</span></p>
+                  
+                  {activeSession.status === 'PENDING' && activeSession.paymentStatus === 'UNPAID' && (
+                    <div className="mt-4 flex flex-col items-center bg-white p-4 rounded-xl mx-auto">
+                      <p className="text-stone-900 font-bold mb-2 text-center text-sm">Mã QR Thanh Toán</p>
+                      <img 
+                        src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${activeSession.totalAmount || 0}&addInfo=${activeSession.accessCode}&accountName=SPACE CAFE`} 
+                        alt="VietQR" 
+                        className="w-48 h-48 rounded shadow-sm border border-stone-200" 
+                      />
+                      <div className="text-stone-600 text-xs mt-3 text-center space-y-1">
+                        <p>Số tiền: <strong className="text-emerald-600 text-sm">{(activeSession.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
+                        <p>Mã phiên: <strong className="text-stone-900">{activeSession.accessCode}</strong></p>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeSession.status === 'ACTIVE' && (
+                    <div className="mt-4 flex flex-col items-center bg-white p-4 rounded-xl mx-auto max-w-[220px]">
+                      <p className="text-stone-900 font-bold mb-2 text-center text-sm">Mã QR Lên Lầu</p>
+                      <QRCodeCanvas 
+                        value={activeSession.accessCode} 
+                        size={180} 
+                        level={"H"} 
+                        includeMargin={true}
+                        fgColor={"#000000"} 
+                        bgColor={"#ffffff"} 
+                      />
+                      <p className="text-stone-500 font-mono mt-2 text-xs text-center">{activeSession.accessCode}</p>
+                    </div>
+                  )}
+
+                  {activeSession.status === 'ACTIVE' && (
+                    <button onClick={() => router.push(`/customer/${activeSession.accessCode}`)} className="w-full mt-4 bg-emerald-600/20 border border-emerald-500 hover:bg-emerald-600/30 text-emerald-400 py-3 rounded-xl font-bold transition-colors">
+                      Vào Menu Gọi Thêm Nước
+                    </button>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <h4 className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-3">Lịch sử giao dịch</h4>
+                {historySessions.length === 0 ? (
+                  <p className="text-stone-500 text-sm italic text-center py-8">Chưa có giao dịch nào</p>
+                ) : (
+                  historySessions.filter(s => s.status === 'COMPLETED' || s.status === 'CANCELLED').map(s => (
+                    <div key={s.id} className="bg-white/5 p-4 rounded-xl border border-white/10 flex justify-between items-center">
+                      <div>
+                        <p className="font-bold text-sm text-stone-200">{s.package?.name || "Gói thời gian"}</p>
+                        <p className="text-xs text-stone-500 mt-1">{new Date(s.createdAt).toLocaleDateString('vi-VN')} - {new Date(s.createdAt).toLocaleTimeString('vi-VN')}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-emerald-400">{(s.totalAmount || 0).toLocaleString('vi-VN')}đ</p>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${s.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                          {s.status === 'COMPLETED' ? 'HOÀN THÀNH' : 'ĐÃ HỦY'}
+                        </span>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
-              {session.status === 'PENDING' && session.paymentStatus === 'UNPAID' && (
-                <div className="mt-6 flex flex-col items-center bg-white p-4 rounded-xl mx-auto">
-                  <p className="text-stone-900 font-bold mb-2 text-center">Quét mã để thanh toán</p>
-                  <img 
-                    src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${session.totalAmount || 0}&addInfo=${session.accessCode}&accountName=SPACE CAFE`} 
-                    alt="VietQR" 
-                    className="w-48 h-48 rounded shadow-md border border-stone-200" 
-                  />
-                  <div className="text-stone-700 font-medium text-xs mt-3 text-center space-y-1">
-                    <p>Tổng tiền: <strong className="text-emerald-600 text-sm">{(session.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
-                    <p>Ngân hàng MB Bank</p>
-                    <p>STK: <strong className="text-stone-900">123456789</strong></p>
-                    <p>Chủ TK: SPACE CAFE</p>
-                  </div>
-                </div>
-              )}
-              {session.status === 'ACTIVE' && (
-                <div className="mt-6 flex flex-col items-center bg-white p-4 rounded-xl max-w-[200px] mx-auto">
-                  <QRCodeCanvas 
-                    value={session.accessCode} 
-                    size={160} 
-                    level={"H"} 
-                    includeMargin={true}
-                    fgColor={"#000000"} 
-                    bgColor={"#ffffff"} 
-                  />
-                  <p className="text-stone-900 font-bold mt-2 text-sm text-center">Quét QR tại cổng</p>
-                </div>
-              )}
             </div>
-          </div>
-        ) : (
-          <div className="p-4">
-            <h3 className="font-bold text-lg mb-4 text-emerald-400">1. Chọn Gói Thời Gian</h3>
-            <div className="space-y-3 mb-8">
-              {packages.map(pkg => (
-                <div 
-                  key={pkg.id} 
-                  onClick={() => setSelectedPkg(pkg.id)}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedPkg === pkg.id ? 'bg-emerald-900/40 border-emerald-500' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{pkg.name}</span>
-                    <span className="text-emerald-400 font-bold">{pkg.price.toLocaleString('vi-VN')}đ</span>
-                  </div>
-                  {pkg.includesDrink && <p className="text-xs text-amber-400 mt-1">✨ Tặng 1 ly nước</p>}
-                </div>
-              ))}
-            </div>
+          )}
+        </div>
 
-            <h3 className="font-bold text-lg mb-4 text-emerald-400">2. Chọn Đồ Uống (Tùy chọn)</h3>
-            <div className="grid grid-cols-2 gap-3 mb-8">
-              {menuItems.map(item => (
-                <div key={item.id} onClick={() => addToCart(item)} className="bg-white/5 p-3 rounded-xl border border-white/10 flex flex-col items-center text-center cursor-pointer hover:bg-white/10 active:scale-95 transition-all">
-                  <div className="text-4xl mb-2">{item.imageUrl || "🍹"}</div>
-                  <span className="text-sm font-medium mb-1 line-clamp-1">{item.name}</span>
-                  <span className="text-xs text-stone-400">{item.price.toLocaleString('vi-VN')}đ</span>
-                </div>
-              ))}
-            </div>
-
-            {cart.length > 0 && (
-              <div className="mb-8 bg-white/5 p-4 rounded-xl border border-white/10 space-y-2">
-                <h4 className="font-bold mb-2">Đã chọn:</h4>
-                {cart.map((c, i) => (
-                  <div key={i} className="flex justify-between text-sm">
-                    <span>{c.quantity}x {c.name}</span>
-                    <button onClick={() => setCart(cart.filter(x => x.id !== c.id))} className="text-red-400">Xóa</button>
-                  </div>
-                ))}
-              </div>
-            )}
-
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-stone-950/80 backdrop-blur-xl border-t border-white/10 z-50">
+          <div className="flex justify-around items-center px-2 py-3">
             <button 
-              onClick={submitOrder}
-              disabled={submitting || !selectedPkg}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all"
+              onClick={() => setActiveTab("menu")}
+              className={`flex flex-col items-center gap-1 p-2 flex-1 rounded-xl transition-all ${activeTab === 'menu' ? 'text-emerald-400' : 'text-stone-500 hover:text-stone-300'}`}
             >
-              {submitting ? "Đang gửi..." : "Gửi Đơn Order"}
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+              <span className="text-[10px] font-bold uppercase tracking-wider">Menu</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab("cart")}
+              className={`flex flex-col items-center gap-1 p-2 flex-1 rounded-xl transition-all relative ${activeTab === 'cart' ? 'text-emerald-400' : 'text-stone-500 hover:text-stone-300'}`}
+            >
+              <div className="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                {cart.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-amber-500 text-stone-900 text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full animate-bounce">
+                    {cart.length}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider">Giỏ Hàng</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab("history")}
+              className={`flex flex-col items-center gap-1 p-2 flex-1 rounded-xl transition-all ${activeTab === 'history' ? 'text-emerald-400' : 'text-stone-500 hover:text-stone-300'}`}
+            >
+              <div className="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+                {activeSession && activeTab !== 'history' && (
+                  <span className="absolute 0 top-0 right-0 w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+                )}
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider">Lịch sử</span>
             </button>
           </div>
-        )}
+        </div>
+
       </div>
     </div>
   );
