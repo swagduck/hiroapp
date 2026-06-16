@@ -8,6 +8,7 @@ import HistoryTab from "@/components/admin/HistoryTab";
 import MenuTab from "@/components/admin/MenuTab";
 import PackagesTab from "@/components/admin/PackagesTab";
 import OrdersTab from "@/components/admin/OrdersTab";
+import AnalyticsTab from "@/components/AnalyticsTab";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -112,6 +113,9 @@ export default function Dashboard() {
         </div>
         <nav className="flex-1 p-4 space-y-2">
           <button onClick={() => setActiveTab("overview")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "overview" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Tổng quan (POS)</button>
+          <button onClick={() => setActiveTab("analytics")} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "analytics" ? "bg-blue-600/20 text-blue-400 font-bold border border-blue-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
+            Báo cáo doanh thu
+          </button>
           <button onClick={() => setActiveTab("sessions")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "sessions" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Phiên sử dụng</button>
           <button onClick={() => setActiveTab("orders")} className={`w-full flex justify-between items-center px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
             Đơn pha chế
@@ -245,6 +249,8 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+          ) : activeTab === "analytics" ? (
+            <AnalyticsTab />
           ) : activeTab === "sessions" ? (
             <HistoryTab />
           ) : activeTab === "orders" ? (
