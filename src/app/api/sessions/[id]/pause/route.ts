@@ -3,17 +3,19 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { phone } = await request.json();
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
 
     if (!phone || phone.trim().length < 9) {
       return NextResponse.json({ error: "Số điện thoại không hợp lệ" }, { status: 400 });
     }
 
     const session = await prisma.session.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { package: true }
     });
 
@@ -66,7 +68,7 @@ export async function POST(
 
       // 2. Kết thúc phiên và lưu userId để tracking
       await tx.session.update({
-        where: { id: params.id },
+        where: { id },
         data: { 
           status: "COMPLETED", 
           endTime: new Date(),
