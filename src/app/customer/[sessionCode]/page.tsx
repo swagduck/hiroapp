@@ -14,6 +14,63 @@ export default function CustomerOrderPage() {
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
 
+  // Notification States
+  const [notificationPermission, setNotificationPermission] = useState("default");
+  const [hasNotifiedWarning, setHasNotifiedWarning] = useState(false);
+  const [hasNotifiedExpired, setHasNotifiedExpired] = useState(false);
+
+  useEffect(() => {
+    if ("Notification" in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
+  const requestNotificationPermission = async () => {
+    if (!("Notification" in window)) return;
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    if (permission === "granted") {
+      new Notification("SpaceManager", { body: "Thông báo đã bật. Bạn sẽ nhận được cảnh báo khi sắp hết giờ!" });
+    }
+  };
+
+  const playAlert = (title: string, body: string, isUrgent: boolean) => {
+    // 1. Vibrate
+    if ("vibrate" in navigator) {
+      navigator.vibrate(isUrgent ? [500, 200, 500, 200, 1000] : [200, 100, 200]);
+    }
+    
+    // 2. Sound (Web Audio API)
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const playBeep = (freq: number, startTime: number) => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = isUrgent ? 'sawtooth' : 'sine';
+        oscillator.frequency.setValueAtTime(freq, startTime);
+        gainNode.gain.setValueAtTime(0.5, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.5);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.5);
+      };
+      
+      playBeep(isUrgent ? 880 : 440, audioCtx.currentTime);
+      if (isUrgent) {
+        playBeep(880, audioCtx.currentTime + 0.6);
+        playBeep(880, audioCtx.currentTime + 1.2);
+      }
+    } catch(e) {
+      console.error("Audio play failed", e);
+    }
+    
+    // 3. OS Notification
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body, icon: "/favicon.ico" }); // Optional icon
+    }
+  };
+
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(interval);
@@ -126,9 +183,34 @@ export default function CustomerOrderPage() {
   const showWarning = remainingMinutes !== null && remainingMinutes <= 15 && remainingMinutes > 0;
   const isExpired = remainingMinutes !== null && remainingMinutes <= 0;
 
+  useEffect(() => {
+    if (remainingMinutes === null) return;
+    
+    if (remainingMinutes === 15 && !hasNotifiedWarning) {
+      playAlert("Sắp hết giờ!", "Bạn còn 15 phút nữa, vui lòng chú ý thời gian nhé!", false);
+      setHasNotifiedWarning(true);
+    }
+    
+    if (remainingMinutes <= 0 && !hasNotifiedExpired) {
+      playAlert("Đã hết giờ!", "Thời gian sử dụng của bạn đã hết. Vui lòng đến quầy nếu muốn gia hạn.", true);
+      setHasNotifiedExpired(true);
+    }
+  }, [remainingMinutes, hasNotifiedWarning, hasNotifiedExpired]);
+
   return (
     <div className="min-h-screen bg-slate-950 flex justify-center overflow-x-hidden">
       <div className="w-full max-w-md flex flex-col min-h-screen bg-stone-950 text-white pb-20 shadow-2xl border-x border-white/5 relative">
+      
+      {/* Banner xin quyền thông báo */}
+      {notificationPermission === "default" && (
+        <div className="bg-amber-500/10 border-b border-amber-500/30 p-3 flex justify-between items-center px-4 animate-slide-down">
+          <span className="text-amber-400 text-xs font-medium pr-2">Bật thông báo để nhận cảnh báo khi sắp hết giờ</span>
+          <button onClick={requestNotificationPermission} className="bg-amber-500 text-stone-900 text-xs font-bold px-3 py-2 rounded-lg shadow-[0_0_10px_rgba(245,158,11,0.3)] shrink-0">
+            Cho phép
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <header className="glass sticky top-0 z-10 px-4 py-4 border-b border-white/10 shadow-lg">
         <div className="flex justify-between items-center mb-4">
