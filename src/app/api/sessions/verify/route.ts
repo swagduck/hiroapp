@@ -20,7 +20,15 @@ export async function GET(request: Request) {
     }
 
     if (session.status !== "ACTIVE") {
-      return NextResponse.json({ valid: false, message: `Vé đã kết thúc hoặc bị hủy.` }, { status: 400 });
+      let message = `Vé đã kết thúc hoặc bị hủy.`;
+      // Nếu đã kết thúc, tính xem đã kết thúc bao lâu nếu có endTime
+      if (session.endTime) {
+        const endedAgo = Math.floor((new Date().getTime() - new Date(session.endTime).getTime()) / 60000);
+        if (endedAgo > 0) {
+          message = `Vé đã kết thúc từ ${endedAgo} phút trước!`;
+        }
+      }
+      return NextResponse.json({ valid: false, message, session }, { status: 400 });
     }
 
     const duration = session.savedMinutesUsed || session.package?.duration;
@@ -32,7 +40,13 @@ export async function GET(request: Request) {
       remainingMinutes = Math.floor((expireTime - now) / 60000);
 
       if (remainingMinutes <= 0) {
-        return NextResponse.json({ valid: false, message: "Vé đã hết hạn thời gian!" }, { status: 400 });
+        const overstay = Math.abs(remainingMinutes);
+        return NextResponse.json({ 
+          valid: false, 
+          message: `Đã quá giờ ${overstay} phút!`,
+          session,
+          overstay
+        }, { status: 400 });
       }
     }
 

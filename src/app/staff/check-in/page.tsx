@@ -97,25 +97,25 @@ export default function CheckInPage() {
               </h2>
               <p className="text-stone-300 text-lg">{scanResult.message}</p>
               
-              {scanResult.valid && scanResult.session && (
-                <div className="mt-4 p-5 bg-[#141c16]/60 rounded-xl w-full text-left border border-white/10 shadow-inner">
+              {scanResult.session && (
+                <div className={`mt-4 p-5 rounded-xl w-full text-left border shadow-inner ${scanResult.valid ? 'bg-[#141c16]/60 border-white/10' : 'bg-red-950/40 border-red-500/30'}`}>
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-sm text-stone-400">Mã truy cập:</span>
-                    <span className="font-mono font-bold text-emerald-400 text-lg bg-emerald-900/30 px-2 py-0.5 rounded">#{scanResult.session.accessCode}</span>
+                    <span className={`text-sm ${scanResult.valid ? 'text-stone-400' : 'text-red-300/70'}`}>Mã truy cập:</span>
+                    <span className={`font-mono font-bold text-lg px-2 py-0.5 rounded ${scanResult.valid ? 'text-emerald-400 bg-emerald-900/30' : 'text-red-400 bg-red-900/30'}`}>#{scanResult.session.accessCode}</span>
                   </div>
                   
                   <div className="mb-3">
-                    <span className="text-sm text-stone-400 block mb-1">Gói cước:</span>
+                    <span className={`text-sm block mb-1 ${scanResult.valid ? 'text-stone-400' : 'text-red-300/70'}`}>Gói cước:</span>
                     <span className="font-bold text-lg text-white">{scanResult.session.package?.name}</span>
                   </div>
                   
                   <div className="mb-4">
-                    <span className="text-sm text-stone-400 block mb-1">Giờ vào:</span>
+                    <span className={`text-sm block mb-1 ${scanResult.valid ? 'text-stone-400' : 'text-red-300/70'}`}>Giờ vào:</span>
                     <span className="font-mono text-stone-200">{new Date(scanResult.session.startTime).toLocaleTimeString('vi-VN')}</span>
                   </div>
 
                   {scanResult.session.package?.includesDrink && (
-                    <div className="pt-3 border-t border-white/10">
+                    <div className={`pt-3 border-t ${scanResult.valid ? 'border-white/10' : 'border-red-500/20'}`}>
                       <span className="text-sm text-stone-400 block mb-2">Tình trạng đồ uống miễn phí:</span>
                       {scanResult.session.freeDrinkClaimed ? (
                         <div className="flex items-center gap-2 text-stone-400 bg-stone-800/50 p-2 rounded-lg">
