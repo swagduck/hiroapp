@@ -169,7 +169,7 @@ export default function MemberDashboard() {
         </div>
 
         {/* Content based on Tab */}
-        <div className="p-4 animate-page-transition">
+        <div key={activeTab} className="p-4 animate-tab-enter">
           {activeTab === "menu" && (
             <div className="space-y-6">
               {/* Active Session Banner */}
@@ -208,10 +208,11 @@ export default function MemberDashboard() {
                 <h3 className="font-bold text-lg mb-4 text-emerald-400">2. Chọn Đồ Uống (Tùy chọn)</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {menuItems.map(item => (
-                    <div key={item.id} onClick={() => {addToCart(item); alert(`Đã thêm ${item.name} vào giỏ!`);}} className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col items-center text-center cursor-pointer hover:bg-white/10 hover:border-white/30 active:scale-95 transition-all">
-                      <div className="text-4xl mb-3">{item.imageUrl || "🍹"}</div>
+                    <div key={item.id} onClick={() => addToCart(item)} className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col items-center text-center cursor-pointer hover:bg-white/10 hover:border-emerald-500/50 active:scale-95 transition-all group">
+                      <div className="text-4xl mb-3 group-active:scale-110 transition-transform">{item.imageUrl || "🍹"}</div>
                       <span className="text-sm font-medium mb-1 line-clamp-2 min-h-[40px]">{item.name}</span>
                       <span className="text-xs text-emerald-400 font-bold">{item.price.toLocaleString('vi-VN')}đ</span>
+                      <div className="mt-2 w-full bg-emerald-600/20 text-emerald-400 py-1.5 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">Thêm</div>
                     </div>
                   ))}
                 </div>
