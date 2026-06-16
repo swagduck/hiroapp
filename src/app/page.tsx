@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [posCart, setPosCart] = useState<any[]>([]);
   const [posLoading, setPosLoading] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
 
   // Pause Session States
   const [sessionToPause, setSessionToPause] = useState<string | null>(null);
@@ -51,14 +52,18 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const [resSessions, resPackages, resMenu] = await Promise.all([
+      const [resSessions, resPackages, resMenu, resOrders] = await Promise.all([
         fetch('/api/sessions'),
         fetch('/api/packages'),
-        fetch('/api/menu')
+        fetch('/api/menu'),
+        fetch('/api/orders?t=' + new Date().getTime())
       ]);
       const dataSessions = await resSessions.json();
       const dataPackages = await resPackages.json();
       const dataMenu = await resMenu.json();
+      const dataOrders = await resOrders.json();
+      
+      setPendingOrdersCount(dataOrders.filter((o: any) => o.status === "PENDING").length);
       
       setSessions(dataSessions);
       setPackages(dataPackages);
@@ -213,7 +218,12 @@ export default function Dashboard() {
           </button>
           <button onClick={() => setActiveTab("sessions")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "sessions" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Phiên sử dụng</button>
           <button onClick={() => setActiveTab("orders")} className={`w-full flex justify-between items-center px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
-            Đơn pha chế
+            <span>Đơn pha chế</span>
+            {pendingOrdersCount > 0 && (
+              <span className="bg-amber-500 text-stone-900 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                {pendingOrdersCount}
+              </span>
+            )}
           </button>
           <button onClick={() => setActiveTab("menu")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "menu" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Menu Đồ uống</button>
           <button onClick={() => setActiveTab("settings")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "settings" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Cài đặt Gói cước</button>
@@ -859,7 +869,12 @@ export default function Dashboard() {
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span className="text-[10px] font-bold tracking-wide uppercase">Phiên</span>
         </button>
-        <button onClick={() => setActiveTab("orders")} className={`flex flex-col items-center p-2 transition-colors ${activeTab === "orders" ? "text-emerald-500 font-bold" : "text-stone-500 hover:text-stone-400"}`}>
+        <button onClick={() => setActiveTab("orders")} className={`relative flex flex-col items-center p-2 transition-colors ${activeTab === "orders" ? "text-emerald-500 font-bold" : "text-stone-500 hover:text-stone-400"}`}>
+          {pendingOrdersCount > 0 && (
+            <span className="absolute top-0 right-1 w-4 h-4 bg-amber-500 text-stone-900 text-[10px] font-bold flex items-center justify-center rounded-full animate-pulse border border-[#0a0f0d]">
+              {pendingOrdersCount}
+            </span>
+          )}
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
           <span className="text-[10px] font-bold tracking-wide uppercase">Đơn Pha</span>
         </button>
