@@ -28,11 +28,6 @@ export default function CheckInPage() {
       const res = await fetch(`/api/sessions/verify?code=${code}`);
       const data = await res.json();
       setScanResult(data);
-      
-      // Auto-clear result after 5 seconds
-      setTimeout(() => {
-        setScanResult(null);
-      }, 5000);
     } catch (error) {
       console.error(error);
       setScanResult({ valid: false, message: "Lỗi kết nối máy chủ" });
@@ -51,36 +46,40 @@ export default function CheckInPage() {
     <div className="min-h-screen bg-stone-950 text-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-amber-500 mb-2">HIRO SCANNER</h1>
-          <p className="text-stone-400">Quét vé lên lầu (Staff Only)</p>
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-amber-500 mb-1">HIRO SCANNER</h1>
+          <p className="text-stone-400 text-sm">Quét vé lên lầu (Staff Only)</p>
         </div>
 
-        {/* Khung quét QR */}
-        <div className="bg-white/5 border border-white/10 p-4 rounded-2xl shadow-2xl mb-6 overflow-hidden relative min-h-[300px] flex items-center justify-center">
-          <QrScanner 
-            elementId="reader"
-            onScanSuccess={handleScanSuccess}
-          />
-        </div>
+        {!scanResult && (
+          <>
+            {/* Khung quét QR */}
+            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl shadow-2xl mb-6 overflow-hidden relative min-h-[300px] flex items-center justify-center">
+              <QrScanner 
+                elementId="reader"
+                onScanSuccess={handleScanSuccess}
+              />
+            </div>
 
-        {/* Nhập mã thủ công */}
-        <form onSubmit={handleManualSubmit} className="flex gap-2 mb-8">
-          <input 
-            type="text" 
-            placeholder="Hoặc nhập mã (VD: 6PUHM)" 
-            value={manualCode}
-            onChange={(e) => setManualCode(e.target.value)}
-            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-600"
-          />
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="px-6 py-3 rounded-xl bg-emerald-700 font-bold hover:bg-emerald-600 disabled:opacity-50 transition-colors"
-          >
-            Kiểm tra
-          </button>
-        </form>
+            {/* Nhập mã thủ công */}
+            <form onSubmit={handleManualSubmit} className="flex gap-2 mb-8">
+              <input 
+                type="text" 
+                placeholder="Nhập mã vé..." 
+                value={manualCode}
+                onChange={(e) => setManualCode(e.target.value)}
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-600 w-full"
+              />
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="px-6 py-3 rounded-xl bg-emerald-700 font-bold hover:bg-emerald-600 disabled:opacity-50 transition-colors shrink-0"
+              >
+                {loading ? "..." : "Kiểm tra"}
+              </button>
+            </form>
+          </>
+        )}
 
         {/* Kết quả quét */}
         {scanResult && (
@@ -133,6 +132,13 @@ export default function CheckInPage() {
                   )}
                 </div>
               )}
+              
+              <button 
+                onClick={() => setScanResult(null)}
+                className={`mt-6 w-full py-4 rounded-xl font-bold transition-colors ${scanResult.valid ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'} text-white shadow-lg`}
+              >
+                QUÉT MÃ TIẾP THEO
+              </button>
             </div>
           </div>
         )}
