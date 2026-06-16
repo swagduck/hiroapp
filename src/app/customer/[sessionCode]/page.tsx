@@ -274,7 +274,7 @@ export default function CustomerOrderPage() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="absolute bottom-0 w-full bg-stone-950/80 backdrop-blur-xl border-t border-white/10 p-2 px-6 flex justify-around pb-6 z-20 rounded-b-lg">
+      <nav className="fixed bottom-0 w-full max-w-md bg-stone-950/80 backdrop-blur-xl border-t border-white/10 p-2 px-6 flex justify-around pb-6 z-50 rounded-b-lg">
         <button onClick={() => setActiveTab("menu")} className={`flex flex-col items-center justify-center p-2 transition-colors ${activeTab === "menu" ? "text-emerald-500 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" : "text-stone-500 hover:text-stone-400"}`}>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
           <span className="text-[10px] font-bold tracking-wide uppercase">Menu</span>
