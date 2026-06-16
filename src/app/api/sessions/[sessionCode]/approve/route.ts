@@ -19,6 +19,7 @@ export async function POST(request: Request, context: { params: Promise<{ sessio
       where: { id: sessionCode },
       data: {
         status: "ACTIVE",
+        paymentStatus: "PAID",
         startTime: new Date(), // Reset thời gian bắt đầu tính từ lúc Thu Ngân bấm duyệt
       }
     });

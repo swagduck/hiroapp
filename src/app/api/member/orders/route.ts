@@ -25,6 +25,11 @@ export async function POST(request: Request) {
 
     // Dùng transaction
     const session = await prisma.$transaction(async (tx) => {
+      // Fetch package to get the price
+      const pkg = await tx.package.findUnique({ where: { id: packageId } });
+      const pkgPrice = pkg?.price || 0;
+      const totalAmount = pkgPrice + (orderTotal || 0);
+
       const newSession = await tx.session.create({
         data: {
           userId: payload.userId,
@@ -32,6 +37,8 @@ export async function POST(request: Request) {
           accessCode,
           startTime: new Date(), // Giờ bắt đầu tạm, khi staff duyệt sẽ update lại nếu cần
           status: "PENDING",
+          paymentStatus: "UNPAID",
+          totalAmount,
           freeDrinkClaimed: false // Chưa duyệt nên chưa được tính là đã lấy
         },
         include: {

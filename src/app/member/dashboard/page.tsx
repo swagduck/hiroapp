@@ -154,6 +154,22 @@ export default function MemberDashboard() {
                   </button>
                 )}
               </div>
+              {session.status === 'PENDING' && session.paymentStatus === 'UNPAID' && (
+                <div className="mt-6 flex flex-col items-center bg-white p-4 rounded-xl mx-auto">
+                  <p className="text-stone-900 font-bold mb-2 text-center">Quét mã để thanh toán</p>
+                  <img 
+                    src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${session.totalAmount || 0}&addInfo=${session.accessCode}&accountName=SPACE CAFE`} 
+                    alt="VietQR" 
+                    className="w-48 h-48 rounded shadow-md border border-stone-200" 
+                  />
+                  <div className="text-stone-700 font-medium text-xs mt-3 text-center space-y-1">
+                    <p>Tổng tiền: <strong className="text-emerald-600 text-sm">{(session.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
+                    <p>Ngân hàng MB Bank</p>
+                    <p>STK: <strong className="text-stone-900">123456789</strong></p>
+                    <p>Chủ TK: SPACE CAFE</p>
+                  </div>
+                </div>
+              )}
               {session.status === 'ACTIVE' && (
                 <div className="mt-6 flex flex-col items-center bg-white p-4 rounded-xl max-w-[200px] mx-auto">
                   <QRCodeCanvas 

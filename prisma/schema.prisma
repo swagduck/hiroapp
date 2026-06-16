@@ -58,6 +58,11 @@ enum SessionStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  UNPAID
+  PAID
+}
+
 model Session {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   userId      String?  @db.ObjectId
@@ -68,6 +73,8 @@ model Session {
   startTime   DateTime @default(now())
   endTime     DateTime?
   status      SessionStatus @default(ACTIVE)
+  paymentStatus PaymentStatus @default(PAID) // Default PAID for backward compatibility with POS
+  totalAmount Float?   // Store total amount required to pay
   
   accessCode  String   @unique // Access code for Wi-Fi / tracking
   freeDrinkClaimed Boolean @default(false) // Trạng thái đã lấy ly nước miễn phí chưa (nếu gói là combo)

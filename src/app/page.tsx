@@ -294,7 +294,7 @@ export default function Dashboard() {
                         <th className="p-4 font-medium">Bắt đầu</th>
                         <th className="p-4 font-medium">Thời gian</th>
                         <th className="p-4 font-medium">Link gọi món (Quét QR)</th>
-                        <th className="p-4 font-medium">Tạm tính</th>
+                        <th className="p-4 font-medium">Cần thu (Tạm tính)</th>
                         <th className="p-4 font-medium text-right">Thao tác</th>
                       </tr>
                     </thead>
@@ -338,12 +338,12 @@ export default function Dashboard() {
                                 Mở Menu KH
                               </a>
                             </td>
-                            <td className="p-4 font-medium text-white">{(session.package?.price || 0).toLocaleString('vi-VN')}đ</td>
+                            <td className="p-4 font-medium text-white">{(session.totalAmount || session.package?.price || 0).toLocaleString('vi-VN')}đ</td>
                             <td className="p-4 text-right">
                               <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 {session.status === 'PENDING' ? (
                                   <button onClick={() => handleApproveSession(session.id)} className="text-sm px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]">
-                                    Duyệt & Tính Giờ
+                                    Đã nhận tiền & Bắt đầu
                                   </button>
                                 ) : (
                                   <>
@@ -752,16 +752,29 @@ export default function Dashboard() {
               <h2 className="text-2xl font-black tracking-tighter">HIRO COFFEE</h2>
               <p className="text-sm text-stone-500 uppercase tracking-widest mt-1">Study Space</p>
               
-              <div className="mt-6 flex justify-center">
-                <div className="p-2 border-2 border-black rounded-xl inline-block">
-                  <QRCodeCanvas 
-                    value={`http://localhost:9999/customer/${receiptData.accessCode}`} 
-                    size={200}
-                    level={"H"}
-                  />
+              <div className="mt-6 flex flex-wrap justify-center gap-6">
+                <div className="text-center">
+                  <div className="p-2 border-2 border-black rounded-xl inline-block bg-white">
+                    <QRCodeCanvas 
+                      value={`http://localhost:9999/customer/${receiptData.accessCode}`} 
+                      size={140}
+                      level={"H"}
+                    />
+                  </div>
+                  <p className="text-xs text-stone-500 mt-2 font-bold">Quét QR tại cổng</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="p-2 border-2 border-black rounded-xl inline-block bg-white">
+                    <img 
+                      src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${receiptData.totalAmount || receiptData.package?.price || 0}&addInfo=${receiptData.accessCode}&accountName=SPACE CAFE`} 
+                      alt="VietQR" 
+                      className="w-[140px] h-[140px] object-contain" 
+                    />
+                  </div>
+                  <p className="text-xs text-stone-500 mt-2 font-bold">Quét VietQR Thanh toán</p>
                 </div>
               </div>
-              <p className="text-xs text-stone-500 mt-3 font-medium">Quét mã để gọi nước tại bàn</p>
             </div>
             
             <div className="p-6 bg-[#f3f0e8]">

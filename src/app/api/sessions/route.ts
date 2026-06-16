@@ -33,6 +33,11 @@ export async function POST(request: Request) {
     const accessCode = Math.random().toString(36).substring(2, 7).toUpperCase();
 
     let session;
+    
+    // Fetch package to get the price for totalAmount calculation
+    const pkg = await prisma.package.findUnique({ where: { id: packageId } });
+    const pkgPrice = pkg?.price || 0;
+    const totalAmount = pkgPrice + (orderTotal || 0);
 
     if (orderItems && orderItems.length > 0) {
       // Dùng transaction để đảm bảo tạo Phiên và Đơn hàng thành công cùng lúc
@@ -43,6 +48,8 @@ export async function POST(request: Request) {
             accessCode,
             startTime: new Date(),
             status: "ACTIVE",
+            paymentStatus: "PAID",
+            totalAmount,
             freeDrinkClaimed: true // Đã lấy ly nước ngay tại quầy
           },
           include: {
@@ -74,7 +81,9 @@ export async function POST(request: Request) {
           packageId,
           accessCode,
           startTime: new Date(),
-          status: "ACTIVE"
+          status: "ACTIVE",
+          paymentStatus: "PAID",
+          totalAmount
         },
         include: {
           package: true
