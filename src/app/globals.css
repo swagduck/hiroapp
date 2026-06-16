@@ -94,3 +94,33 @@ body {
 .animate-tab-enter {
   animation: tab-enter 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #print-receipt, #print-receipt * {
+    visibility: visible;
+  }
+  
+  #print-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-bg-white {
+    background-color: white !important;
+  }
+}
