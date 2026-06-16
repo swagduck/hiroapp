@@ -308,7 +308,7 @@ export default function MemberDashboard() {
                       <img 
                         src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${activeSession.totalAmount || 0}&addInfo=${activeSession.accessCode}&accountName=SPACE CAFE`} 
                         alt="VietQR" 
-                        className="w-48 h-48 rounded shadow-sm border border-stone-200" 
+                        className="w-[160px] h-[180px] object-contain rounded shadow-sm border border-stone-200" 
                       />
                       <div className="text-stone-600 text-xs mt-3 text-center space-y-1">
                         <p>Số tiền: <strong className="text-emerald-600 text-sm">{(activeSession.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>

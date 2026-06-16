@@ -769,7 +769,7 @@ export default function Dashboard() {
                     <img 
                       src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${receiptData.totalAmount || receiptData.package?.price || 0}&addInfo=${receiptData.accessCode}&accountName=SPACE CAFE`} 
                       alt="VietQR" 
-                      className="w-[140px] h-[140px] object-contain" 
+                      className="w-[160px] h-[180px] object-contain" 
                     />
                   </div>
                   <p className="text-xs text-stone-500 mt-2 font-bold">Quét VietQR Thanh toán</p>
