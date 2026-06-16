@@ -9,10 +9,11 @@ export async function GET(request: Request) {
     const all = searchParams.get('all') === 'true';
 
     const sessions = await prisma.session.findMany({
-      where: all ? undefined : { status: "ACTIVE" },
+      where: all ? undefined : { status: { in: ["ACTIVE", "PENDING"] } },
       include: {
         package: true,
-        orders: true
+        orders: true,
+        user: true // Thêm user để hiển thị tên khách
       },
       orderBy: { startTime: 'desc' }
     });

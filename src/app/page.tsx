@@ -159,6 +159,20 @@ export default function Dashboard() {
     }
   };
 
+  const handleApproveSession = async (id: string) => {
+    try {
+      const res = await fetch(`/api/sessions/${id}/approve`, { method: "POST" });
+      if (res.ok) {
+        alert("Đã duyệt đơn và bắt đầu tính giờ!");
+        fetchData();
+      } else {
+        alert("Có lỗi xảy ra khi duyệt");
+      }
+    } catch (e) {
+      alert("Lỗi kết nối");
+    }
+  };
+
   const handleUseSavedTime = async () => {
     if (!savedTimePhone || !savedTimeResult || savedTimeResult.minutes <= 0) return;
     try {
@@ -309,11 +323,16 @@ export default function Dashboard() {
                         }
 
                         return (
-                          <tr key={session.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
-                            <td className="p-4 font-mono text-emerald-500 font-bold">#{session.accessCode}</td>
+                          <tr key={session.id} className={`border-b border-white/5 transition-colors group ${session.status === 'PENDING' ? 'bg-amber-900/10 hover:bg-amber-900/20' : 'hover:bg-white/5'}`}>
+                            <td className="p-4 font-mono text-emerald-500 font-bold">
+                              #{session.accessCode}
+                              {session.user && <div className="text-xs font-sans text-amber-400 mt-1">KH: {session.user.name}</div>}
+                            </td>
                             <td className="p-4 text-stone-300">{session.package?.name || "Không rõ"}</td>
-                            <td className="p-4 text-stone-400">{startTime}</td>
-                            <td className="p-4 font-medium">{timeStatus}</td>
+                            <td className="p-4 text-stone-400">{session.status === 'PENDING' ? '---' : startTime}</td>
+                            <td className="p-4 font-medium">
+                              {session.status === 'PENDING' ? <span className="text-amber-500 animate-pulse">Chờ duyệt</span> : timeStatus}
+                            </td>
                             <td className="p-4 text-blue-400">
                               <a href={`/customer/${session.accessCode}`} target="_blank" rel="noreferrer" className="hover:underline">
                                 Mở Menu KH
@@ -322,14 +341,22 @@ export default function Dashboard() {
                             <td className="p-4 font-medium text-white">{(session.package?.price || 0).toLocaleString('vi-VN')}đ</td>
                             <td className="p-4 text-right">
                               <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                {canPause && (
-                                  <button onClick={() => handlePauseSession(session.id)} className="text-sm px-3 py-1.5 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/40 transition-colors">
-                                    Bảo lưu
+                                {session.status === 'PENDING' ? (
+                                  <button onClick={() => handleApproveSession(session.id)} className="text-sm px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                                    Duyệt & Tính Giờ
                                   </button>
+                                ) : (
+                                  <>
+                                    {canPause && (
+                                      <button onClick={() => handlePauseSession(session.id)} className="text-sm px-3 py-1.5 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/40 transition-colors">
+                                        Bảo lưu
+                                      </button>
+                                    )}
+                                    <button onClick={() => handleEndSession(session.id)} className="text-sm px-3 py-1.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-colors">
+                                      Kết thúc
+                                    </button>
+                                  </>
                                 )}
-                                <button onClick={() => handleEndSession(session.id)} className="text-sm px-3 py-1.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-colors">
-                                  Kết thúc
-                                </button>
                               </div>
                             </td>
                           </tr>

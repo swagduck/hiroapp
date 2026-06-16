@@ -3,6 +3,8 @@ import { jwtVerify, SignJWT } from "jose";
 interface JwtPayload {
   userId: string;
   role: string;
+  name?: string;
+  customerCode?: string;
 }
 
 export const getJwtSecretKey = () => {

@@ -18,6 +18,8 @@ model User {
   email     String?  @unique
   phone     String?  @unique
   name      String?
+  dob       String?
+  customerCode String?
   role      Role     @default(CUSTOMER)
   password  String?
   createdAt DateTime @default(now())
@@ -50,6 +52,7 @@ model Package {
 }
 
 enum SessionStatus {
+  PENDING
   ACTIVE
   COMPLETED
   CANCELLED
