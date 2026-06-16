@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState(""); // For register
   const [dob, setDob] = useState(""); // For register
+  const [confirmPassword, setConfirmPassword] = useState(""); // For register
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -51,6 +52,12 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Mật khẩu nhập lại không khớp!");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/auth/register", {
@@ -147,7 +154,16 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Mật khẩu</label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-sm font-medium text-gray-300">Mật khẩu</label>
+                <button 
+                  type="button"
+                  onClick={() => alert("Để bảo mật thông tin, tính năng khôi phục mật khẩu trực tuyến đang bảo trì. Quý khách vui lòng cung cấp Số điện thoại hoặc Email cho nhân viên thu ngân tại quán để được hỗ trợ cấp lại mật khẩu mới. Xin cảm ơn!")}
+                  className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
               <input
                 type="password"
                 required
@@ -216,6 +232,19 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
                 placeholder="Ít nhất 6 ký tự"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Nhập lại mật khẩu</label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
+                placeholder="Nhập lại mật khẩu"
               />
             </div>
 
