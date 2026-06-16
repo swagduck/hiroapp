@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [dob, setDob] = useState(""); // For register
   const [confirmPassword, setConfirmPassword] = useState(""); // For register
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -19,6 +20,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -32,18 +34,22 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        if (data.role === "CUSTOMER") {
-          router.push("/member/dashboard");
-        } else {
-          router.push("/");
-        }
-        router.refresh();
+        setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
+        // Add a slight delay so user can read the success message
+        setTimeout(() => {
+          if (data.role === "CUSTOMER") {
+            router.push("/member/dashboard");
+          } else {
+            router.push("/");
+          }
+          router.refresh();
+        }, 1000);
       } else {
         setError(data.error || "Đăng nhập thất bại");
+        setLoading(false);
       }
     } catch (err) {
       setError("Có lỗi kết nối tới server");
-    } finally {
       setLoading(false);
     }
   };
@@ -52,6 +58,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
 
     if (password !== confirmPassword) {
       setError("Mật khẩu nhập lại không khớp!");
@@ -71,14 +78,17 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        router.push("/member/dashboard");
-        router.refresh();
+        setSuccess("Đăng ký thành công! Đang chuyển hướng...");
+        setTimeout(() => {
+          router.push("/member/dashboard");
+          router.refresh();
+        }, 1000);
       } else {
         setError(data.error || "Đăng ký thất bại");
+        setLoading(false);
       }
     } catch (err) {
       setError("Có lỗi kết nối tới server");
-    } finally {
       setLoading(false);
     }
   };
@@ -86,17 +96,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div className="glass-card w-full max-w-md p-8 relative z-10 shadow-2xl border border-white/10 rounded-2xl bg-slate-900/50 backdrop-blur-xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-emerald-600 mb-2">
             Hiro Coffee
           </h1>
           <p className="text-gray-400 text-sm mb-8">Chào mừng bạn đến với hệ thống</p>
 
-          <Link href="/customer" className="inline-block w-full py-5 rounded-2xl border border-white/20 bg-gradient-to-r from-blue-600/40 to-indigo-600/40 hover:from-blue-500/50 hover:to-indigo-500/50 text-white font-bold text-lg shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all">
+          <Link href="/customer" className="inline-block w-full py-5 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-600/20 to-emerald-800/20 hover:from-emerald-600/30 hover:to-emerald-800/30 text-emerald-400 font-bold text-lg shadow-[0_0_30px_rgba(16,185,129,0.15)] transition-all">
             🚶 Khách Vãng Lai (Vào Đây)
           </Link>
           <p className="text-xs text-slate-400 mt-3">Không cần tài khoản. Nhấn vào đây để xem Menu và Gọi nước trực tiếp.</p>
@@ -109,22 +119,22 @@ export default function LoginPage() {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex w-full bg-black/20 p-1 rounded-2xl mb-8 border border-white/5">
+        <div className="flex w-full bg-black/20 p-1 rounded-2xl mb-8 border border-white/5 relative">
           <button
-            onClick={() => { setActiveTab("login"); setError(""); }}
-            className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${
+            onClick={() => { setActiveTab("login"); setError(""); setSuccess(""); }}
+            className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
               activeTab === "login" 
-                ? "bg-purple-600/50 border border-purple-500/50 text-white shadow-lg" 
+                ? "bg-emerald-600/50 border border-emerald-500/50 text-white shadow-lg" 
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
             Đăng Nhập
           </button>
           <button
-            onClick={() => { setActiveTab("register"); setError(""); }}
-            className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${
+            onClick={() => { setActiveTab("register"); setError(""); setSuccess(""); }}
+            className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
               activeTab === "register" 
-                ? "bg-pink-600/50 border border-pink-500/50 text-white shadow-lg" 
+                ? "bg-emerald-600/50 border border-emerald-500/50 text-white shadow-lg" 
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
@@ -133,130 +143,138 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="p-3 mb-5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+          <div className="p-3 mb-5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center animate-tab-enter">
             {error}
           </div>
         )}
 
-        {/* Login Form */}
-        {activeTab === "login" && (
-          <form onSubmit={handleLogin} className="space-y-5 animate-slide-up">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
-                placeholder="VD: user@email.com"
-              />
-            </div>
+        {success && (
+          <div className="p-3 mb-5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium text-sm text-center animate-tab-enter">
+            {success}
+          </div>
+        )}
 
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-sm font-medium text-gray-300">Mật khẩu</label>
-                <button 
-                  type="button"
-                  onClick={() => alert("Để bảo mật thông tin, tính năng khôi phục mật khẩu trực tuyến đang bảo trì. Quý khách vui lòng cung cấp Số điện thoại hoặc Email cho nhân viên thu ngân tại quán để được hỗ trợ cấp lại mật khẩu mới. Xin cảm ơn!")}
-                  className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
-                >
-                  Quên mật khẩu?
-                </button>
+        <div key={activeTab} className="animate-tab-enter">
+          {/* Login Form */}
+          {activeTab === "login" && (
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                  placeholder="VD: user@email.com"
+                />
               </div>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
-                placeholder="••••••••"
-              />
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
-            >
-              {loading ? "Đang xử lý..." : "Vào Hệ Thống"}
-            </button>
-          </form>
-        )}
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-sm font-medium text-gray-300">Mật khẩu</label>
+                  <button 
+                    type="button"
+                    onClick={() => alert("Để bảo mật thông tin, tính năng khôi phục mật khẩu trực tuyến đang bảo trì. Quý khách vui lòng cung cấp Số điện thoại hoặc Email cho nhân viên thu ngân tại quán để được hỗ trợ cấp lại mật khẩu mới. Xin cảm ơn!")}
+                    className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                  >
+                    Quên mật khẩu?
+                  </button>
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                  placeholder="••••••••"
+                />
+              </div>
 
-        {/* Register Form */}
-        {activeTab === "register" && (
-          <form onSubmit={handleRegister} className="space-y-5 animate-slide-up">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Tên hiển thị (Username)</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
-                placeholder="VD: Nguyễn Văn A"
-              />
-            </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+              >
+                {loading ? "Đang xử lý..." : "Vào Hệ Thống"}
+              </button>
+            </form>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
-                placeholder="VD: user@email.com"
-              />
-            </div>
+          {/* Register Form */}
+          {activeTab === "register" && (
+            <form onSubmit={handleRegister} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Tên hiển thị (Username)</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                  placeholder="VD: Nguyễn Văn A"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Ngày sinh (Để nhận quà sinh nhật)</label>
-              <input
-                type="text"
-                placeholder="DD/MM/YYYY (Ví dụ: 25/12/1999)"
-                value={dob}
-                onChange={(e) => setDob(e.target.value)}
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                  placeholder="VD: user@email.com"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Mật khẩu</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
-                placeholder="Ít nhất 6 ký tự"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Ngày sinh (Để nhận quà sinh nhật)</label>
+                <input
+                  type="text"
+                  placeholder="DD/MM/YYYY (Ví dụ: 25/12/1999)"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Nhập lại mật khẩu</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 transition-all"
-                placeholder="Nhập lại mật khẩu"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Mật khẩu</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                  placeholder="Ít nhất 6 ký tự"
+                />
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold shadow-[0_0_20px_rgba(236,72,153,0.4)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
-            >
-              {loading ? "Đang xử lý..." : "Tạo Tài Khoản"}
-            </button>
-          </form>
-        )}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Nhập lại mật khẩu</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                  placeholder="Nhập lại mật khẩu"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+              >
+                {loading ? "Đang xử lý..." : "Tạo Tài Khoản"}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
