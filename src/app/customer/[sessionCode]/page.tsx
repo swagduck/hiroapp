@@ -304,7 +304,7 @@ export default function CustomerOrderPage() {
             
             {session?.package?.includesDrink && !session?.freeDrinkClaimed && (
               <div className="mb-4 p-3 bg-gradient-to-r from-emerald-700/20 to-amber-600/20 border border-emerald-600/30 rounded-xl">
-                <p className="text-sm font-medium text-purple-300">🎁 Bạn được tặng 1 ly nước theo gói Combo! (Miễn phí món đầu tiên)</p>
+                <p className="text-sm font-medium text-purple-300">🎁 Bạn được tặng 1 ly nước vì đã mua gói Combo!</p>
               </div>
             )}
 
@@ -320,7 +320,7 @@ export default function CustomerOrderPage() {
                       <div>
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-emerald-500">
-                          {isFree && item.quantity === 1 ? "Miễn phí (Combo)" : item.price.toLocaleString('vi-VN') + "đ/ly"}
+                          {isFree && item.quantity === 1 ? "Tặng kèm (Gói Combo)" : item.price.toLocaleString('vi-VN') + "đ/ly"}
                         </p>
                       </div>
                       <div className="font-bold text-lg">
