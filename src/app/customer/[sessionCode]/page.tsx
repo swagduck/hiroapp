@@ -106,6 +106,12 @@ export default function CustomerOrderPage() {
     return <div className="min-h-screen bg-stone-950 text-white flex flex-col justify-center items-center"><p>Phiên không tồn tại hoặc đã kết thúc.</p></div>;
   }
 
+  const expireTime = session?.package?.duration ? new Date(session.startTime).getTime() + session.package.duration * 60000 : null;
+  const remainingMs = expireTime ? expireTime - now.getTime() : null;
+  const remainingMinutes = remainingMs ? Math.ceil(remainingMs / 60000) : null;
+  const showWarning = remainingMinutes !== null && remainingMinutes <= 15 && remainingMinutes > 0;
+  const isExpired = remainingMinutes !== null && remainingMinutes <= 0;
+
   return (
     <div className="min-h-screen bg-slate-950 flex justify-center overflow-x-hidden">
       <div className="w-full max-w-md flex flex-col min-h-screen bg-stone-950 text-white pb-20 shadow-2xl border-x border-white/5 relative">
@@ -128,17 +134,30 @@ export default function CustomerOrderPage() {
           <div className="text-right">
             <p className="text-xs text-stone-400">Thời gian</p>
             {(() => {
-              if (!session.package?.duration) return <p className="font-medium">Không giới hạn</p>;
-              const expireTime = new Date(session.startTime).getTime() + session.package.duration * 60000;
-              const remaining = expireTime - now.getTime();
-              if (remaining <= 0) return <p className="font-bold text-red-500">Đã hết giờ!</p>;
-              const hours = Math.floor(remaining / 3600000);
-              const minutes = Math.floor((remaining % 3600000) / 60000);
+              if (remainingMs === null) return <p className="font-medium">Không giới hạn</p>;
+              if (isExpired) return <p className="font-bold text-red-500">Đã hết giờ!</p>;
+              const hours = Math.floor(remainingMs / 3600000);
+              const minutes = Math.floor((remainingMs % 3600000) / 60000);
               return <p className="font-medium text-white">{hours}h {minutes}m</p>;
             })()}
           </div>
         </div>
       </header>
+
+      {/* Cảnh báo sắp hết giờ */}
+      {showWarning && (
+        <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 mx-4 mt-4 rounded-xl flex items-center shadow-lg animate-pulse">
+          <span className="mr-2 text-lg">⚠️</span>
+          <span className="text-sm font-medium">Phiên của bạn sẽ kết thúc trong vòng {remainingMinutes} phút nữa!</span>
+        </div>
+      )}
+
+      {isExpired && (
+        <div className="bg-red-600/30 border border-red-500 text-red-200 p-3 mx-4 mt-4 rounded-xl flex items-center shadow-lg">
+          <span className="mr-2 text-lg">⏰</span>
+          <span className="text-sm font-bold">Đã hết thời gian. Vui lòng đến quầy gia hạn nếu muốn ngồi thêm!</span>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 p-4 relative overflow-hidden">
