@@ -1,51 +1,25 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { useState } from "react";
+import dynamic from "next/dynamic";
+
+const QrScanner = dynamic(() => import("@/components/QRScanner"), {
+  ssr: false,
+  loading: () => <div className="text-stone-400 p-4 text-center min-h-[300px] flex items-center justify-center">Đang khởi động Camera...</div>
+});
 
 export default function CheckInPage() {
   const [manualCode, setManualCode] = useState("");
   const [scanResult, setScanResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [cameraError, setCameraError] = useState("");
 
-  useEffect(() => {
-    const html5QrCode = new Html5Qrcode("reader");
-
-    const startCamera = async () => {
-      try {
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          (decodedText) => {
-            let code = decodedText;
-            if (code.includes("/customer/")) {
-              code = code.split("/customer/")[1].split("?")[0].replace("/", "");
-            }
-            verifyCode(code);
-            html5QrCode.pause();
-            setTimeout(() => html5QrCode.resume(), 3000);
-          },
-          (errorMessage) => {
-            // Ignore scan errors
-          }
-        );
-      } catch (err) {
-        console.error("Camera start error:", err);
-        setCameraError("Vui lòng cho phép trình duyệt truy cập Camera để quét vé.");
-      }
-    };
-
-    startCamera();
-
-    return () => {
-      if (html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => html5QrCode.clear()).catch(console.error);
-      } else {
-        html5QrCode.clear();
-      }
-    };
-  }, []);
+  const handleScanSuccess = (decodedText: string) => {
+    let code = decodedText;
+    if (code.includes("/customer/")) {
+      code = code.split("/customer/")[1].split("?")[0].replace("/", "");
+    }
+    verifyCode(code);
+  };
 
   const verifyCode = async (code: string) => {
     if (!code) return;
@@ -84,14 +58,10 @@ export default function CheckInPage() {
 
         {/* Khung quét QR */}
         <div className="bg-white/5 border border-white/10 p-4 rounded-2xl shadow-2xl mb-6 overflow-hidden relative min-h-[300px] flex items-center justify-center">
-          {cameraError ? (
-            <div className="text-center p-6 text-amber-500 font-medium">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-4 opacity-50"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
-              <p>{cameraError}</p>
-            </div>
-          ) : (
-            <div id="reader" className="w-full rounded-xl overflow-hidden [&_video]:rounded-xl [&_video]:object-cover"></div>
-          )}
+          <QrScanner 
+            elementId="reader"
+            onScanSuccess={handleScanSuccess}
+          />
         </div>
 
         {/* Nhập mã thủ công */}

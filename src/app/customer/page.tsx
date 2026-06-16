@@ -1,53 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Html5Qrcode } from "html5-qrcode";
+import dynamic from "next/dynamic";
+
+const QrScanner = dynamic(() => import("@/components/QRScanner"), {
+  ssr: false,
+  loading: () => <div className="text-stone-400 p-4 text-center">Đang tải máy quét...</div>
+});
 
 export default function CustomerLanding() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-  const [cameraError, setCameraError] = useState("");
   const router = useRouter();
-
-  useEffect(() => {
-    let html5QrCode: Html5Qrcode | null = null;
-    if (isScanning) {
-      html5QrCode = new Html5Qrcode("customer-reader");
-      
-      const startCamera = async () => {
-        try {
-          await html5QrCode!.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => {
-              let parsedCode = decodedText;
-              if (parsedCode.includes("/customer/")) {
-                parsedCode = parsedCode.split("/customer/")[1].split("?")[0].replace("/", "");
-              }
-              setCode(parsedCode.toUpperCase());
-              setIsScanning(false);
-            },
-            (errorMessage) => {
-              // Ignore
-            }
-          );
-        } catch (err) {
-          console.error("Camera start error:", err);
-          setCameraError("Vui lòng cho phép truy cập Camera để quét mã.");
-        }
-      };
-      
-      startCamera();
-    }
-
-    return () => {
-      if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => html5QrCode!.clear()).catch(console.error);
-      }
-    };
-  }, [isScanning]);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +35,15 @@ export default function CustomerLanding() {
       alert("Lỗi kết nối");
       setLoading(false);
     }
+  };
+
+  const handleScanSuccess = (decodedText: string) => {
+    let parsedCode = decodedText;
+    if (parsedCode.includes("/customer/")) {
+      parsedCode = parsedCode.split("/customer/")[1].split("?")[0].replace("/", "");
+    }
+    setCode(parsedCode.toUpperCase());
+    setIsScanning(false);
   };
 
   return (
@@ -151,11 +126,10 @@ export default function CustomerLanding() {
             </div>
             
             <div className="p-4 flex-1 flex flex-col items-center justify-center min-h-[300px]">
-              {cameraError ? (
-                <p className="text-amber-500 text-center">{cameraError}</p>
-              ) : (
-                <div id="customer-reader" className="w-full rounded-xl overflow-hidden [&_video]:rounded-xl [&_video]:object-cover"></div>
-              )}
+              <QrScanner 
+                elementId="customer-reader" 
+                onScanSuccess={handleScanSuccess} 
+              />
             </div>
             <div className="p-4 text-center text-sm text-stone-400 border-t border-white/5 bg-stone-950">
               Đưa camera vào mã QR in trên hóa đơn để tự động đăng nhập.
