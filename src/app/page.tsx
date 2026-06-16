@@ -63,6 +63,9 @@ export default function Dashboard() {
       const dataMenu = await resMenu.json();
       const dataOrders = await resOrders.json();
       
+      // Auto-end expired sessions silently
+      fetch('/api/cron/auto-end').catch(() => {});
+      
       setPendingOrdersCount(dataOrders.filter((o: any) => o.status === "PENDING").length);
       
       setSessions(dataSessions);
