@@ -48,18 +48,19 @@ export default function CustomerOrderPage() {
         const gainNode = audioCtx.createGain();
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        oscillator.type = isUrgent ? 'sawtooth' : 'sine';
+        // Dùng sóng square để âm thanh to và gắt hơn
+        oscillator.type = 'square';
         oscillator.frequency.setValueAtTime(freq, startTime);
-        gainNode.gain.setValueAtTime(0.5, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.5);
+        // Tăng âm lượng lên mức tối đa (1.0)
+        gainNode.gain.setValueAtTime(1.0, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
         oscillator.start(startTime);
-        oscillator.stop(startTime + 0.5);
+        oscillator.stop(startTime + 0.4);
       };
       
-      playBeep(isUrgent ? 880 : 440, audioCtx.currentTime);
-      if (isUrgent) {
-        playBeep(880, audioCtx.currentTime + 0.6);
-        playBeep(880, audioCtx.currentTime + 1.2);
+      // Lặp lại mỗi 0.5 giây, tổng cộng 10 lần (5 giây)
+      for (let i = 0; i < 10; i++) {
+        playBeep(isUrgent ? 880 : 600, audioCtx.currentTime + i * 0.5);
       }
     } catch(e) {
       console.error("Audio play failed", e);
