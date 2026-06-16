@@ -128,16 +128,23 @@ export default function CustomerOrderPage() {
   const submitOrder = async () => {
     if (cart.length === 0 || !session) return;
     
+    const isMember = !!session.userId;
     let totalAmount = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    
+    if (isMember) {
+      totalAmount = totalAmount * 0.9;
+    }
+
     const orderItems = cart.map(item => ({
       menuItemId: item.id,
       quantity: item.quantity,
-      price: item.price
+      price: isMember ? item.price * 0.9 : item.price
     }));
 
     const isComboAvailable = session?.package?.includesDrink && !session?.freeDrinkClaimed;
     if (isComboAvailable && cart.length > 0) {
-      totalAmount -= cart[0].price;
+      const firstDrinkPrice = isMember ? cart[0].price * 0.9 : cart[0].price;
+      totalAmount -= firstDrinkPrice;
       orderItems[0].price = 0;
     }
 
@@ -335,14 +342,24 @@ export default function CustomerOrderPage() {
                   <span className="font-medium">Tổng cộng:</span>
                   <span className="text-xl font-bold text-emerald-500">
                     {(() => {
+                      const isMember = !!session?.userId;
                       let total = cart.reduce((a, b) => a + b.price * b.quantity, 0);
+                      if (isMember) total = total * 0.9;
+                      
                       if (session?.package?.includesDrink && !session?.freeDrinkClaimed && cart.length > 0) {
-                        total -= cart[0].price;
+                        const firstPrice = isMember ? cart[0].price * 0.9 : cart[0].price;
+                        total -= firstPrice;
                       }
                       return total.toLocaleString('vi-VN');
                     })()}đ
                   </span>
                 </div>
+                {!!session?.userId && cart.length > 0 && (
+                  <div className="bg-emerald-900/10 text-emerald-400 text-xs p-3 rounded-lg border border-emerald-500/20 flex items-center gap-2 mt-2">
+                    <span>💎</span>
+                    <span>Đã giảm 10% tiền nước (Đặc quyền Hội viên)</span>
+                  </div>
+                )}
                 <button onClick={submitOrder} className="w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-emerald-700 to-amber-600 text-white font-bold shadow-lg active:scale-95 transition-transform">
                   Xác nhận Order
                 </button>

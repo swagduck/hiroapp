@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { packageId, orderItems, orderTotal } = body;
+    const { packageId, orderItems, orderTotal, updateFreeDrink } = body;
 
     // Sinh mã truy cập ngẫu nhiên
     const accessCode = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -29,6 +29,8 @@ export async function POST(request: Request) {
       const pkg = await tx.package.findUnique({ where: { id: packageId } });
       const pkgPrice = pkg?.price || 0;
       const totalAmount = pkgPrice + (orderTotal || 0);
+      
+      const claimed = (pkg?.includesDrink || updateFreeDrink) ? true : false;
 
       const newSession = await tx.session.create({
         data: {
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
           status: "PENDING",
           paymentStatus: "UNPAID",
           totalAmount,
-          freeDrinkClaimed: false // Chưa duyệt nên chưa được tính là đã lấy
+          freeDrinkClaimed: claimed // Đánh dấu đã dùng quyền lợi ly nước
         },
         include: {
           package: true
@@ -60,6 +62,13 @@ export async function POST(request: Request) {
               }))
             }
           }
+        });
+      }
+
+      if (updateFreeDrink) {
+        await tx.user.update({
+          where: { id: payload.userId },
+          data: { freeDrinkTokens: { decrement: 1 } }
         });
       }
 

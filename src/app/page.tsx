@@ -326,7 +326,15 @@ export default function Dashboard() {
                           <tr key={session.id} className={`border-b border-white/5 transition-colors group ${session.status === 'PENDING' ? 'bg-amber-900/10 hover:bg-amber-900/20' : 'hover:bg-white/5'}`}>
                             <td className="p-4 font-mono text-emerald-500 font-bold">
                               #{session.accessCode}
-                              {session.user && <div className="text-xs font-sans text-amber-400 mt-1">KH: {session.user.name}</div>}
+                              {session.user ? (
+                                <div className="text-xs font-sans text-amber-400 mt-1 flex items-center gap-1">
+                                  <span>👑</span> Hội viên: {session.user.name}
+                                </div>
+                              ) : (
+                                <div className="text-xs font-sans text-stone-500 mt-1">
+                                  Khách vãng lai
+                                </div>
+                              )}
                             </td>
                             <td className="p-4 text-stone-300">{session.package?.name || "Không rõ"}</td>
                             <td className="p-4 text-stone-400">{session.status === 'PENDING' ? '---' : startTime}</td>

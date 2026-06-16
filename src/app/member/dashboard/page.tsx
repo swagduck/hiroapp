@@ -11,8 +11,9 @@ export default function MemberDashboard() {
   const [historySessions, setHistorySessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Tabs
-  const [activeTab, setActiveTab] = useState<"menu" | "cart" | "history">("menu");
+  const [activeTab, setActiveTab] = useState<"menu" | "cart" | "history" | "profile">("menu");
+  const [dobInput, setDobInput] = useState("");
+  const [updatingProfile, setUpdatingProfile] = useState(false);
 
   // Mua hàng
   const [packages, setPackages] = useState<any[]>([]);
@@ -20,6 +21,7 @@ export default function MemberDashboard() {
   const [selectedPkg, setSelectedPkg] = useState<string | null>(null);
   const [cart, setCart] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [useFreeDrink, setUseFreeDrink] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +37,7 @@ export default function MemberDashboard() {
         if (meRes.ok) {
           const userData = await meRes.json();
           setMember(userData);
+          if (userData.dob) setDobInput(userData.dob);
         } else {
           router.push("/customer");
           return;
@@ -87,16 +90,22 @@ export default function MemberDashboard() {
     
     setSubmitting(true);
     const pkg = packages.find(p => p.id === selectedPkg);
-    let totalAmount = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const totalAmount = getCartTotal();
+
+    // The orderItems will just be sent, API will trust the totalAmount for simplicity in this MVP
+    // We should send the updateFreeDrink flag
+    let updateFreeDrink = false;
     const orderItems = cart.map(item => ({
       id: item.id,
       quantity: item.quantity,
-      price: item.price
+      price: item.price * 0.9 // Member discount recorded in DB
     }));
 
     if (pkg?.includesDrink && cart.length > 0) {
-      totalAmount -= cart[0].price; // Miễn phí ly đầu tiên
       orderItems[0].price = 0;
+    } else if (useFreeDrink && cart.length > 0) {
+      orderItems[0].price = 0;
+      updateFreeDrink = true;
     }
 
     try {
@@ -106,7 +115,8 @@ export default function MemberDashboard() {
         body: JSON.stringify({
           packageId: selectedPkg,
           orderItems,
-          orderTotal: totalAmount
+          orderTotal: totalAmount,
+          updateFreeDrink
         })
       });
 
@@ -128,10 +138,23 @@ export default function MemberDashboard() {
     let totalDrinks = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     let pkgPrice = pkg ? pkg.price : 0;
 
+    // Apply 10% member discount on drinks
+    totalDrinks = totalDrinks * 0.9;
+
+    let firstDrinkPrice = cart.length > 0 ? cart[0].price * 0.9 : 0;
+    
     if (pkg?.includesDrink && cart.length > 0) {
-      totalDrinks -= cart[0].price;
+      totalDrinks -= firstDrinkPrice;
+    } else if (useFreeDrink && cart.length > 0) {
+      totalDrinks -= firstDrinkPrice;
     }
-    return pkgPrice + totalDrinks;
+
+    return pkgPrice + Math.max(0, totalDrinks);
+  };
+
+  const getDiscountAmount = () => {
+    let totalDrinksOriginal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    return totalDrinksOriginal * 0.1;
   };
 
   if (loading) return <div className="min-h-screen bg-stone-950 flex justify-center items-center"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-500"></div></div>;
@@ -148,12 +171,35 @@ export default function MemberDashboard() {
             </div>
             <div className="flex-1">
               <h2 className="font-bold text-lg">{member?.name}</h2>
-              <div className="flex items-center gap-2 text-sm text-emerald-400">
+              <div className="flex items-center gap-2 text-sm text-emerald-400 flex-wrap">
                 <span className="font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
                   {member?.customerCode || "KH MỚI"}
                 </span>
                 <span className="text-stone-400">|</span>
-                <span>Bảo lưu: {member?.savedMinutes || 0} phút</span>
+                <span>Bảo lưu: {member?.savedMinutes || 0}p</span>
+                <span className="text-stone-400">|</span>
+                <span className="text-amber-400">Điểm: {member?.points || 0}</span>
+                {member?.points >= 100 && (
+                  <button 
+                    onClick={async () => {
+                      if (!confirm("Đổi 100 điểm lấy 60 phút bảo lưu?")) return;
+                      try {
+                        const res = await fetch("/api/users/redeem-points", { method: "POST" });
+                        if (res.ok) {
+                          alert("Đổi điểm thành công!");
+                          window.location.reload();
+                        } else {
+                          alert("Lỗi đổi điểm!");
+                        }
+                      } catch (e) {
+                        alert("Lỗi kết nối");
+                      }
+                    }}
+                    className="ml-1 px-2 py-0.5 bg-amber-500/20 border border-amber-500/50 text-amber-400 rounded hover:bg-amber-500/40 transition-colors text-xs font-bold"
+                  >
+                    Đổi 1h
+                  </button>
+                )}
               </div>
             </div>
             <button
@@ -265,6 +311,31 @@ export default function MemberDashboard() {
                 </div>
               </div>
 
+              {getDiscountAmount() > 0 && (
+                <div className="bg-emerald-900/10 text-emerald-400 text-xs p-3 rounded-lg border border-emerald-500/20 flex items-center gap-2">
+                  <span>💎</span>
+                  <span>Đã giảm 10% tiền nước (Đặc quyền Hội viên)</span>
+                </div>
+              )}
+
+              {member?.freeDrinkTokens > 0 && !packages.find(p => p.id === selectedPkg)?.includesDrink && cart.length > 0 && (
+                <div className="bg-pink-900/20 text-pink-400 text-xs p-3 rounded-lg border border-pink-500/30 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span>🎂</span>
+                    <span>Bạn có {member.freeDrinkTokens} quà sinh nhật!</span>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={useFreeDrink} 
+                      onChange={(e) => setUseFreeDrink(e.target.checked)}
+                      className="accent-pink-500 w-4 h-4"
+                    />
+                    <span className="font-bold">Dùng ngay</span>
+                  </label>
+                </div>
+              )}
+
               {packages.find(p => p.id === selectedPkg)?.includesDrink && cart.length > 0 && (
                 <div className="bg-emerald-900/20 text-emerald-400 text-xs p-3 rounded-lg border border-emerald-500/30 flex items-center gap-2">
                   <span>🎁</span>
@@ -363,6 +434,61 @@ export default function MemberDashboard() {
               </div>
             </div>
           )}
+
+          {activeTab === "profile" && (
+            <div className="space-y-6 animate-page-transition">
+              <h3 className="font-bold text-lg text-emerald-400">Thông tin Cá nhân</h3>
+              
+              <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1">Tên hiển thị</label>
+                  <input type="text" value={member?.name || ""} disabled className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-stone-500 cursor-not-allowed" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1">Email</label>
+                  <input type="email" value={member?.email || ""} disabled className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-stone-500 cursor-not-allowed" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1">Ngày sinh (Để nhận quà sinh nhật)</label>
+                  <input 
+                    type="date" 
+                    value={dobInput} 
+                    onChange={(e) => setDobInput(e.target.value)}
+                    className="w-full bg-black/20 border border-emerald-500/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50" 
+                  />
+                  <p className="text-xs text-stone-500 mt-2">Ngày sinh chỉ được nhập một lần hoặc phải liên hệ nhân viên để đổi lại nhằm tránh gian lận.</p>
+                </div>
+
+                <button 
+                  disabled={updatingProfile}
+                  onClick={async () => {
+                    setUpdatingProfile(true);
+                    try {
+                      const res = await fetch("/api/auth/me", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ dob: dobInput })
+                      });
+                      if (res.ok) {
+                        alert("Cập nhật thành công!");
+                        const userData = await res.json();
+                        setMember(userData.user);
+                      } else {
+                        const err = await res.json();
+                        alert(err.error || "Lỗi cập nhật");
+                      }
+                    } catch(e) {
+                      alert("Lỗi kết nối");
+                    }
+                    setUpdatingProfile(false);
+                  }}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {updatingProfile ? "Đang lưu..." : "Lưu Thay Đổi"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom Navigation */}
@@ -400,6 +526,13 @@ export default function MemberDashboard() {
                 )}
               </div>
               <span className="text-[10px] font-bold uppercase tracking-wider">Lịch sử</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab("profile")}
+              className={`flex flex-col items-center gap-1 p-2 flex-1 rounded-xl transition-all ${activeTab === 'profile' ? 'text-emerald-400' : 'text-stone-500 hover:text-stone-300'}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span className="text-[10px] font-bold uppercase tracking-wider">Cá Nhân</span>
             </button>
           </div>
         </div>

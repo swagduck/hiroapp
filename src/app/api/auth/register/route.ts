@@ -5,7 +5,7 @@ import { signJwtToken } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name } = await request.json();
+    const { email, password, name, dob } = await request.json();
 
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         role: "CUSTOMER",
         customerCode: "KH" + Math.floor(10000 + Math.random() * 90000).toString(),
+        dob: dob || null,
       },
     });
 

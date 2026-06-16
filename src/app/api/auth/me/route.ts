@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: verifiedToken.userId },
       select: {
         id: true,
@@ -26,7 +26,11 @@ export async function GET(request: Request) {
         email: true,
         role: true,
         customerCode: true,
-        savedMinutes: true
+        savedMinutes: true,
+        dob: true,
+        points: true,
+        freeDrinkTokens: true,
+        lastBirthdayClaimYear: true
       }
     });
 
@@ -34,9 +38,82 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Birthday Logic Check
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
+    if (user.dob) {
+      // Assuming dob is in YYYY-MM-DD or similar format that can be parsed
+      const dobDate = new Date(user.dob);
+      if (!isNaN(dobDate.getTime())) {
+        const birthMonth = dobDate.getMonth() + 1;
+        
+        // If it's birth month and hasn't claimed this year
+        if (birthMonth === currentMonth && user.lastBirthdayClaimYear !== currentYear) {
+          const updatedUser = await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              freeDrinkTokens: { increment: 1 },
+              lastBirthdayClaimYear: currentYear
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              customerCode: true,
+              savedMinutes: true,
+              dob: true,
+              points: true,
+              freeDrinkTokens: true,
+              lastBirthdayClaimYear: true
+            }
+          });
+          user = updatedUser;
+        }
+      }
+    }
+
     return NextResponse.json(user, { status: 200 });
   } catch (error) {
     console.error("Auth Me Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const verifiedToken = await verifyJwtToken(token).catch(() => null);
+    if (!verifiedToken || !verifiedToken.userId) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
+    const { dob } = await request.json();
+
+    const user = await prisma.user.findUnique({ where: { id: verifiedToken.userId } });
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+    if (user.dob && dob !== user.dob) {
+      return NextResponse.json({ error: "Bạn đã cập nhật ngày sinh rồi. Vui lòng liên hệ nhân viên nếu muốn thay đổi." }, { status: 400 });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { dob: dob || null },
+      select: {
+        id: true, name: true, email: true, role: true, customerCode: true,
+        savedMinutes: true, dob: true, points: true, freeDrinkTokens: true, lastBirthdayClaimYear: true
+      }
+    });
+
+    return NextResponse.json({ success: true, user: updatedUser }, { status: 200 });
+  } catch (error) {
+    console.error("Auth Me Update Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

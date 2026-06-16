@@ -25,6 +25,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   savedMinutes Int @default(0)
+  
+  // Member Perks
+  points        Int @default(0)
+  freeDrinkTokens Int @default(0)
+  lastBirthdayClaimYear Int?
 
   sessions  Session[]
   orders    Order[]

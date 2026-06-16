@@ -10,10 +10,30 @@ export async function PUT(
     const body = await request.json();
     const { status } = body;
 
+    const existingOrder = await prisma.order.findUnique({
+      where: { id },
+      include: { session: true }
+    });
+
+    if (!existingOrder) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
     const updatedOrder = await prisma.order.update({
       where: { id },
       data: { status }
     });
+
+    // Add points if served
+    if (status === "SERVED" && existingOrder.status !== "SERVED" && existingOrder.session?.userId) {
+      const earnedPoints = Math.floor(existingOrder.totalAmount / 10000);
+      if (earnedPoints > 0) {
+        await prisma.user.update({
+          where: { id: existingOrder.session.userId },
+          data: { points: { increment: earnedPoints } }
+        });
+      }
+    }
 
     return NextResponse.json(updatedOrder);
   } catch (error) {
