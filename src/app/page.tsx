@@ -19,6 +19,7 @@ export default function Dashboard() {
   
   // POS States
   const [isPosOpen, setIsPosOpen] = useState(false);
+  const [posStep, setPosStep] = useState<number>(1);
   const [posSelectedPackage, setPosSelectedPackage] = useState<any>(null);
   const [posCart, setPosCart] = useState<any[]>([]);
   const [posLoading, setPosLoading] = useState(false);
@@ -71,10 +72,9 @@ export default function Dashboard() {
 
   const handleCreateSession = () => {
     setIsPosOpen(true);
-    // Tự động chọn gói đầu tiên nếu có
-    if (packages.length > 0 && !posSelectedPackage) {
-      setPosSelectedPackage(packages[0]);
-    }
+    setPosStep(1);
+    setPosCart([]);
+    setPosSelectedPackage(null);
   };
 
   const handleEndSession = (sessionId: string) => {
@@ -283,148 +283,199 @@ export default function Dashboard() {
 
       {/* POS Modal */}
       {isPosOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c16]/80 backdrop-blur-sm p-2 md:p-4 pb-20 md:pb-4">
-          <div className="bg-stone-950 border border-white/10 rounded-2xl w-full max-w-6xl h-full md:h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-page-transition">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c16]/90 backdrop-blur-md p-2 md:p-6 pb-20 md:pb-6">
+          <div className="bg-stone-950 border border-white/10 rounded-2xl w-full max-w-6xl h-full flex flex-col shadow-2xl overflow-hidden animate-page-transition">
             {/* Header */}
             <div className="h-14 md:h-16 border-b border-white/10 flex items-center justify-between px-4 md:px-6 bg-white/5">
-              <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
-                Tạo Đơn (POS)
-              </h2>
+              <div className="flex items-center gap-4">
+                <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                  Tạo Đơn (POS)
+                </h2>
+                {posStep > 1 && (
+                  <div className="hidden md:flex items-center gap-2 text-sm">
+                    <span className={`px-2 py-1 rounded ${posStep >= 1 ? 'bg-emerald-500/20 text-emerald-400' : 'text-stone-500'}`}>1. Chọn gói</span>
+                    <span className="text-stone-600">→</span>
+                    <span className={`px-2 py-1 rounded ${posStep >= 2 ? 'bg-emerald-500/20 text-emerald-400' : 'text-stone-500'}`}>2. Menu Nước</span>
+                    <span className="text-stone-600">→</span>
+                    <span className={`px-2 py-1 rounded ${posStep >= 3 ? 'bg-emerald-500/20 text-emerald-400' : 'text-stone-500'}`}>3. Thanh toán</span>
+                  </div>
+                )}
+              </div>
               <button onClick={() => setIsPosOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-stone-300 transition-colors">✕</button>
             </div>
             
             {/* Body */}
-            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-              {/* Left Column: Packages */}
-              <div className="w-full md:w-1/4 h-32 md:h-auto border-b md:border-b-0 md:border-r border-white/10 p-3 md:p-6 overflow-y-auto bg-[#141c16]/20 shrink-0">
-                <h3 className="text-xs md:text-sm font-medium text-stone-400 mb-2 md:mb-4 uppercase tracking-wider">1. Gói Thời Gian (*)</h3>
-                <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
-                  {packages.map(pkg => (
-                    <div 
-                      key={pkg.id} 
-                      onClick={() => setPosSelectedPackage(pkg)}
-                      className={`p-3 md:p-4 min-w-[140px] md:min-w-0 rounded-xl cursor-pointer border transition-all ${posSelectedPackage?.id === pkg.id ? 'border-emerald-600 bg-emerald-600/20 shadow-[0_0_15px_rgba(5,150,105,0.2)]' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
-                    >
-                      <h4 className="font-medium text-white text-sm md:text-base">{pkg.name}</h4>
-                      <p className="text-emerald-500 font-bold mt-1 text-sm md:text-base">{pkg.price.toLocaleString('vi-VN')}đ</p>
-                    </div>
-                  ))}
-                  {packages.length === 0 && <p className="text-stone-500 text-sm">Chưa có gói cước nào.</p>}
-                </div>
-              </div>
+            <div className="flex-1 flex flex-col overflow-hidden relative bg-[#141c16]/20">
               
-              {/* Middle Column: Menu */}
-              <div className="flex-1 p-3 md:p-6 overflow-y-auto">
-                <h3 className="text-sm font-medium text-stone-400 mb-4 uppercase tracking-wider">2. Nước uống gọi thêm</h3>
-                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {menuItems.map(item => (
-                    <div 
-                      key={item.id} 
-                      onClick={() => {
-                        const exist = posCart.find(c => c.id === item.id);
-                        if (exist) {
-                          setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c));
-                        } else {
-                          setPosCart([...posCart, { ...item, quantity: 1 }]);
-                        }
-                      }}
-                      className="glass-card p-4 cursor-pointer hover:scale-105 active:scale-95 transition-all text-center flex flex-col items-center justify-center aspect-square"
-                    >
-                      <div className="text-5xl mb-3 drop-shadow-xl">{item.imageUrl || "🍹"}</div>
-                      <h4 className="font-medium text-sm text-gray-200 line-clamp-2">{item.name}</h4>
-                      <p className="text-emerald-500 font-bold text-sm mt-1">{item.price.toLocaleString('vi-VN')}đ</p>
-                    </div>
-                  ))}
-                  {menuItems.length === 0 && <p className="text-stone-500 text-sm">Chưa có đồ uống nào.</p>}
-                </div>
-              </div>
-
-              {/* Right Column: Cart & Checkout */}
-              <div className="w-full md:w-80 h-1/3 md:h-auto bg-[#141c16]/40 p-4 md:p-6 flex flex-col border-t md:border-t-0 md:border-l border-white/10 shrink-0">
-                <h3 className="text-xs md:text-sm font-medium text-stone-400 mb-2 md:mb-4 uppercase tracking-wider">Hóa Đơn</h3>
-                
-                <div className="flex-1 overflow-y-auto space-y-2 md:space-y-4 pr-2 custom-scrollbar">
-                  {posSelectedPackage ? (
-                    <div className="flex justify-between items-start pb-4 border-b border-white/10">
-                      <div>
-                        <p className="font-medium text-green-400">{posSelectedPackage.name}</p>
-                        <p className="text-xs text-stone-500">Gói thời gian {posSelectedPackage.includesDrink && "(Kèm 1 ly nước)"}</p>
-                      </div>
-                      <p className="font-bold text-white">{posSelectedPackage.price.toLocaleString('vi-VN')}đ</p>
-                    </div>
-                  ) : (
-                    <p className="text-red-400 text-sm mb-4">Vui lòng chọn 1 Gói thời gian!</p>
-                  )}
-
-                  {posCart.map((item, index) => {
-                    const isFreeDrink = posSelectedPackage?.includesDrink && index === 0;
-                    return (
-                    <div key={item.id} className="flex flex-col gap-2 pb-3 border-b border-white/5">
-                      <div className="flex justify-between items-start">
-                        <p className="text-sm font-medium text-gray-200">{item.name}</p>
-                        <p className="text-sm font-bold text-white">
-                          {isFreeDrink 
-                            ? (item.price * (item.quantity - 1)).toLocaleString('vi-VN') + "đ" 
-                            : (item.price * item.quantity).toLocaleString('vi-VN') + "đ"
-                          }
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-emerald-500">
-                          {isFreeDrink && item.quantity === 1 ? "Miễn phí (Combo)" : item.price.toLocaleString('vi-VN') + "đ/ly"}
-                        </p>
-                        <div className="flex items-center gap-3 bg-white/5 rounded-lg px-2 py-1">
-                          <button onClick={() => {
-                             if (item.quantity > 1) {
-                               setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity - 1 } : c));
-                             } else {
-                               setPosCart(posCart.filter(c => c.id !== item.id));
-                             }
-                          }} className="w-5 h-5 flex items-center justify-center text-stone-400 hover:text-white">-</button>
-                          <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
-                          <button onClick={() => setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c))} className="w-5 h-5 flex items-center justify-center text-stone-400 hover:text-white">+</button>
+              {/* STEP 1: CHỌN GÓI CƯỚC */}
+              {posStep === 1 && (
+                <div className="p-6 h-full overflow-y-auto animate-fade-in flex flex-col">
+                  <h3 className="text-2xl font-bold text-white mb-8 text-center mt-4">Khách hàng chọn gói cước nào?</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full">
+                    {packages.map(pkg => (
+                      <div 
+                        key={pkg.id} 
+                        onClick={() => {
+                          setPosSelectedPackage(pkg);
+                          setPosStep(2); // Đi tới Bước 2 (Menu)
+                        }}
+                        className="glass-card p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:scale-105 active:scale-95 transition-all aspect-square border-2 border-transparent hover:border-emerald-500/50"
+                      >
+                        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={pkg.includesDrink ? "text-amber-400" : "text-emerald-500"}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         </div>
+                        <h4 className="font-bold text-white text-lg mb-2">{pkg.name}</h4>
+                        <p className="text-emerald-400 font-black text-xl mb-2">{pkg.price.toLocaleString('vi-VN')}đ</p>
+                        {pkg.includesDrink ? (
+                          <span className="text-xs bg-amber-500/20 text-amber-400 px-3 py-1.5 rounded-full font-medium mt-auto">
+                            🎁 Kèm 1 phần nước
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-stone-500/20 text-stone-400 px-3 py-1.5 rounded-full font-medium mt-auto">
+                            Chỉ chỗ ngồi
+                          </span>
+                        )}
                       </div>
-                    </div>
-                  )})}
+                    ))}
+                  </div>
+                  {packages.length === 0 && <p className="text-stone-500 text-center mt-10">Chưa có gói cước nào.</p>}
                 </div>
+              )}
 
-                <div className="pt-2 md:pt-6 mt-2 md:mt-4">
-                  <div className="flex justify-between items-end mb-3 md:mb-6 bg-white/5 p-3 md:p-4 rounded-xl border border-white/10">
-                    <span className="text-stone-400 font-medium text-sm md:text-base">Tổng thanh toán</span>
-                    <span className="text-xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-amber-500">
-                      {(() => {
-                        let drinkTotal = posCart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-                        if (posSelectedPackage?.includesDrink && posCart.length > 0) {
-                          drinkTotal -= posCart[0].price; // Giảm giá 1 ly đầu tiên
-                        }
-                        return ((posSelectedPackage?.price || 0) + drinkTotal).toLocaleString('vi-VN');
-                      })()}đ
-                    </span>
+              {/* STEP 2: CHỌN NƯỚC */}
+              {posStep === 2 && (
+                <div className="flex flex-col h-full animate-slide-up">
+                  <div className="p-4 bg-emerald-900/30 border-b border-emerald-500/20 flex flex-col md:flex-row justify-between items-start md:items-center px-6 shrink-0 gap-4">
+                    <div>
+                      <p className="text-sm text-emerald-400">Gói đã chọn: <span className="font-bold text-white">{posSelectedPackage?.name}</span></p>
+                      {posSelectedPackage?.includesDrink && (
+                        <p className="text-xs text-amber-400 mt-1">🎁 Khách được tặng 1 ly nước miễn phí trong Menu!</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                      <button onClick={() => setPosStep(1)} className="text-stone-400 hover:text-white text-sm">← Đổi gói khác</button>
+                      <button onClick={() => setPosStep(3)} className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-[0_0_15px_rgba(5,150,105,0.4)] transition-colors">
+                        {posCart.length > 0 ? `Tiếp tục (${posCart.length} món) →` : "Bỏ qua gọi nước →"}
+                      </button>
+                    </div>
                   </div>
                   
-                  <div className="flex gap-3">
+                  <div className="flex-1 overflow-y-auto p-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 max-w-6xl mx-auto">
+                      {menuItems.map(item => (
+                        <div 
+                          key={item.id} 
+                          onClick={() => {
+                            const exist = posCart.find(c => c.id === item.id);
+                            if (exist) {
+                              setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c));
+                            } else {
+                              setPosCart([...posCart, { ...item, quantity: 1 }]);
+                            }
+                          }}
+                          className="glass-card p-4 cursor-pointer hover:scale-105 active:scale-95 transition-all text-center flex flex-col items-center justify-center aspect-square relative"
+                        >
+                          <div className="text-5xl mb-3 drop-shadow-xl">{item.imageUrl || "🍹"}</div>
+                          <h4 className="font-medium text-sm text-gray-200 line-clamp-2">{item.name}</h4>
+                          <p className="text-emerald-500 font-bold text-sm mt-1">{item.price.toLocaleString('vi-VN')}đ</p>
+                          
+                          {posCart.find(c => c.id === item.id) && (
+                            <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-bounce-short">
+                              {posCart.find(c => c.id === item.id)?.quantity}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3: THANH TOÁN */}
+              {posStep === 3 && (
+                <div className="flex flex-col h-full animate-slide-up max-w-3xl mx-auto w-full p-6">
+                  <div className="flex items-center gap-4 mb-6">
+                    <button onClick={() => setPosStep(2)} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">←</button>
+                    <h3 className="text-2xl font-bold text-white">Xác nhận & Thanh toán</h3>
+                  </div>
+
+                  <div className="flex-1 bg-[#141c16]/40 rounded-2xl border border-white/10 p-6 overflow-y-auto">
+                    {/* Bill Header */}
+                    <div className="flex justify-between items-start pb-4 border-b border-white/10 mb-4">
+                      <div>
+                        <p className="font-bold text-lg text-green-400">{posSelectedPackage?.name}</p>
+                        <p className="text-sm text-stone-500">Gói cước thời gian</p>
+                      </div>
+                      <p className="font-bold text-lg text-white">{(posSelectedPackage?.price || 0).toLocaleString('vi-VN')}đ</p>
+                    </div>
+
+                    {/* Drink Items */}
+                    <div className="space-y-4">
+                      {posCart.length === 0 ? (
+                        <p className="text-stone-500 text-center py-8 italic">Không kèm nước uống</p>
+                      ) : posCart.map((item, index) => {
+                        const isFreeDrink = posSelectedPackage?.includesDrink && index === 0;
+                        return (
+                        <div key={item.id} className="flex flex-col gap-1 pb-2 border-b border-white/5">
+                          <div className="flex justify-between items-start">
+                            <p className="font-medium text-gray-200">
+                              <span className="text-emerald-500 font-bold mr-2">{item.quantity}x</span>
+                              {item.name}
+                            </p>
+                            <p className="font-bold text-white">
+                              {isFreeDrink 
+                                ? (item.price * (item.quantity - 1)).toLocaleString('vi-VN') + "đ" 
+                                : (item.price * item.quantity).toLocaleString('vi-VN') + "đ"
+                              }
+                            </p>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            {isFreeDrink ? (
+                              <p className="text-xs text-amber-500 font-medium bg-amber-500/10 px-2 py-0.5 rounded inline-block">🎁 Tặng kèm gói Combo (1 ly)</p>
+                            ) : (
+                              <p className="text-xs text-stone-500">{item.price.toLocaleString('vi-VN')}đ/ly</p>
+                            )}
+                            
+                            <div className="flex items-center gap-3 bg-white/5 rounded-lg px-2 py-1 mt-1">
+                              <button onClick={() => {
+                                 if (item.quantity > 1) {
+                                   setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity - 1 } : c));
+                                 } else {
+                                   setPosCart(posCart.filter(c => c.id !== item.id));
+                                 }
+                              }} className="w-6 h-6 flex items-center justify-center text-stone-400 hover:text-white bg-white/5 rounded">-</button>
+                              <button onClick={() => setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c))} className="w-6 h-6 flex items-center justify-center text-stone-400 hover:text-white bg-white/5 rounded">+</button>
+                            </div>
+                          </div>
+                        </div>
+                      )})}
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <div className="flex justify-between items-end mb-6 bg-emerald-900/20 p-5 rounded-2xl border border-emerald-500/30">
+                      <span className="text-emerald-400 font-medium text-lg uppercase tracking-wider">Tổng Thu</span>
+                      <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400 drop-shadow-sm">
+                        {(() => {
+                          let drinkTotal = posCart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+                          if (posSelectedPackage?.includesDrink && posCart.length > 0) {
+                            drinkTotal -= posCart[0].price; // Giảm giá 1 ly đầu tiên
+                          }
+                          return ((posSelectedPackage?.price || 0) + drinkTotal).toLocaleString('vi-VN');
+                        })()}đ
+                      </span>
+                    </div>
+                    
                     <button 
-                      onClick={() => {
-                        setPosCart([]);
-                        setPosSelectedPackage(null);
-                      }}
-                      className="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors"
-                    >
-                      Hủy
-                    </button>
-                    <button 
-                      disabled={!posSelectedPackage || posLoading}
+                      disabled={posLoading}
                       onClick={async () => {
                         setPosLoading(true);
                         try {
-                          // Nếu có Combo, tính lại tổng bill
                           let drinkTotal = posCart.reduce((acc, item) => acc + item.price * item.quantity, 0);
                           let modifiedOrderItems = [...posCart];
                           if (posSelectedPackage?.includesDrink && posCart.length > 0) {
                             drinkTotal -= posCart[0].price;
-                            // Đổi giá trị ly đầu tiên để lưu xuống DB là 0đ cho ly đó
                             modifiedOrderItems[0] = { ...modifiedOrderItems[0], price: 0 };
                           }
 
@@ -443,21 +494,32 @@ export default function Dashboard() {
                             setIsPosOpen(false);
                             setPosSelectedPackage(null);
                             setPosCart([]);
-                            setReceiptData(data); // Hiện biên lai QR
+                            setPosStep(1);
+                            setReceiptData(data);
                             fetchData();
                           } else {
                             alert("Có lỗi tạo phiên");
                           }
-                        } catch(e) {}
+                        } catch(e) {
+                          console.error(e);
+                        }
                         setPosLoading(false);
                       }}
-                      className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-700 to-amber-600 text-white font-bold shadow-[0_0_15px_rgba(5,150,105,0.4)] disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-all active:scale-95"
+                      className="w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-600 to-amber-500 text-white font-bold text-xl shadow-[0_0_30px_rgba(5,150,105,0.4)] disabled:opacity-50 hover:opacity-90 transition-all active:scale-95 flex justify-center items-center gap-3"
                     >
-                      {posLoading ? "Đang xử lý..." : "Bắt Đầu & In Mã"}
+                      {posLoading ? (
+                        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4"/><path d="M7 15h10v6H7z"/></svg>
+                          HOÀN TẤT & IN MÃ KHÁCH
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
-              </div>
+              )}
+
             </div>
           </div>
         </div>
