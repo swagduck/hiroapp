@@ -109,11 +109,11 @@ export default function AnalyticsTab() {
                     </div>
                     <div>
                       <p className="font-medium text-stone-200">{drink.name}</p>
-                      <p className="text-xs text-stone-500">{drink.quantity} ly đã bán</p>
+                      <p className="text-xs text-stone-500">Doanh thu: {formatPrice(drink.revenue)}</p>
                     </div>
                   </div>
-                  <div className="font-bold text-emerald-400/80">
-                    {formatPrice(drink.revenue)}
+                  <div className="font-black text-xl text-emerald-400">
+                    {drink.quantity} <span className="text-sm font-medium text-emerald-500/60">ly</span>
                   </div>
                 </div>
               ))}
