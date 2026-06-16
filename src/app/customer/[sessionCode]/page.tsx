@@ -168,14 +168,6 @@ export default function CustomerOrderPage() {
     }
   };
 
-  if (loading) {
-    return <div className="min-h-screen bg-stone-950 flex justify-center items-center"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-600"></div></div>;
-  }
-
-  if (!session) {
-    return <div className="min-h-screen bg-stone-950 text-white flex flex-col justify-center items-center"><p>Phiên không tồn tại hoặc đã kết thúc.</p></div>;
-  }
-
   const duration = session?.savedMinutesUsed || session?.package?.duration;
   const expireTime = duration ? new Date(session.startTime).getTime() + duration * 60000 : null;
   const remainingMs = expireTime ? expireTime - now.getTime() : null;
@@ -196,6 +188,16 @@ export default function CustomerOrderPage() {
       setHasNotifiedExpired(true);
     }
   }, [remainingMinutes, hasNotifiedWarning, hasNotifiedExpired]);
+
+  if (loading) {
+    return <div className="min-h-screen bg-stone-950 flex justify-center items-center"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-600"></div></div>;
+  }
+
+  if (!session) {
+    return <div className="min-h-screen bg-stone-950 text-white flex flex-col justify-center items-center"><p>Phiên không tồn tại hoặc đã kết thúc.</p></div>;
+  }
+
+
 
   return (
     <div className="min-h-screen bg-slate-950 flex justify-center overflow-x-hidden">
