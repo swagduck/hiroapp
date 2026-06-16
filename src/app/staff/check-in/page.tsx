@@ -99,11 +99,38 @@ export default function CheckInPage() {
               <p className="text-stone-300 text-lg">{scanResult.message}</p>
               
               {scanResult.valid && scanResult.session && (
-                <div className="mt-4 p-4 bg-[#141c16]/40 rounded-xl w-full text-left border border-white/10">
-                  <p className="text-sm text-stone-400">Gói cước:</p>
-                  <p className="font-bold text-lg text-white mb-2">{scanResult.session.package?.name}</p>
-                  <p className="text-sm text-stone-400">Giờ vào:</p>
-                  <p className="font-mono text-white">{new Date(scanResult.session.startTime).toLocaleTimeString('vi-VN')}</p>
+                <div className="mt-4 p-5 bg-[#141c16]/60 rounded-xl w-full text-left border border-white/10 shadow-inner">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm text-stone-400">Mã truy cập:</span>
+                    <span className="font-mono font-bold text-emerald-400 text-lg bg-emerald-900/30 px-2 py-0.5 rounded">#{scanResult.session.accessCode}</span>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <span className="text-sm text-stone-400 block mb-1">Gói cước:</span>
+                    <span className="font-bold text-lg text-white">{scanResult.session.package?.name}</span>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <span className="text-sm text-stone-400 block mb-1">Giờ vào:</span>
+                    <span className="font-mono text-stone-200">{new Date(scanResult.session.startTime).toLocaleTimeString('vi-VN')}</span>
+                  </div>
+
+                  {scanResult.session.package?.includesDrink && (
+                    <div className="pt-3 border-t border-white/10">
+                      <span className="text-sm text-stone-400 block mb-2">Tình trạng đồ uống miễn phí:</span>
+                      {scanResult.session.freeDrinkClaimed ? (
+                        <div className="flex items-center gap-2 text-stone-400 bg-stone-800/50 p-2 rounded-lg">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                          <span className="font-medium text-sm">Đã đổi nước / Đã sử dụng</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-amber-400 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 14h10"/><path d="M14 2v10"/><path d="m3 3 3 9"/><path d="m21 3-3 9"/><path d="M10 14v4"/><path d="M14 14v4"/><path d="M6 18h12"/></svg>
+                          <span className="font-bold text-sm">Chưa đổi (Khách được 1 ly miễn phí)</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
