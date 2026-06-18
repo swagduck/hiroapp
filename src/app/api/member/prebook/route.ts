@@ -81,6 +81,7 @@ export async function POST(request: Request) {
       embed_data,
       item: items,
       description,
+      callback_url: `${appUrl}/api/webhooks/zalopay`,
       mac,
       bank_code: "" // Mặc định hiển thị tất cả
     };
