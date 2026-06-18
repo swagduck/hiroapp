@@ -33,7 +33,7 @@ export default function StaffTab() {
       const res = await fetch(`/api/admin/users/${confirmModal.userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: newRole })
+        body: JSON.stringify({ role: confirmModal.newRole })
       });
       if (res.ok) {
         toast.success("Đã cập nhật quyền!");
