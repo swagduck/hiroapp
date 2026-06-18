@@ -509,9 +509,9 @@ export default function MemberDashboard() {
             >
               <div className="relative">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                {cart.length > 0 && (
+                {(cart.reduce((acc, item) => acc + item.quantity, 0) + (selectedPkg ? 1 : 0)) > 0 && (
                   <span className="absolute -top-2 -right-2 bg-amber-500 text-stone-900 text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full animate-bounce">
-                    {cart.length}
+                    {cart.reduce((acc, item) => acc + item.quantity, 0) + (selectedPkg ? 1 : 0)}
                   </span>
                 )}
               </div>
