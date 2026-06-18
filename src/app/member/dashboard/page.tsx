@@ -745,6 +745,21 @@ export default function MemberDashboard() {
 
           {activeTab === "profile" && (
             <div className="space-y-6 animate-page-transition">
+              
+              {/* Thẻ Điểm & Quà */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gradient-to-br from-amber-500/20 to-orange-600/20 border border-amber-500/30 p-4 rounded-2xl flex flex-col items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                  <span className="text-3xl mb-1">🌟</span>
+                  <span className="text-2xl font-bold text-amber-400">{member?.points || 0}</span>
+                  <span className="text-[10px] text-amber-500/80 font-bold uppercase tracking-widest mt-1">Điểm Tích Lũy</span>
+                </div>
+                <div className="bg-gradient-to-br from-pink-500/20 to-rose-600/20 border border-pink-500/30 p-4 rounded-2xl flex flex-col items-center justify-center shadow-[0_0_15px_rgba(236,72,153,0.1)]">
+                  <span className="text-3xl mb-1">🥤</span>
+                  <span className="text-2xl font-bold text-pink-400">{member?.freeDrinkTokens || 0}</span>
+                  <span className="text-[10px] text-pink-500/80 font-bold uppercase tracking-widest mt-1">Nước Tặng Kèm</span>
+                </div>
+              </div>
+
               <h3 className="font-bold text-lg text-emerald-400">Thông tin Cá nhân</h3>
               
               <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-4">
