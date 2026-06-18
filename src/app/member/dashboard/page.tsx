@@ -113,7 +113,7 @@ export default function MemberDashboard() {
 
       if (sessionRes.ok) {
         const s = await sessionRes.json();
-        if (s && (s.status === "ACTIVE" || s.status === "PENDING" || s.status === "PRE_BOOKED")) {
+        if (s && (s.status === "ACTIVE" || s.status === "PENDING" || s.status === "PRE_BOOKED" || s.status === "PENDING_PAYMENT")) {
           setActiveSession(s);
         } else {
           setActiveSession(null);
@@ -289,11 +289,6 @@ export default function MemberDashboard() {
 
   const handlePreBook = async (pkgId: string) => {
     try {
-      setSimulatingPayment(pkgId);
-      
-      // Giả lập thời gian ngân hàng xử lý giao dịch (3 giây)
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
       setExtending(true);
       const res = await fetch("/api/member/prebook", {
         method: "POST",
@@ -301,17 +296,22 @@ export default function MemberDashboard() {
         body: JSON.stringify({ packageId: pkgId })
       });
       if (res.ok) {
-        toast.success("Thanh toán thành công! Bạn đã nhận được Mã Check-in.");
-        fetchData();
-        setActiveTab("menu");
+        const data = await res.json();
+        if (data.orderurl) {
+          window.location.href = data.orderurl;
+        } else {
+          toast.error("Không nhận được URL thanh toán");
+          setExtending(false);
+          setSimulatingPayment(null);
+        }
       } else {
         toast.error("Lỗi đặt chỗ");
+        setExtending(false);
+        setSimulatingPayment(null);
       }
     } catch (e) {
       toast.error("Lỗi kết nối");
     } finally {
-      setExtending(false);
-      setSimulatingPayment(null);
       setExtendPkg(null);
     }
   };
@@ -609,26 +609,22 @@ export default function MemberDashboard() {
                     </div>
                     {pkg.includesDrink && <p className="text-xs text-amber-400 mb-4">✨ Tặng kèm 1 ly nước tự chọn</p>}
                     
-                    <div className="bg-black/30 p-4 rounded-lg mt-3 flex flex-col items-center relative overflow-hidden">
-                      {simulatingPayment === pkg.id && (
-                        <div className="absolute inset-0 z-10 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center">
-                          <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                          <p className="text-purple-400 font-bold text-sm animate-pulse text-center px-4">Đang chờ ngân hàng<br/>xác nhận giao dịch...</p>
-                        </div>
-                      )}
+                    <div className="bg-black/30 p-4 rounded-lg mt-3 flex flex-col items-center">
+                      <p className="text-xs text-stone-400 mb-2 font-medium">Thanh toán an toàn qua ZaloPay</p>
                       
-                      <p className="text-xs text-stone-400 mb-2">Quét mã để thanh toán</p>
-                      <img 
-                        src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${pkg.price}&addInfo=DAT CHO SPACE CAFE&accountName=SPACE CAFE`} 
-                        alt="VietQR" 
-                        className="w-[140px] h-[160px] object-contain rounded bg-white p-1" 
-                      />
                       <button 
                         onClick={() => handlePreBook(pkg.id)}
-                        disabled={simulatingPayment !== null}
-                        className="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] disabled:opacity-50"
+                        disabled={extending}
+                        className="mt-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-colors shadow-[0_0_15px_rgba(37,99,235,0.4)] disabled:opacity-50 flex items-center justify-center gap-2"
                       >
-                        Thanh Toán (Giả Lập)
+                        {extending ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Đang kết nối ZaloPay...
+                          </>
+                        ) : (
+                          "Thanh toán ZaloPay"
+                        )}
                       </button>
                     </div>
                   </div>
@@ -796,8 +792,16 @@ export default function MemberDashboard() {
                     </div>
                   )}
 
+                  {activeSession.status === 'PENDING_PAYMENT' && (
+                    <div className="bg-white text-black p-6 rounded-2xl w-full max-w-sm mx-auto shadow-2xl relative overflow-hidden flex flex-col items-center justify-center">
+                      <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                      <p className="font-bold text-center text-blue-600 mb-2">Đang chờ xác nhận thanh toán</p>
+                      <p className="text-sm text-center text-stone-500">Hệ thống đang đồng bộ với ZaloPay. Nếu bạn đã thanh toán thành công, vui lòng chờ giây lát...</p>
+                    </div>
+                  )}
+
                   {activeSession.status === 'PRE_BOOKED' && (
-                    <div className="mt-4 flex flex-col items-center bg-white p-4 rounded-xl mx-auto max-w-[240px]">
+                    <div className="bg-white text-black p-6 rounded-2xl w-full max-w-sm mx-auto shadow-2xl relative overflow-hidden">
                       <div className="flex items-center gap-2 mb-2 text-purple-600 font-bold">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         Mã Check-in Tự Động

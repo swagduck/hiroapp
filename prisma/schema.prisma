@@ -59,6 +59,7 @@ model Package {
 }
 
 enum SessionStatus {
+  PENDING_PAYMENT
   PRE_BOOKED
   PENDING
   ACTIVE
@@ -85,6 +86,7 @@ model Session {
   totalAmount Float?   // Store total amount required to pay
   
   accessCode  String   @unique // Access code for Wi-Fi / tracking
+  transId     String?  // Mã giao dịch (vd: dùng cho ZaloPay app_trans_id)
   freeDrinkClaimed Boolean @default(false) // Trạng thái đã lấy ly nước miễn phí chưa (nếu gói là combo)
   savedMinutesUsed Int? // Số phút bảo lưu được dùng cho phiên này (nếu có)
   extraMinutes Int @default(0) // Số phút được gia hạn thêm
