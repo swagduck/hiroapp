@@ -200,25 +200,26 @@ export default function CustomerOrderPage() {
       if (res.ok) {
         const resData = await res.json();
         if (resData.orderurl) {
-          toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
+          toast.loading("Đang chuyển hướng ZaloPay...", { id: toastId });
           window.location.href = resData.orderurl;
           return;
         }
-        toast.success("Order thành công! Nhân viên sẽ mang nước ra cho bạn.");
+        toast.success("Order thành công! Nhân viên sẽ mang nước ra cho bạn.", { id: toastId });
         setCart([]);
         setActiveTab("account");
         fetchSession();
       } else {
-        toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+        toast.error("Có lỗi xảy ra, vui lòng thử lại.", { id: toastId });
       }
     } catch (error) {
       console.error(error);
-      toast.error("Lỗi kết nối");
+      toast.error("Lỗi kết nối", { id: toastId });
     }
   };
 
   const handleExtend = async () => {
     if (!extendPkg) return toast.error("Vui lòng chọn 1 gói!");
+    const toastId = toast.loading("Đang khởi tạo thanh toán...");
     setExtending(true);
     try {
       const res = await fetch(`/api/sessions/${sessionCode}/extend`, {
@@ -229,19 +230,19 @@ export default function CustomerOrderPage() {
       if (res.ok) {
         const resData = await res.json();
         if (resData.orderurl) {
-          toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
+          toast.loading("Đang chuyển hướng ZaloPay...", { id: toastId });
           window.location.href = resData.orderurl;
           return;
         }
-        toast.success("Đã gia hạn thành công!");
+        toast.success("Đã gia hạn thành công!", { id: toastId });
         setIsExtending(false);
         setExtendPkg(null);
         fetchSession();
       } else {
-        toast.error("Có lỗi xảy ra");
+        toast.error("Có lỗi xảy ra", { id: toastId });
       }
     } catch(e) {
-      toast.error("Lỗi kết nối");
+      toast.error("Lỗi kết nối", { id: toastId });
     } finally {
       setExtending(false);
     }

@@ -199,6 +199,7 @@ export default function MemberDashboard() {
         toast.error("Vui lòng chọn đồ uống!");
         return;
       }
+      const toastId = toast.loading("Đang khởi tạo thanh toán...");
       setSubmitting(true);
       let totalAmount = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) * 0.9;
       const orderItems = cart.map(item => ({
@@ -222,19 +223,19 @@ export default function MemberDashboard() {
         if (res.ok) {
           const resData = await res.json();
           if (resData.orderurl) {
-            toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
+            toast.loading("Đang chuyển hướng ZaloPay...", { id: toastId });
             window.location.href = resData.orderurl;
             return;
           }
-          toast.success("Order thành công! Nhân viên sẽ mang nước ra cho bạn.");
+          toast.success("Order thành công! Nhân viên sẽ mang nước ra cho bạn.", { id: toastId });
           setCart([]);
           setActiveTab("history");
           fetchData();
         } else {
-          toast.error("Lỗi tạo đơn");
+          toast.error("Lỗi tạo đơn", { id: toastId });
         }
       } catch (e) {
-        toast.error("Lỗi kết nối");
+        toast.error("Lỗi kết nối", { id: toastId });
       } finally {
         setSubmitting(false);
       }
@@ -341,6 +342,7 @@ export default function MemberDashboard() {
   };
 
   const handlePreBook = async (pkgId: string) => {
+    const toastId = toast.loading("Đang khởi tạo thanh toán...");
     try {
       setExtending(true);
       const res = await fetch("/api/member/prebook", {
@@ -351,20 +353,20 @@ export default function MemberDashboard() {
       if (res.ok) {
         const data = await res.json();
         if (data.orderurl) {
-          toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
+          toast.loading("Đang chuyển hướng ZaloPay...", { id: toastId });
           window.location.href = data.orderurl;
         } else {
-          toast.error("Không nhận được URL thanh toán");
+          toast.error("Không nhận được URL thanh toán", { id: toastId });
           setExtending(false);
           setSimulatingPayment(null);
         }
       } else {
-        toast.error("Lỗi đặt chỗ");
+        toast.error("Lỗi đặt chỗ", { id: toastId });
         setExtending(false);
         setSimulatingPayment(null);
       }
     } catch (e) {
-      toast.error("Lỗi kết nối");
+      toast.error("Lỗi kết nối", { id: toastId });
     } finally {
       setExtendPkg(null);
     }
@@ -372,6 +374,7 @@ export default function MemberDashboard() {
 
   const handleExtend = async () => {
     if (!extendPkg) return toast.error("Vui lòng chọn 1 gói!");
+    const toastId = toast.loading("Đang khởi tạo thanh toán...");
     setExtending(true);
     try {
       const res = await fetch(`/api/sessions/${activeSession.accessCode}/extend`, {
@@ -382,21 +385,21 @@ export default function MemberDashboard() {
       if (res.ok) {
         const resData = await res.json();
         if (resData.orderurl) {
-          toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
+          toast.loading("Đang chuyển hướng ZaloPay...", { id: toastId });
           window.location.href = resData.orderurl;
           return;
         }
-        toast.success("Đã gửi đơn, bếp đang chuẩn bị!");
+        toast.success("Đã gửi đơn, bếp đang chuẩn bị!", { id: toastId });
         setCart([]);
         setSubmitting(false);
         setActiveTab("history");
         fetchData();
       } else {
-        toast.error("Có lỗi xảy ra, thử lại sau.");
+        toast.error("Có lỗi xảy ra, thử lại sau.", { id: toastId });
         setSubmitting(false);
       }
     } catch (e) {
-      toast.error("Lỗi kết nối");
+      toast.error("Lỗi kết nối", { id: toastId });
     } finally {
       setExtending(false);
     }
