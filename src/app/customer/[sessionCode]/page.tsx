@@ -277,7 +277,10 @@ export default function CustomerOrderPage() {
           <div className="flex items-center gap-2">
             {!!session.userId && (
               <button 
-                onClick={() => router.push('/member/dashboard')} 
+                onClick={() => {
+                  toast.loading("Đang chuyển trang...");
+                  router.push('/member/dashboard');
+                }} 
                 className="w-8 h-8 flex items-center justify-center -ml-2 rounded-lg bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white transition-colors"
                 title="Quay lại Dashboard"
               >

@@ -393,6 +393,7 @@ export default function MemberDashboard() {
             </div>
             <button
               onClick={async () => {
+                toast.loading("Đang đăng xuất...");
                 await fetch("/api/auth/logout", { method: "POST" });
                 router.push("/customer");
               }}
