@@ -96,6 +96,47 @@ export default function MemberDashboard() {
   };
 
   const submitOrder = async () => {
+    if (activeSession) {
+      if (cart.length === 0) {
+        toast.error("Vui lòng chọn đồ uống!");
+        return;
+      }
+      setSubmitting(true);
+      let totalAmount = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) * 0.9;
+      const orderItems = cart.map(item => ({
+        menuItemId: item.id,
+        quantity: item.quantity,
+        price: item.price * 0.9
+      }));
+
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: activeSession.id,
+            totalAmount,
+            items: orderItems,
+            updateFreeDrink: false
+          })
+        });
+
+        if (res.ok) {
+          toast.success("Order thành công! Nhân viên sẽ mang nước ra cho bạn.");
+          setCart([]);
+          setActiveTab("history");
+          fetchData();
+        } else {
+          toast.error("Lỗi tạo đơn");
+        }
+      } catch (e) {
+        toast.error("Lỗi kết nối");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
     if (!selectedPkg) {
       toast.error("Vui lòng chọn 1 Gói giờ!");
       return;
@@ -112,8 +153,6 @@ export default function MemberDashboard() {
     setSubmitting(true);
     const totalAmount = getCartTotal();
 
-    // The orderItems will just be sent, API will trust the totalAmount for simplicity in this MVP
-    // We should send the updateFreeDrink flag
     let updateFreeDrink = false;
     const orderItems = cart.map(item => ({
       id: item.id,
@@ -154,6 +193,10 @@ export default function MemberDashboard() {
   };
 
   const getCartTotal = () => {
+    if (activeSession) {
+      return cart.reduce((acc, item) => acc + (item.price * item.quantity), 0) * 0.9;
+    }
+
     const pkg = packages.find(p => p.id === selectedPkg);
     let totalDrinks = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     let pkgPrice = pkg ? pkg.price : 0;
@@ -268,34 +311,35 @@ export default function MemberDashboard() {
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="font-bold text-sm text-stone-300">Bạn đang có 1 phiên {activeSession.status === 'PENDING' ? 'chờ duyệt' : 'hoạt động'}</h3>
-                      <p className="text-xs text-stone-500 mt-1">Nhấn vào Lịch sử để xem chi tiết QR thanh toán/check-in.</p>
+                      <p className="text-xs text-emerald-400 mt-1">Giao diện đã chuyển sang chế độ Gọi Thêm Nước.</p>
                     </div>
-                    <span className="text-xl">👉</span>
+                  </div>
+                </div>
+              )}
+
+              {!activeSession && (
+                <div>
+                  <h3 className="font-bold text-lg mb-4 text-emerald-400">1. Chọn Gói Thời Gian</h3>
+                  <div className="space-y-3">
+                    {packages.map(pkg => (
+                      <div 
+                        key={pkg.id} 
+                        onClick={() => setSelectedPkg(pkg.id)}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedPkg === pkg.id ? 'bg-emerald-900/40 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">{pkg.name}</span>
+                          <span className="text-emerald-400 font-bold">{pkg.price.toLocaleString('vi-VN')}đ</span>
+                        </div>
+                        {pkg.includesDrink && <p className="text-xs text-amber-400 mt-1">✨ Tặng 1 ly nước bất kỳ</p>}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
 
               <div>
-                <h3 className="font-bold text-lg mb-4 text-emerald-400">1. Chọn Gói Thời Gian</h3>
-                <div className="space-y-3">
-                  {packages.map(pkg => (
-                    <div 
-                      key={pkg.id} 
-                      onClick={() => setSelectedPkg(pkg.id)}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedPkg === pkg.id ? 'bg-emerald-900/40 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">{pkg.name}</span>
-                        <span className="text-emerald-400 font-bold">{pkg.price.toLocaleString('vi-VN')}đ</span>
-                      </div>
-                      {pkg.includesDrink && <p className="text-xs text-amber-400 mt-1">✨ Tặng 1 ly nước bất kỳ</p>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-bold text-lg mb-4 text-emerald-400">2. Chọn Đồ Uống (Tùy chọn)</h3>
+                <h3 className="font-bold text-lg mb-4 text-emerald-400">{activeSession ? "Menu Đồ Uống" : "2. Chọn Đồ Uống (Tùy chọn)"}</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {menuItems.map(item => (
                     <div key={item.id} onClick={() => addToCart(item)} className="bg-white/5 p-4 rounded-xl border border-white/10 flex flex-col items-center text-center cursor-pointer hover:bg-white/10 hover:border-emerald-500/50 active:scale-95 transition-all group">
@@ -315,17 +359,19 @@ export default function MemberDashboard() {
               <h3 className="font-bold text-2xl text-white mb-2">Giỏ hàng của bạn</h3>
               
               <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-4">
-                <div className="pb-4 border-b border-white/10">
-                  <h4 className="text-sm text-stone-400 font-medium mb-2">Gói thời gian</h4>
-                  {selectedPkg ? (
-                    <div className="flex justify-between items-center text-emerald-400 font-bold">
-                      <span>{packages.find(p => p.id === selectedPkg)?.name}</span>
-                      <span>{packages.find(p => p.id === selectedPkg)?.price.toLocaleString('vi-VN')}đ</span>
-                    </div>
-                  ) : (
-                    <p className="text-stone-500 text-sm italic">Chưa chọn gói</p>
-                  )}
-                </div>
+                {!activeSession && (
+                  <div className="pb-4 border-b border-white/10">
+                    <h4 className="text-sm text-stone-400 font-medium mb-2">Gói thời gian</h4>
+                    {selectedPkg ? (
+                      <div className="flex justify-between items-center text-emerald-400 font-bold">
+                        <span>{packages.find(p => p.id === selectedPkg)?.name}</span>
+                        <span>{packages.find(p => p.id === selectedPkg)?.price.toLocaleString('vi-VN')}đ</span>
+                      </div>
+                    ) : (
+                      <p className="text-stone-500 text-sm italic">Chưa chọn gói</p>
+                    )}
+                  </div>
+                )}
 
                 <div>
                   <div className="flex justify-between items-center mb-2">
@@ -362,7 +408,7 @@ export default function MemberDashboard() {
                 </div>
               )}
 
-              {member?.freeDrinkTokens > 0 && !packages.find(p => p.id === selectedPkg)?.includesDrink && cart.length > 0 && (
+              {member?.freeDrinkTokens > 0 && !activeSession && !packages.find(p => p.id === selectedPkg)?.includesDrink && cart.length > 0 && (
                 <div className="bg-pink-900/20 text-pink-400 text-xs p-3 rounded-lg border border-pink-500/30 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span>🎂</span>
@@ -380,7 +426,7 @@ export default function MemberDashboard() {
                 </div>
               )}
 
-              {packages.find(p => p.id === selectedPkg)?.includesDrink && cart.length > 0 && (
+              {!activeSession && packages.find(p => p.id === selectedPkg)?.includesDrink && cart.length > 0 && (
                 <div className="bg-emerald-900/20 text-emerald-400 text-xs p-3 rounded-lg border border-emerald-500/30 flex items-center gap-2">
                   <span>🎁</span>
                   <span>Đã trừ tiền 1 ly nước (Áp dụng theo gói Combo)</span>
@@ -394,10 +440,10 @@ export default function MemberDashboard() {
 
               <button 
                 onClick={submitOrder}
-                disabled={submitting || !selectedPkg || !!activeSession}
+                disabled={submitting || (!activeSession && !selectedPkg) || (activeSession && cart.length === 0)}
                 className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-50 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all mt-4"
               >
-                {activeSession ? "Đang có phiên hoạt động" : (submitting ? "Đang xử lý..." : "Gửi Đơn Order")}
+                {activeSession ? (submitting ? "Đang xử lý..." : "Xác nhận Gọi Nước") : (submitting ? "Đang xử lý..." : "Gửi Đơn Order")}
               </button>
             </div>
           )}
@@ -457,7 +503,7 @@ export default function MemberDashboard() {
                       ) : (
                         <>
                           <div className="flex gap-2 mt-4">
-                            <button onClick={() => router.push(`/customer/${activeSession.accessCode}`)} className="flex-1 bg-emerald-600/20 border border-emerald-500 hover:bg-emerald-600/30 text-emerald-400 py-3 rounded-xl font-bold transition-colors">
+                            <button onClick={() => setActiveTab("menu")} className="flex-1 bg-emerald-600/20 border border-emerald-500 hover:bg-emerald-600/30 text-emerald-400 py-3 rounded-xl font-bold transition-colors">
                               Menu Nước
                             </button>
                             <button onClick={() => setIsExtending(!isExtending)} className="flex-1 bg-purple-600/20 border border-purple-500 hover:bg-purple-600/30 text-purple-400 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-1">
