@@ -220,6 +220,11 @@ export default function MemberDashboard() {
         });
 
         if (res.ok) {
+          const resData = await res.json();
+          if (resData.orderurl) {
+            window.location.href = resData.orderurl;
+            return;
+          }
           toast.success("Order thành công! Nhân viên sẽ mang nước ra cho bạn.");
           setCart([]);
           setActiveTab("history");
