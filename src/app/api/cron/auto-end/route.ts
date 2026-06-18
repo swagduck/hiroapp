@@ -5,6 +5,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
+    const authHeader = request.headers.get('authorization');
+    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     // Tìm tất cả các phiên đang hoạt động có giới hạn thời gian (có package duration hoặc dùng giờ bảo lưu)
     const activeSessions = await prisma.session.findMany({
       where: {
