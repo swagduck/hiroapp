@@ -441,12 +441,26 @@ export default function MemberDashboard() {
 
                   {activeSession.status === 'ACTIVE' && (
                     <div className="mt-2 border-t border-white/5 pt-3">
-                      {activeSession.orders?.find((o: any) => o.isExtension && o.status === 'PENDING') ? (
-                        <div className="p-3 border border-amber-500/30 bg-amber-900/20 rounded-xl text-center">
-                          <p className="text-amber-400 text-sm font-bold animate-pulse">Đang chờ duyệt gia hạn...</p>
-                        </div>
-                      ) : (
-                        duration && (
+                      {(() => {
+                        const pendingExtension = activeSession.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+                        if (pendingExtension) {
+                          return (
+                            <div className="mt-2 flex flex-col items-center bg-white p-3 rounded-xl mx-auto border border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                              <p className="text-stone-900 font-bold mb-2 text-center text-xs">Thanh toán gia hạn</p>
+                              <img 
+                                src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${pendingExtension.totalAmount || 0}&addInfo=${activeSession.accessCode}&accountName=SPACE CAFE`} 
+                                alt="VietQR" 
+                                className="w-[120px] h-[140px] object-contain rounded shadow-sm border border-stone-200" 
+                              />
+                              <div className="text-stone-600 text-xs mt-2 text-center space-y-1">
+                                <p>Số tiền: <strong className="text-emerald-600">{(pendingExtension.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
+                              </div>
+                              <p className="text-amber-500 font-bold mt-1 text-[10px] text-center animate-pulse">Đang chờ thu ngân duyệt...</p>
+                            </div>
+                          );
+                        }
+                        
+                        return duration && (
                           <div className="flex flex-col gap-2">
                             <button 
                               onClick={() => setIsExtending(!isExtending)}
@@ -482,8 +496,8 @@ export default function MemberDashboard() {
                               </div>
                             )}
                           </div>
-                        )
-                      )}
+                        );
+                      })()}
                     </div>
                   )}
                 </div>

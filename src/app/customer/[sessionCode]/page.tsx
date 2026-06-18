@@ -328,13 +328,27 @@ export default function CustomerOrderPage() {
 
       {/* EXTEND UI */}
       <div className="mx-4 mt-4">
-        {session?.orders?.find((o: any) => o.isExtension && o.status === 'PENDING') ? (
-          <div className="p-3 border border-amber-500/30 bg-amber-900/20 rounded-xl text-center">
-            <p className="text-amber-400 text-sm font-bold animate-pulse">Đang chờ thu ngân duyệt gia hạn...</p>
-            <p className="text-xs text-amber-500/70 mt-1">Nhân viên sẽ ra hỗ trợ bạn thanh toán.</p>
-          </div>
-        ) : (
-          duration && (
+        {(() => {
+          const pendingExtension = session?.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+          if (pendingExtension) {
+            return (
+              <div className="mt-4 flex flex-col items-center bg-white p-4 rounded-xl mx-auto border border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                <p className="text-stone-900 font-bold mb-2 text-center text-sm">Quét mã để thanh toán gia hạn</p>
+                <img 
+                  src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${pendingExtension.totalAmount || 0}&addInfo=${session.accessCode}&accountName=SPACE CAFE`} 
+                  alt="VietQR" 
+                  className="w-[160px] h-[180px] object-contain rounded shadow-sm border border-stone-200" 
+                />
+                <div className="text-stone-600 text-xs mt-3 text-center space-y-1">
+                  <p>Số tiền: <strong className="text-emerald-600 text-sm">{(pendingExtension.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
+                  <p>Mã chuyển khoản: <strong className="text-stone-900">{session.accessCode}</strong></p>
+                </div>
+                <p className="text-amber-500 font-bold mt-2 text-xs text-center animate-pulse">Đang chờ thu ngân duyệt...</p>
+              </div>
+            );
+          }
+          
+          return duration && (
             <div className="flex flex-col gap-2">
               <button 
                 onClick={() => setIsExtending(!isExtending)}
@@ -370,8 +384,8 @@ export default function CustomerOrderPage() {
                 </div>
               )}
             </div>
-          )
-        )}
+          );
+        })()}
       </div>
 
       {/* Main Content */}
