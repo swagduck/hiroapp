@@ -13,6 +13,11 @@ export default function MemberDashboard() {
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
 
+  // Notification States
+  const [notificationPermission, setNotificationPermission] = useState("default");
+  const [hasNotifiedWarning, setHasNotifiedWarning] = useState(false);
+  const [hasNotifiedExpired, setHasNotifiedExpired] = useState(false);
+
   const [activeTab, setActiveTab] = useState<"menu" | "cart" | "history" | "profile">("menu");
   const [dobInput, setDobInput] = useState("");
   const [updatingProfile, setUpdatingProfile] = useState(false);
@@ -29,6 +34,56 @@ export default function MemberDashboard() {
   const [cart, setCart] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [useFreeDrink, setUseFreeDrink] = useState(false);
+
+  useEffect(() => {
+    if ("Notification" in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
+  const requestNotificationPermission = async () => {
+    if (!("Notification" in window)) return;
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    if (permission === "granted") {
+      new Notification("HiroApp", { body: "Thông báo đã bật. Bạn sẽ nhận được cảnh báo khi sắp hết giờ!" });
+    }
+  };
+
+  const playAlert = (title: string, body: string, isUrgent: boolean) => {
+    // 1. Vibrate
+    if ("vibrate" in navigator) {
+      navigator.vibrate(isUrgent ? [500, 200, 500, 200, 1000] : [200, 100, 200]);
+    }
+    
+    // 2. Sound (Web Audio API)
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const playBeep = (freq: number, startTime: number) => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(freq, startTime);
+        gainNode.gain.setValueAtTime(1.0, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.4);
+      };
+      
+      for (let i = 0; i < 10; i++) {
+        playBeep(isUrgent ? 880 : 600, audioCtx.currentTime + i * 0.5);
+      }
+    } catch(e) {
+      console.error("Audio play failed", e);
+    }
+    
+    // 3. OS Notification
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body, icon: "/favicon.ico" });
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -253,7 +308,23 @@ export default function MemberDashboard() {
   const duration = baseDuration ? baseDuration + (activeSession?.extraMinutes || 0) : null;
   const expireTime = duration ? new Date(activeSession.startTime).getTime() + duration * 60000 : null;
   const remainingMs = expireTime ? expireTime - now.getTime() : null;
-  const isExpired = remainingMs !== null && remainingMs <= 0;
+  const remainingMinutes = remainingMs ? Math.ceil(remainingMs / 60000) : null;
+  const showWarning = remainingMinutes !== null && remainingMinutes <= 15 && remainingMinutes > 0;
+  const isExpired = remainingMinutes !== null && remainingMinutes <= 0;
+
+  useEffect(() => {
+    if (remainingMinutes === null) return;
+    
+    if (remainingMinutes <= 15 && remainingMinutes > 0 && !hasNotifiedWarning) {
+      playAlert("Sắp hết giờ!", "Bạn còn chưa tới 15 phút, vui lòng chú ý thời gian nhé!", false);
+      setHasNotifiedWarning(true);
+    }
+    
+    if (remainingMinutes <= 0 && !hasNotifiedExpired) {
+      playAlert("Đã hết giờ!", "Thời gian sử dụng của bạn đã hết. Vui lòng gia hạn nếu muốn sử dụng tiếp.", true);
+      setHasNotifiedExpired(true);
+    }
+  }, [remainingMinutes, hasNotifiedWarning, hasNotifiedExpired]);
 
   if (loading) return <div className="min-h-screen bg-stone-950 flex justify-center items-center"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-500"></div></div>;
 
@@ -261,6 +332,27 @@ export default function MemberDashboard() {
     <div className="min-h-screen bg-slate-950 flex justify-center pb-24">
       <div className="w-full max-w-md bg-stone-950 min-h-screen border-x border-white/5 text-white relative">
         
+        {/* Banner xin quyền thông báo */}
+        {notificationPermission === "default" && (
+          <div className="bg-amber-500/10 border-b border-amber-500/30 p-3 flex justify-between items-center px-4 animate-slide-down">
+            <span className="text-amber-400 text-xs font-medium pr-2">Bật thông báo để nhận cảnh báo khi sắp hết giờ</span>
+            <button onClick={requestNotificationPermission} className="bg-amber-500 text-stone-900 text-xs font-bold px-3 py-2 rounded-lg shadow-[0_0_10px_rgba(245,158,11,0.3)] shrink-0">
+              Cho phép
+            </button>
+          </div>
+        )}
+
+        {/* Nút Test Thông Báo */}
+        <div className="bg-indigo-500/10 border-b border-indigo-500/30 p-2 flex justify-between items-center px-4">
+          <span className="text-indigo-400 text-xs font-medium">Bấm để thử nghiệm âm thanh & thông báo 👉</span>
+          <button 
+            onClick={() => playAlert("Sắp hết giờ (Thử nghiệm)!", "Đây là cách thông báo sẽ hiện ra khi bạn sắp hết thời gian.", false)} 
+            className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/50 text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 active:bg-indigo-500/40 transition-colors"
+          >
+            Test Thử
+          </button>
+        </div>
+
         {/* Header User */}
         <div className="p-5 bg-gradient-to-b from-emerald-900/40 to-transparent border-b border-white/5 sticky top-0 z-10 backdrop-blur-xl">
           <div className="flex items-center gap-3">
@@ -317,6 +409,13 @@ export default function MemberDashboard() {
           {activeTab === "menu" && (
             <div className="space-y-6">
               {/* Active Session Banner */}
+              {showWarning && (
+                <div className="bg-red-500/20 border border-red-500/50 text-red-300 p-3 mb-4 rounded-xl flex items-center shadow-lg animate-pulse">
+                  <span className="mr-2 text-lg">⚠️</span>
+                  <span className="text-sm font-medium">Phiên của bạn sẽ kết thúc trong vòng {remainingMinutes} phút nữa!</span>
+                </div>
+              )}
+
               {activeSession && (
                 <div className={`p-4 rounded-2xl border ${activeSession.status === 'PENDING' ? 'bg-amber-900/20 border-amber-500/30' : 'bg-emerald-900/20 border-emerald-500/30'}`}>
                   <div className="flex justify-between items-start mb-3">
