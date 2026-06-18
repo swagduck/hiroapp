@@ -21,6 +21,7 @@ export default function MemberDashboard() {
   const [activeTab, setActiveTab] = useState<"menu" | "cart" | "history" | "profile" | "prebook">("menu");
   const [dobInput, setDobInput] = useState("");
   const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [simulatingPayment, setSimulatingPayment] = useState<string | null>(null);
 
   // Extend
   const [isExtending, setIsExtending] = useState(false);
@@ -288,6 +289,11 @@ export default function MemberDashboard() {
 
   const handlePreBook = async (pkgId: string) => {
     try {
+      setSimulatingPayment(pkgId);
+      
+      // Giả lập thời gian ngân hàng xử lý giao dịch (3 giây)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
       setExtending(true);
       const res = await fetch("/api/member/prebook", {
         method: "POST",
@@ -295,7 +301,7 @@ export default function MemberDashboard() {
         body: JSON.stringify({ packageId: pkgId })
       });
       if (res.ok) {
-        toast.success("Đặt chỗ thành công! Vui lòng lưu mã QR để Check-in khi đến quán.");
+        toast.success("Thanh toán thành công! Bạn đã nhận được Mã Check-in.");
         fetchData();
         setActiveTab("menu");
       } else {
@@ -305,6 +311,7 @@ export default function MemberDashboard() {
       toast.error("Lỗi kết nối");
     } finally {
       setExtending(false);
+      setSimulatingPayment(null);
       setExtendPkg(null);
     }
   };
@@ -602,7 +609,14 @@ export default function MemberDashboard() {
                     </div>
                     {pkg.includesDrink && <p className="text-xs text-amber-400 mb-4">✨ Tặng kèm 1 ly nước tự chọn</p>}
                     
-                    <div className="bg-black/30 p-4 rounded-lg mt-3 flex flex-col items-center">
+                    <div className="bg-black/30 p-4 rounded-lg mt-3 flex flex-col items-center relative overflow-hidden">
+                      {simulatingPayment === pkg.id && (
+                        <div className="absolute inset-0 z-10 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                          <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                          <p className="text-purple-400 font-bold text-sm animate-pulse text-center px-4">Đang chờ ngân hàng<br/>xác nhận giao dịch...</p>
+                        </div>
+                      )}
+                      
                       <p className="text-xs text-stone-400 mb-2">Quét mã để thanh toán</p>
                       <img 
                         src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${pkg.price}&addInfo=DAT CHO SPACE CAFE&accountName=SPACE CAFE`} 
@@ -611,10 +625,10 @@ export default function MemberDashboard() {
                       />
                       <button 
                         onClick={() => handlePreBook(pkg.id)}
-                        disabled={extending}
+                        disabled={simulatingPayment !== null}
                         className="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] disabled:opacity-50"
                       >
-                        {extending ? "Đang xử lý..." : "Xác nhận đã Chuyển Khoản"}
+                        Thanh Toán (Giả Lập)
                       </button>
                     </div>
                   </div>
