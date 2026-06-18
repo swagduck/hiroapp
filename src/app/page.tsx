@@ -9,6 +9,7 @@ import MenuTab from "@/components/admin/MenuTab";
 import PackagesTab from "@/components/admin/PackagesTab";
 import OrdersTab from "@/components/admin/OrdersTab";
 import AnalyticsTab from "@/components/AnalyticsTab";
+import ActivityLogTab from "@/components/admin/ActivityLogTab";
 
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Package, PosCartItem, Session } from "@/types";
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const [posSelectedPackage, setPosSelectedPackage] = useState<Package | null>(null);
   const [posCart, setPosCart] = useState<PosCartItem[]>([]);
   const [posLoading, setPosLoading] = useState(false);
+  const [posPaymentStatus, setPosPaymentStatus] = useState<"PAID" | "UNPAID">("PAID");
   const [receiptData, setReceiptData] = useState<Session | null>(null);
 
   // Pause Session States
@@ -179,7 +181,8 @@ export default function Dashboard() {
         body: JSON.stringify({
           packageId: posSelectedPackage?.id,
           orderItems: modifiedOrderItems,
-          orderTotal: drinkTotal
+          orderTotal: drinkTotal,
+          paymentStatus: posPaymentStatus
         })
       });
       
@@ -189,6 +192,7 @@ export default function Dashboard() {
         setPosSelectedPackage(null);
         setPosCart([]);
         setPosStep(1);
+        setPosPaymentStatus("PAID");
         setReceiptData(data);
         refreshData();
       } else {
@@ -237,6 +241,9 @@ export default function Dashboard() {
             Báo cáo doanh thu
           </button>
           <button onClick={() => setActiveTab("sessions")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "sessions" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Phiên sử dụng</button>
+          <button onClick={() => setActiveTab("activity")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "activity" ? "bg-amber-600/20 text-amber-500 font-bold border border-amber-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
+            Nhật ký Giao dịch
+          </button>
           <button onClick={() => setActiveTab("orders")} className={`w-full flex justify-between items-center px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
             <span>Đơn pha chế</span>
             {pendingOrdersCount > 0 && (
@@ -297,6 +304,35 @@ export default function Dashboard() {
             <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600"></div></div>
           ) : activeTab === "overview" ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Overtime Alerts */}
+              {(() => {
+                const overtimeSessions = sessions.filter(s => {
+                  if (s.status !== 'ACTIVE' && s.status !== 'PENDING') return false;
+                  const baseDuration = s.savedMinutesUsed || s.package?.duration;
+                  if (!baseDuration) return false;
+                  const duration = baseDuration + (s.extraMinutes || 0);
+                  const expireTime = new Date(s.startTime).getTime() + duration * 60000;
+                  return expireTime <= currentTime.getTime();
+                });
+                
+                if (overtimeSessions.length === 0) return null;
+                
+                return (
+                  <div className="col-span-1 md:col-span-3 bg-red-500/10 border border-red-500/50 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between animate-pulse">
+                    <div className="flex items-center gap-3 mb-2 md:mb-0">
+                      <div className="w-10 h-10 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                      </div>
+                      <div>
+                        <h3 className="text-red-500 font-bold text-lg">Cảnh Báo Lố Giờ</h3>
+                        <p className="text-stone-300 text-sm">Hiện có <span className="font-bold text-red-400">{overtimeSessions.length} phiên</span> đã hết thời gian sử dụng!</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div className="glass-card p-6">
                 <h3 className="text-stone-400 text-sm font-medium mb-1">Phiên đang hoạt động</h3>
                 <p className="text-3xl font-bold text-white">{sessions.length} <span className="text-sm text-green-400 font-normal">người</span></p>
@@ -395,7 +431,16 @@ export default function Dashboard() {
                                 </button>
                               </div>
                             </td>
-                            <td className="p-4 font-medium text-white">{(session.totalAmount || session.package?.price || 0).toLocaleString('vi-VN')}đ</td>
+                            <td className="p-4 font-medium text-white">
+                              <div className="flex flex-col gap-1">
+                                <span>{(session.totalAmount || session.package?.price || 0).toLocaleString('vi-VN')}đ</span>
+                                {session.paymentStatus === 'UNPAID' ? (
+                                  <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded w-fit">Chưa thu</span>
+                                ) : (
+                                  <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded w-fit">Đã thu</span>
+                                )}
+                              </div>
+                            </td>
                             <td className="p-4 text-right">
                               <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 {session.status === 'PENDING' ? (
@@ -461,6 +506,28 @@ export default function Dashboard() {
                                     <button onClick={() => setSessionToEnd(session.id)} className="text-sm px-3 py-1.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-colors">
                                       Kết thúc
                                     </button>
+                                    {session.paymentStatus === 'UNPAID' && (
+                                      <button 
+                                        onClick={async () => {
+                                          try {
+                                            const res = await fetch(`/api/sessions/${session.id}`, {
+                                              method: 'PUT',
+                                              headers: { 'Content-Type': 'application/json' },
+                                              body: JSON.stringify({ action: 'markPaid' })
+                                            });
+                                            if (res.ok) {
+                                              toast.success("Đã ghi nhận thanh toán!");
+                                              refreshData();
+                                            }
+                                          } catch(e) {
+                                            toast.error("Lỗi kết nối");
+                                          }
+                                        }} 
+                                        className="text-sm px-3 py-1.5 rounded bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 transition-colors"
+                                      >
+                                        Đã Thu Tiền
+                                      </button>
+                                    )}
                                   </>
                                 )}
                               </div>
@@ -477,6 +544,8 @@ export default function Dashboard() {
             <AnalyticsTab />
           ) : activeTab === "sessions" ? (
             <HistoryTab />
+          ) : activeTab === "activity" ? (
+            <ActivityLogTab />
           ) : activeTab === "orders" ? (
             <OrdersTab />
           ) : activeTab === "menu" ? (
@@ -520,6 +589,8 @@ export default function Dashboard() {
         savedTimeResult={savedTimeResult}
         handleUseSavedTime={handleUseSavedTime}
         posLoading={posLoading}
+        posPaymentStatus={posPaymentStatus}
+        setPosPaymentStatus={setPosPaymentStatus}
         handleCompleteOrder={handleCompleteOrder}
       />
 

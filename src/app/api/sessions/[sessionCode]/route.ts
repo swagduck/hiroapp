@@ -55,6 +55,16 @@ export async function PUT(
       return NextResponse.json(updatedSession);
     }
 
+    if (body.action === 'markPaid') {
+      const updatedSession = await prisma.session.update({
+        where: { id: sessionCode },
+        data: {
+          paymentStatus: "PAID"
+        }
+      });
+      return NextResponse.json(updatedSession);
+    }
+
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     console.error("Error updating session:", error);

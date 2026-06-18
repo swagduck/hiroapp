@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { packageId, orderItems, orderTotal } = body;
+    const { packageId, orderItems, orderTotal, paymentStatus = "PAID" } = body;
 
     // Sinh mã ngẫu nhiên 5 ký tự (Ví dụ: A9B21)
     const accessCode = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -47,8 +47,8 @@ export async function POST(request: Request) {
             packageId,
             accessCode,
             startTime: new Date(),
-            status: "PENDING", // Wait for payment confirmation
-            paymentStatus: "UNPAID",
+            status: "ACTIVE", // Đã chốt payment status thì active luôn
+            paymentStatus: paymentStatus,
             totalAmount,
             freeDrinkClaimed: true // Đã lấy ly nước ngay tại quầy
           },
@@ -81,8 +81,8 @@ export async function POST(request: Request) {
           packageId,
           accessCode,
           startTime: new Date(),
-          status: "PENDING", // Wait for payment confirmation
-          paymentStatus: "UNPAID",
+          status: "ACTIVE", // Đã chốt payment status thì active luôn
+          paymentStatus: paymentStatus,
           totalAmount
         },
         include: {

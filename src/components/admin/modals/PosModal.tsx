@@ -21,6 +21,8 @@ interface PosModalProps {
   handleUseSavedTime: () => void;
   
   posLoading: boolean;
+  posPaymentStatus?: "PAID" | "UNPAID";
+  setPosPaymentStatus?: (status: "PAID" | "UNPAID") => void;
   handleCompleteOrder: () => void;
 }
 
@@ -28,7 +30,7 @@ export default function PosModal({
   isPosOpen, setIsPosOpen, posStep, setPosStep, packages, menuItems,
   posSelectedPackage, setPosSelectedPackage, posCart, setPosCart,
   savedTimePhone, setSavedTimePhone, isCheckingSavedTime, handleCheckSavedTime,
-  savedTimeResult, handleUseSavedTime, posLoading, handleCompleteOrder
+  savedTimeResult, handleUseSavedTime, posLoading, posPaymentStatus, setPosPaymentStatus, handleCompleteOrder
 }: PosModalProps) {
   if (!isPosOpen) return null;
 
@@ -272,6 +274,31 @@ export default function PosModal({
                     })()}đ
                   </span>
                 </div>
+                
+                {setPosPaymentStatus && (
+                  <div className="flex w-full bg-black/20 p-1 rounded-2xl mb-6 border border-white/5 relative">
+                    <button
+                      onClick={() => setPosPaymentStatus("PAID")}
+                      className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
+                        posPaymentStatus === "PAID" 
+                          ? "bg-emerald-600/50 border border-emerald-500/50 text-white shadow-lg" 
+                          : "text-stone-500 hover:text-stone-300"
+                      }`}
+                    >
+                      Đã Thu Tiền Ngay
+                    </button>
+                    <button
+                      onClick={() => setPosPaymentStatus("UNPAID")}
+                      className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
+                        posPaymentStatus === "UNPAID" 
+                          ? "bg-amber-600/50 border border-amber-500/50 text-white shadow-lg" 
+                          : "text-stone-500 hover:text-stone-300"
+                      }`}
+                    >
+                      Khách Trả Sau (Ghi Nợ)
+                    </button>
+                  </div>
+                )}
                 
                 <button 
                   disabled={posLoading}
