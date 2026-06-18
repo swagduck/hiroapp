@@ -200,6 +200,7 @@ export default function CustomerOrderPage() {
       if (res.ok) {
         const resData = await res.json();
         if (resData.orderurl) {
+          toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
           window.location.href = resData.orderurl;
           return;
         }
@@ -228,6 +229,7 @@ export default function CustomerOrderPage() {
       if (res.ok) {
         const resData = await res.json();
         if (resData.orderurl) {
+          toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
           window.location.href = resData.orderurl;
           return;
         }

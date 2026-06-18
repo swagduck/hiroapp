@@ -222,6 +222,7 @@ export default function MemberDashboard() {
         if (res.ok) {
           const resData = await res.json();
           if (resData.orderurl) {
+            toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
             window.location.href = resData.orderurl;
             return;
           }
@@ -350,6 +351,7 @@ export default function MemberDashboard() {
       if (res.ok) {
         const data = await res.json();
         if (data.orderurl) {
+          toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
           window.location.href = data.orderurl;
         } else {
           toast.error("Không nhận được URL thanh toán");
@@ -380,6 +382,7 @@ export default function MemberDashboard() {
       if (res.ok) {
         const resData = await res.json();
         if (resData.orderurl) {
+          toast.loading("Đang chuyển hướng ZaloPay...", { duration: 3000 });
           window.location.href = resData.orderurl;
           return;
         }
