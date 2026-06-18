@@ -52,7 +52,17 @@ export async function POST(request: Request) {
       if (updateFreeDrink) {
         await tx.session.update({
           where: { id: sessionId },
-          data: { freeDrinkClaimed: true }
+          data: { 
+            freeDrinkClaimed: true,
+            totalAmount: { increment: totalAmount }
+          }
+        });
+      } else {
+        await tx.session.update({
+          where: { id: sessionId },
+          data: { 
+            totalAmount: { increment: totalAmount }
+          }
         });
       }
 

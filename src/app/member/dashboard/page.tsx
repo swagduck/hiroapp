@@ -500,6 +500,44 @@ export default function MemberDashboard() {
                       })()}
                     </div>
                   )}
+
+                  {/* Drink Orders of Active Session */}
+                  {activeSession.orders && activeSession.orders.filter((o: any) => !o.isExtension).length > 0 && (
+                    <div className="mt-4 border-t border-white/5 pt-4">
+                      <h4 className="text-sm font-bold text-stone-300 mb-3">Đơn nước của bạn</h4>
+                      <div className="space-y-3">
+                        {activeSession.orders.filter((o: any) => !o.isExtension).map((order: any, idx: number) => (
+                          <div key={idx} className="bg-black/20 p-3 rounded-lg border border-white/5">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-xs text-stone-400">Đơn #{idx + 1}</span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${order.status === 'SERVED' ? 'bg-emerald-500/20 text-emerald-400' : order.status === 'CANCELLED' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                {order.status === 'SERVED' ? 'ĐÃ XONG' : order.status === 'CANCELLED' ? 'ĐÃ HỦY' : 'ĐANG CHỜ'}
+                              </span>
+                            </div>
+                            <div className="space-y-1">
+                              {order.items.map((item: any, i: number) => (
+                                <div key={i} className="flex justify-between text-xs text-stone-300">
+                                  <span>{item.quantity}x {item.menuItem?.name}</span>
+                                  <span>{(item.price * item.quantity).toLocaleString('vi-VN')}đ</span>
+                                </div>
+                              ))}
+                            </div>
+                            {order.status === 'PENDING' && (
+                              <div className="mt-3 pt-3 border-t border-white/10 flex flex-col items-center">
+                                <p className="text-xs mb-2 text-amber-400">Quét mã thanh toán đơn này</p>
+                                <img 
+                                  src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${order.totalAmount || 0}&addInfo=${activeSession.accessCode}&accountName=SPACE CAFE`} 
+                                  className="w-24 h-24 mx-auto rounded border border-white/10" 
+                                  alt="QR Thanh toán"
+                                />
+                                <p className="text-xs font-bold text-emerald-400 mt-2">{(order.totalAmount || 0).toLocaleString('vi-VN')}đ</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

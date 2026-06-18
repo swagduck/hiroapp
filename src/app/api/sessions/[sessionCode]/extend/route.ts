@@ -19,18 +19,25 @@ export async function POST(
     const pkg = await prisma.package.findUnique({ where: { id: packageId } });
     if (!pkg) return NextResponse.json({ error: "Package not found" }, { status: 404 });
 
-    const order = await prisma.order.create({
-      data: {
-        sessionId: session.id,
-        userId: session.userId,
-        status: "PENDING",
-        totalAmount: pkg.price,
-        isExtension: true,
-        extensionPackageId: pkg.id,
-      }
+    await prisma.$transaction(async (tx) => {
+      await tx.order.create({
+        data: {
+          sessionId: session.id,
+          userId: session.userId,
+          status: "PENDING",
+          totalAmount: pkg.price,
+          isExtension: true,
+          extensionPackageId: pkg.id,
+        }
+      });
+
+      await tx.session.update({
+        where: { id: session.id },
+        data: { totalAmount: { increment: pkg.price } }
+      });
     });
 
-    return NextResponse.json(order);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Internal Error" }, { status: 500 });

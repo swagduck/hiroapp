@@ -35,6 +35,14 @@ export async function PUT(
       }
     }
 
+    // Decrement session total if cancelled
+    if (status === "CANCELLED" && existingOrder.status !== "CANCELLED" && existingOrder.sessionId) {
+      await prisma.session.update({
+        where: { id: existingOrder.sessionId },
+        data: { totalAmount: { decrement: existingOrder.totalAmount } }
+      });
+    }
+
     return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error("Error updating order:", error);

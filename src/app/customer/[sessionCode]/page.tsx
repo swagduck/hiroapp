@@ -511,6 +511,18 @@ export default function CustomerOrderPage() {
                         <span>{(oi.price * oi.quantity).toLocaleString('vi-VN')}đ</span>
                       </div>
                     ))}
+                    
+                    {order.status === 'PENDING' && !order.isExtension && (
+                      <div className="mt-3 pt-3 border-t border-white/10 flex flex-col items-center">
+                        <p className="text-xs mb-2 text-amber-400">Quét mã thanh toán đơn nước này</p>
+                        <img 
+                          src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${order.totalAmount || 0}&addInfo=${session.accessCode}&accountName=SPACE CAFE`} 
+                          className="w-24 h-24 mx-auto rounded border border-white/10" 
+                          alt="QR Thanh toán"
+                        />
+                        <p className="text-xs font-bold text-emerald-400 mt-2">{(order.totalAmount || 0).toLocaleString('vi-VN')}đ</p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
