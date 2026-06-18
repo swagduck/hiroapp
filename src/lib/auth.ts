@@ -5,6 +5,7 @@ interface JwtPayload {
   role: string;
   name?: string;
   customerCode?: string;
+  tokenVersion?: number;
 }
 
 export const getJwtSecretKey = () => {

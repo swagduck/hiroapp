@@ -30,12 +30,20 @@ export async function GET(request: Request) {
         dob: true,
         points: true,
         freeDrinkTokens: true,
-        lastBirthdayClaimYear: true
+        lastBirthdayClaimYear: true,
+        tokenVersion: true
       }
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // CHECK TOKEN VERSION (LAST LOGIN WINS)
+    if (user.tokenVersion !== verifiedToken.tokenVersion) {
+      const response = NextResponse.json({ error: "Phiên đăng nhập đã hết hạn hoặc tài khoản đang được đăng nhập ở thiết bị khác." }, { status: 401 });
+      response.cookies.delete("auth_token");
+      return response;
     }
 
     // Birthday Logic Check
@@ -66,7 +74,8 @@ export async function GET(request: Request) {
               dob: true,
               points: true,
               freeDrinkTokens: true,
-              lastBirthdayClaimYear: true
+              lastBirthdayClaimYear: true,
+              tokenVersion: true
             }
           });
           user = updatedUser;
@@ -97,6 +106,13 @@ export async function PUT(request: Request) {
 
     const user = await prisma.user.findUnique({ where: { id: verifiedToken.userId } });
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+    // CHECK TOKEN VERSION (LAST LOGIN WINS)
+    if (user.tokenVersion !== verifiedToken.tokenVersion) {
+      const response = NextResponse.json({ error: "Phiên đăng nhập đã hết hạn hoặc tài khoản đang được đăng nhập ở thiết bị khác." }, { status: 401 });
+      response.cookies.delete("auth_token");
+      return response;
+    }
 
     if (user.dob && dob !== user.dob) {
       return NextResponse.json({ error: "Bạn đã cập nhật ngày sinh rồi. Vui lòng liên hệ nhân viên nếu muốn thay đổi." }, { status: 400 });

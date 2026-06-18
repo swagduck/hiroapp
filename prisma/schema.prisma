@@ -30,6 +30,7 @@ model User {
   points        Int @default(0)
   freeDrinkTokens Int @default(0)
   lastBirthdayClaimYear Int?
+  tokenVersion  Int @default(0)
 
   sessions  Session[]
   orders    Order[]
@@ -53,6 +54,7 @@ model Package {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Quan hệ
   sessions    Session[]
 }
 

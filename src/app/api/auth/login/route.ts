@@ -34,10 +34,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { tokenVersion: { increment: 1 } }
+    });
+
     // Đăng nhập thành công, tạo JWT
     const token = await signJwtToken({
-      userId: user.id,
-      role: user.role,
+      userId: updatedUser.id,
+      role: updatedUser.role,
+      tokenVersion: updatedUser.tokenVersion,
     });
 
     const response = NextResponse.json(

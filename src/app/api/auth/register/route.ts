@@ -35,6 +35,7 @@ export async function POST(request: Request) {
         role: "CUSTOMER",
         customerCode: "KH" + Math.floor(10000 + Math.random() * 90000).toString(),
         dob: dob || null,
+        tokenVersion: 1,
       },
     });
 
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
     const token = await signJwtToken({
       userId: user.id,
       role: user.role,
+      tokenVersion: user.tokenVersion,
     });
 
     const response = NextResponse.json(
