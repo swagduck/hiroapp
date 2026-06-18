@@ -38,6 +38,7 @@ export interface Session {
   packageId: string;
   package?: Package;
   user?: User;
+  paymentStatus?: 'PAID' | 'UNPAID';
   savedMinutesUsed?: number;
   extraMinutes?: number;
   orders?: Order[];
