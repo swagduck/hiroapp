@@ -369,27 +369,26 @@ export default function MemberDashboard() {
                 <span>Bảo lưu: {member?.savedMinutes || 0}p</span>
                 <span className="text-stone-400">|</span>
                 <span className="text-amber-400">Điểm: {member?.points || 0}</span>
-                {member?.points >= 100 && (
-                  <button 
-                    onClick={async () => {
-                      if (!confirm("Đổi 100 điểm lấy 60 phút bảo lưu?")) return;
-                      try {
-                        const res = await fetch("/api/users/redeem-points", { method: "POST" });
-                        if (res.ok) {
-                          toast.success("Đổi điểm thành công!");
-                          fetchData();
-                        } else {
-                          toast.error("Lỗi đổi điểm!");
-                        }
-                      } catch (e) {
-                        toast.error("Lỗi kết nối");
+                <button 
+                  disabled={!member || member.points < 100}
+                  onClick={async () => {
+                    if (!confirm("Đổi 100 điểm lấy 60 phút bảo lưu?")) return;
+                    try {
+                      const res = await fetch("/api/users/redeem-points", { method: "POST" });
+                      if (res.ok) {
+                        toast.success("Đổi điểm thành công!");
+                        fetchData();
+                      } else {
+                        toast.error("Lỗi đổi điểm!");
                       }
-                    }}
-                    className="ml-1 px-2 py-0.5 bg-amber-500/20 border border-amber-500/50 text-amber-400 rounded hover:bg-amber-500/40 transition-colors text-xs font-bold"
-                  >
-                    Đổi 1h
-                  </button>
-                )}
+                    } catch (e) {
+                      toast.error("Lỗi kết nối");
+                    }
+                  }}
+                  className={`ml-1 px-2 py-0.5 rounded text-xs font-bold transition-colors ${member?.points >= 100 ? 'bg-amber-500/20 border border-amber-500/50 text-amber-400 hover:bg-amber-500/40' : 'bg-stone-800 border border-stone-700 text-stone-500 cursor-not-allowed'}`}
+                >
+                  Đổi 1h
+                </button>
               </div>
             </div>
             <button
@@ -745,10 +744,30 @@ export default function MemberDashboard() {
               
               {/* Thẻ Điểm & Quà */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gradient-to-br from-amber-500/20 to-orange-600/20 border border-amber-500/30 p-4 rounded-2xl flex flex-col items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                <div className="bg-gradient-to-br from-amber-500/20 to-orange-600/20 border border-amber-500/30 p-4 rounded-2xl flex flex-col items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.1)] relative">
                   <span className="text-3xl mb-1">🌟</span>
                   <span className="text-2xl font-bold text-amber-400">{member?.points || 0}</span>
                   <span className="text-[10px] text-amber-500/80 font-bold uppercase tracking-widest mt-1">Điểm Tích Lũy</span>
+                  <button 
+                    disabled={!member || member.points < 100}
+                    onClick={async () => {
+                      if (!confirm("Đổi 100 điểm lấy 60 phút bảo lưu?")) return;
+                      try {
+                        const res = await fetch("/api/users/redeem-points", { method: "POST" });
+                        if (res.ok) {
+                          toast.success("Đổi điểm thành công!");
+                          fetchData();
+                        } else {
+                          toast.error("Lỗi đổi điểm!");
+                        }
+                      } catch (e) {
+                        toast.error("Lỗi kết nối");
+                      }
+                    }}
+                    className={`mt-3 px-3 py-1.5 rounded-lg text-[10px] font-bold w-full transition-all ${member?.points >= 100 ? 'bg-amber-500 hover:bg-amber-400 text-stone-900 shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-black/40 text-stone-500 cursor-not-allowed'}`}
+                  >
+                    ĐỔI 1 GIỜ BẢO LƯU (100đ)
+                  </button>
                 </div>
                 <div className="bg-gradient-to-br from-pink-500/20 to-rose-600/20 border border-pink-500/30 p-4 rounded-2xl flex flex-col items-center justify-center shadow-[0_0_15px_rgba(236,72,153,0.1)]">
                   <span className="text-3xl mb-1">🥤</span>
