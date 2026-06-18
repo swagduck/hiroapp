@@ -49,7 +49,11 @@ export async function POST(request: Request) {
     });
 
     // Call ZaloPay Gateway
-    const embed_data = JSON.stringify({ redirecturl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/payment/result` });
+    const host = request.headers.get("host");
+    const protocol = host?.includes("localhost") ? "http" : "https";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+    
+    const embed_data = JSON.stringify({ redirecturl: `${appUrl}/payment/result` });
     const items = JSON.stringify([{ id: pkg.id, name: pkg.name }]);
     const amount = pkg.price;
     const description = `Thanh toán gói ${pkg.name}`;
