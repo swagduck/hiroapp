@@ -312,8 +312,8 @@ export default function Dashboard() {
       <main className="flex-1 flex flex-col overflow-hidden relative w-full">
         <header className="h-auto py-3 md:h-16 glass border-b border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 z-10 relative gap-3 md:gap-0">
           <div className="w-full md:w-auto flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-white capitalize">{activeTab === "overview" ? "Tổng quan hoạt động" : activeTab}</h2>
-            <button onClick={handleLogout} className="md:hidden text-red-400 text-sm">Đăng xuất</button>
+            <h2 className="text-lg font-semibold text-white capitalize">{activeTab === "overview" ? "Tổng quan hoạt động" : activeTab === "settings" ? "Cài đặt & Khác" : activeTab}</h2>
+            <button onClick={handleLogout} className="md:hidden p-2 bg-red-500/10 text-red-400 text-sm rounded-lg font-medium">Đăng xuất</button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <a href="/staff/check-in" target="_blank" rel="noreferrer" className="px-3 md:px-4 py-2 bg-stone-900 border border-white/10 hover:bg-stone-800 text-stone-300 rounded-lg text-xs md:text-sm font-medium transition-colors flex items-center gap-1 md:gap-2">
@@ -385,7 +385,9 @@ export default function Dashboard() {
                 <div className="p-6 border-b border-white/5 flex justify-between items-center">
                   <h3 className="text-lg font-medium text-white">Danh sách Phiên</h3>
                 </div>
-                <div className="overflow-x-auto">
+                
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-white/5 text-stone-400 text-sm border-b border-white/10">
@@ -571,6 +573,148 @@ export default function Dashboard() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden flex flex-col gap-4 p-4">
+                  {sessions.length === 0 ? (
+                    <div className="text-center text-stone-500 p-4">Chưa có phiên nào hoạt động</div>
+                  ) : sessions.map((session) => {
+                    const startTime = new Date(session.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        
+                    let timeStatus: React.ReactNode = "Không giới hạn";
+                    let baseDuration = session.savedMinutesUsed || session.package?.duration;
+                    const duration = baseDuration ? baseDuration + (session.extraMinutes || 0) : null;
+                    
+                    let canPause = false;
+                    if (duration) {
+                      const expireTime = new Date(session.startTime).getTime() + duration * 60000;
+                      const remaining = expireTime - currentTime.getTime();
+                      
+                      if (remaining <= 0) {
+                        timeStatus = <span className="text-red-500 font-bold bg-red-500/10 px-2 py-1 rounded text-xs">Đã hết giờ</span>;
+                      } else {
+                        canPause = true;
+                        const hours = Math.floor(remaining / 3600000);
+                        const minutes = Math.floor((remaining % 3600000) / 60000);
+                        timeStatus = <span className="text-green-400 text-xs">Còn {hours}h {minutes}m</span>;
+                      }
+                    }
+
+                    const hasPendingExtension = session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+
+                    return (
+                      <div key={session.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden">
+                        {session.status === 'PENDING' && (
+                          <div className="absolute top-0 right-0 bg-amber-500 text-stone-900 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                            Chờ duyệt
+                          </div>
+                        )}
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-mono text-emerald-500 font-bold text-lg">#{session.accessCode}</span>
+                              {hasPendingExtension && (
+                                <span className="text-[10px] text-purple-400 font-bold bg-purple-500/20 px-2 py-0.5 rounded animate-pulse">
+                                  +Xin gia hạn
+                               </span>
+                              )}
+                            </div>
+                            <p className="text-sm font-medium text-stone-300">{session.package?.name || "Không rõ"}</p>
+                            {session.user ? (
+                              <p className="text-xs text-amber-400 mt-1">👑 Hội viên: {session.user.name}</p>
+                            ) : (
+                              <p className="text-xs text-stone-500 mt-1">Khách vãng lai</p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-stone-400 mb-1">{session.status === 'PENDING' ? '---' : startTime}</p>
+                            <div>{timeStatus}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-end border-t border-white/5 pt-3 mt-1">
+                          <div>
+                            <p className="text-xs text-stone-400 mb-1">Cần thu</p>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-white">{(session.totalAmount || session.package?.price || 0).toLocaleString('vi-VN')}đ</span>
+                              {session.paymentStatus === 'UNPAID' ? (
+                                <span className="text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">Chưa thu</span>
+                              ) : (
+                                <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">Đã thu</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <a href={`/customer/${session.accessCode}`} target="_blank" rel="noreferrer" className="p-2 bg-blue-500/20 text-blue-400 rounded-lg" title="Mở Menu KH">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+                            </a>
+                            <button onClick={() => setReceiptData(session)} className="p-2 bg-white/10 text-white rounded-lg" title="In Biên Lai">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                            </button>
+                            <button onClick={() => setSessionToEnd(session.id)} className="p-2 bg-red-500/20 text-red-400 rounded-lg" title="Kết thúc">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Mobile Action Buttons for Pending or Unpaid */}
+                        {(session.status === 'PENDING' || session.paymentStatus === 'UNPAID' || hasPendingExtension) && (
+                          <div className="flex flex-col gap-2 border-t border-white/5 pt-3 mt-1">
+                            {session.status === 'PENDING' && (
+                              <button onClick={() => handleApproveSession(session.id)} className="w-full py-2 rounded-lg bg-emerald-500 text-white font-bold text-sm">
+                                Đã nhận tiền & Bắt đầu
+                              </button>
+                            )}
+                            {hasPendingExtension && (
+                              <div className="grid grid-cols-2 gap-2">
+                                <button onClick={async () => {
+                                  const extOrder = session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+                                  if (!extOrder) return;
+                                  try {
+                                    const res = await fetch(`/api/orders/${extOrder.id}/approve-extension`, { method: "POST" });
+                                    if (res.ok) refreshData();
+                                  } catch(e) {}
+                                }} className="py-2 rounded-lg bg-purple-500 text-white font-bold text-sm">
+                                  Duyệt gia hạn
+                                </button>
+                                <button onClick={async () => {
+                                  const extOrder = session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+                                  if (!extOrder) return;
+                                  if (!confirm("Từ chối gia hạn?")) return;
+                                  try {
+                                    const res = await fetch(`/api/orders/${extOrder.id}`, { 
+                                      method: "PUT",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ status: "CANCELLED" })
+                                    });
+                                    if (res.ok) refreshData();
+                                  } catch(e) {}
+                                }} className="py-2 rounded-lg bg-stone-800 text-stone-300 font-bold text-sm border border-white/10">
+                                  Từ chối
+                                </button>
+                              </div>
+                            )}
+                            {session.paymentStatus === 'UNPAID' && session.status !== 'PENDING' && (
+                              <button onClick={async () => {
+                                try {
+                                  const res = await fetch(`/api/sessions/${session.id}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ action: 'markPaid' })
+                                  });
+                                  if (res.ok) refreshData();
+                                } catch(e) {}
+                              }} className="w-full py-2 rounded-lg bg-blue-500/20 text-blue-400 font-bold text-sm border border-blue-500/30">
+                                Xác nhận Đã Thu Tiền
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ) : activeTab === "analytics" ? (
@@ -587,6 +731,81 @@ export default function Dashboard() {
             <PackagesTab />
           ) : activeTab === "staff" && currentUserRole === 'ADMIN' ? (
             <StaffTab />
+          ) : activeTab === "settings" ? (
+            <div className="flex flex-col gap-4 max-w-md mx-auto w-full pt-4 pb-24">
+              <h3 className="text-xl font-bold text-white mb-2">Cài đặt & Tính năng</h3>
+              
+              {currentUserRole === 'ADMIN' && (
+                <button onClick={() => setActiveTab('analytics')} className="bg-stone-900 border border-white/10 p-5 rounded-2xl flex items-center justify-between text-left hover:bg-stone-800 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white text-lg">Báo cáo doanh thu</h4>
+                      <p className="text-sm text-stone-400">Xem biểu đồ và thống kê</p>
+                    </div>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              )}
+
+              <button onClick={() => setActiveTab('activity')} className="bg-stone-900 border border-white/10 p-5 rounded-2xl flex items-center justify-between text-left hover:bg-stone-800 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-lg">Nhật ký Giao dịch</h4>
+                    <p className="text-sm text-stone-400">Xem lịch sử hoạt động</p>
+                  </div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+
+              {currentUserRole === 'ADMIN' && (
+                <>
+                  <button onClick={() => setActiveTab('packages')} className="bg-stone-900 border border-white/10 p-5 rounded-2xl flex items-center justify-between text-left hover:bg-stone-800 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-lg">Cài đặt Gói cước</h4>
+                        <p className="text-sm text-stone-400">Quản lý các gói giờ</p>
+                      </div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+
+                  <button onClick={() => setActiveTab('staff')} className="bg-stone-900 border border-white/10 p-5 rounded-2xl flex items-center justify-between text-left hover:bg-stone-800 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-lg">Quản lý Tài khoản</h4>
+                        <p className="text-sm text-stone-400">Danh sách nhân viên</p>
+                      </div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                </>
+              )}
+
+              <a href="/checkin" target="_blank" rel="noreferrer" className="bg-emerald-900/20 border border-emerald-500/30 p-5 rounded-2xl flex items-center justify-between text-left hover:bg-emerald-900/40 transition-colors mt-2">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-emerald-400 text-lg">Màn hình Check-in</h4>
+                    <p className="text-sm text-emerald-500/70">Mở trên thiết bị cho khách</p>
+                  </div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </div>
           ) : null}
         </div>
       </main>
