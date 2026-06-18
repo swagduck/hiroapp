@@ -129,6 +129,23 @@ export default function MemberDashboard() {
               }
             }).catch(console.error);
           }
+
+          // Chủ động truy vấn ZaloPay cho các đơn hàng UNPAID
+          if (s.orders && s.orders.length > 0) {
+            s.orders.forEach((o: any) => {
+              if (o.paymentStatus === "UNPAID" && o.transId) {
+                fetch("/api/member/check-payment", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ transId: o.transId })
+                }).then(r => r.json()).then(data => {
+                  if (data.status === "PREPARING" || data.status === "SERVED" || data.status === "CANCELLED") {
+                    fetchData();
+                  }
+                }).catch(console.error);
+              }
+            });
+          }
         } else {
           setActiveSession(null);
         }

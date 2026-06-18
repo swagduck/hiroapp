@@ -89,10 +89,32 @@ export default function CustomerOrderPage() {
     try {
       const res = await fetch(`/api/sessions/${sessionCode}?t=${new Date().getTime()}`, { cache: 'no-store' });
       if (res.ok) {
-        setSession(await res.json());
+        const s = await res.json();
+        setSession(s);
+
+        // Chủ động truy vấn ZaloPay cho các đơn hàng UNPAID
+        if (s.orders && s.orders.length > 0) {
+          s.orders.forEach((o: any) => {
+            if (o.paymentStatus === "UNPAID" && o.transId) {
+              fetch("/api/member/check-payment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ transId: o.transId })
+              }).then(r => r.json()).then(data => {
+                if (data.status === "PREPARING" || data.status === "SERVED" || data.status === "CANCELLED") {
+                  fetchSession();
+                }
+              }).catch(console.error);
+            }
+          });
+        }
+      } else {
+        setSession(null);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
