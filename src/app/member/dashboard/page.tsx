@@ -100,7 +100,13 @@ export default function MemberDashboard() {
         setMember(userData);
         if (userData.dob) setDobInput(userData.dob);
       } else {
-        router.push("/customer");
+        const errorData = await meRes.json().catch(() => null);
+        if (errorData?.error) {
+          toast.error(errorData.error);
+        } else {
+          toast.error("Phiên đăng nhập không hợp lệ");
+        }
+        router.push("/login");
         return;
       }
 
