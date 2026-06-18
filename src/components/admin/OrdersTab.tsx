@@ -126,12 +126,24 @@ export default function OrdersTab() {
                       <span className="bg-stone-800 text-stone-300 text-xs px-2 py-1 rounded font-mono">Phiên/Mã: {order.session?.accessCode || "Không rõ"}</span>
                       <p className="text-xs text-stone-500 mt-1">{new Date(order.createdAt).toLocaleTimeString('vi-VN')}</p>
                     </div>
-                    <button 
-                      onClick={() => updateOrderStatus(order.id, "SERVED")}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-[0_0_15px_rgba(5,150,105,0.3)]"
-                    >
-                      ✓ Hoàn thành
-                    </button>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => {
+                          if (confirm("Xác nhận hủy đơn nước này?")) {
+                            updateOrderStatus(order.id, "CANCELLED");
+                          }
+                        }}
+                        className="bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Hủy
+                      </button>
+                      <button 
+                        onClick={() => updateOrderStatus(order.id, "SERVED")}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-[0_0_15px_rgba(5,150,105,0.3)]"
+                      >
+                        ✓ Hoàn thành
+                      </button>
+                    </div>
                   </div>
                   <ul className="space-y-2 mt-4">
                     {order.items.map((item: any) => (
