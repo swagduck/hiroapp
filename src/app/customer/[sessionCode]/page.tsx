@@ -362,7 +362,7 @@ export default function CustomerOrderPage() {
       {/* EXTEND UI */}
       <div className="mx-4 mt-4">
         {(() => {
-          const pendingExtension = session?.orders?.find((o: any) => o.isExtension && o.paymentStatus === 'UNPAID');
+          const pendingExtension = session?.orders?.find((o: any) => o.isExtension && o.paymentStatus === 'UNPAID' && o.status !== 'CANCELLED');
           if (pendingExtension) {
             return (
               <div className="mt-4 flex flex-col items-center bg-stone-900/50 p-4 rounded-xl mx-auto border border-stone-500/30">
@@ -539,7 +539,7 @@ export default function CustomerOrderPage() {
                       </div>
                     ))}
                     
-                    {order.paymentStatus === 'UNPAID' && !order.isExtension && (
+                    {order.paymentStatus === 'UNPAID' && !order.isExtension && order.status !== 'CANCELLED' && (
                       <div className="mt-3 pt-3 border-t border-white/10 flex flex-col items-center text-center">
                         <p className="text-xs mb-2 text-stone-400">Đơn hàng này chưa hoàn tất thanh toán ZaloPay.</p>
                         <p className="text-xs font-bold text-amber-500 mt-1">{(order.totalAmount || 0).toLocaleString('vi-VN')}đ</p>

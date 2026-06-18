@@ -551,7 +551,7 @@ export default function MemberDashboard() {
                   {activeSession.status === 'ACTIVE' && (
                     <div className="mt-2 border-t border-white/5 pt-3">
                       {(() => {
-                        const pendingExtension = activeSession.orders?.find((o: any) => o.isExtension && o.paymentStatus === 'UNPAID');
+                        const pendingExtension = activeSession.orders?.find((o: any) => o.isExtension && o.paymentStatus === 'UNPAID' && o.status !== 'CANCELLED');
                         if (pendingExtension) {
                           return (
                             <div className="mt-2 flex flex-col items-center bg-stone-900/50 p-3 rounded-xl mx-auto border border-amber-500/30">
@@ -804,7 +804,7 @@ export default function MemberDashboard() {
                           </div>
                         ))}
                       </div>
-                      {order.paymentStatus === 'UNPAID' && (
+                      {order.paymentStatus === 'UNPAID' && order.status !== 'CANCELLED' && (
                         <div className="mt-3 pt-3 border-t border-emerald-500/20 flex flex-col items-center bg-black/20 rounded-lg pb-3">
                           <p className="text-xs mt-3 mb-1 text-stone-400">Đơn hàng này chờ thanh toán ZaloPay</p>
                           <p className="text-sm font-bold text-amber-500 mt-1">{(order.totalAmount || 0).toLocaleString('vi-VN')}đ</p>
