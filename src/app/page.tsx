@@ -280,6 +280,13 @@ export default function Dashboard() {
               <button onClick={() => setActiveTab("staff")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "staff" ? "bg-blue-600/20 text-blue-500 font-bold border border-blue-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Quản lý Tài khoản</button>
             </>
           )}
+
+          <div className="pt-4 mt-2 border-t border-white/5">
+            <button onClick={() => window.open("/checkin", "_blank")} className="w-full text-left px-4 py-3 rounded-xl bg-purple-600/20 text-purple-400 font-bold border border-purple-500/30 hover:bg-purple-600/30 transition-all duration-200 flex items-center justify-between group">
+              <span>Màn hình Check-in</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50 group-hover:opacity-100 transition-opacity"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </button>
+          </div>
         </nav>
         <div className="p-4 border-t border-white/10">
           <div className="flex items-center justify-between">
