@@ -84,6 +84,7 @@ model Session {
   accessCode  String   @unique // Access code for Wi-Fi / tracking
   freeDrinkClaimed Boolean @default(false) // Trạng thái đã lấy ly nước miễn phí chưa (nếu gói là combo)
   savedMinutesUsed Int? // Số phút bảo lưu được dùng cho phiên này (nếu có)
+  extraMinutes Int @default(0) // Số phút được gia hạn thêm
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -130,6 +131,10 @@ model Order {
   totalAmount Float
   
   items       OrderItem[]
+  
+  // Extension Fields
+  isExtension Boolean @default(false)
+  extensionPackageId String? @db.ObjectId
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

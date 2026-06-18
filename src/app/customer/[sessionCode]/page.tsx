@@ -178,7 +178,8 @@ export default function CustomerOrderPage() {
     }
   };
 
-  const duration = session?.savedMinutesUsed || session?.package?.duration;
+  const baseDuration = session?.savedMinutesUsed || session?.package?.duration;
+  const duration = baseDuration ? baseDuration + (session?.extraMinutes || 0) : null;
   const expireTime = duration ? new Date(session.startTime).getTime() + duration * 60000 : null;
   const remainingMs = expireTime ? expireTime - now.getTime() : null;
   const remainingMinutes = remainingMs ? Math.ceil(remainingMs / 60000) : null;

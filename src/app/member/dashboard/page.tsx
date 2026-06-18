@@ -16,6 +16,11 @@ export default function MemberDashboard() {
   const [dobInput, setDobInput] = useState("");
   const [updatingProfile, setUpdatingProfile] = useState(false);
 
+  // Extend
+  const [isExtending, setIsExtending] = useState(false);
+  const [extendPkg, setExtendPkg] = useState<string | null>(null);
+  const [extending, setExtending] = useState(false);
+
   // Mua hàng
   const [packages, setPackages] = useState<any[]>([]);
   const [menuItems, setMenuItems] = useState<any[]>([]);
@@ -170,6 +175,30 @@ export default function MemberDashboard() {
   const getDiscountAmount = () => {
     let totalDrinksOriginal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     return totalDrinksOriginal * 0.1;
+  };
+
+  const handleExtend = async () => {
+    if (!extendPkg) return toast.error("Vui lòng chọn 1 gói!");
+    setExtending(true);
+    try {
+      const res = await fetch(`/api/sessions/${activeSession.accessCode}/extend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packageId: extendPkg })
+      });
+      if (res.ok) {
+        toast.success("Đã gửi yêu cầu gia hạn! Vui lòng ra quầy hoặc đợi thu ngân duyệt.");
+        setIsExtending(false);
+        setExtendPkg(null);
+        fetchData();
+      } else {
+        toast.error("Có lỗi xảy ra");
+      }
+    } catch(e) {
+      toast.error("Lỗi kết nối");
+    } finally {
+      setExtending(false);
+    }
   };
 
   if (loading) return <div className="min-h-screen bg-stone-950 flex justify-center items-center"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-500"></div></div>;
@@ -419,9 +448,52 @@ export default function MemberDashboard() {
                   )}
 
                   {activeSession.status === 'ACTIVE' && (
-                    <button onClick={() => router.push(`/customer/${activeSession.accessCode}`)} className="w-full mt-4 bg-emerald-600/20 border border-emerald-500 hover:bg-emerald-600/30 text-emerald-400 py-3 rounded-xl font-bold transition-colors">
-                      Vào Menu Gọi Thêm Nước
-                    </button>
+                    <>
+                      {activeSession.orders?.find((o: any) => o.isExtension && o.status === 'PENDING') ? (
+                        <div className="mt-4 p-3 border border-amber-500/30 bg-amber-900/20 rounded-xl text-center">
+                          <p className="text-amber-400 text-sm font-bold animate-pulse">Đang chờ thu ngân duyệt gia hạn...</p>
+                          <p className="text-xs text-amber-500/70 mt-1">Bạn có thể ra quầy thanh toán hoặc đợi nhân viên tới.</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex gap-2 mt-4">
+                            <button onClick={() => router.push(`/customer/${activeSession.accessCode}`)} className="flex-1 bg-emerald-600/20 border border-emerald-500 hover:bg-emerald-600/30 text-emerald-400 py-3 rounded-xl font-bold transition-colors">
+                              Menu Nước
+                            </button>
+                            <button onClick={() => setIsExtending(!isExtending)} className="flex-1 bg-purple-600/20 border border-purple-500 hover:bg-purple-600/30 text-purple-400 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-1">
+                              <span>{isExtending ? "Đóng" : "+ Gia Hạn"}</span>
+                            </button>
+                          </div>
+                          
+                          {isExtending && (
+                            <div className="mt-4 p-4 border border-purple-500/30 bg-purple-900/10 rounded-xl animate-slide-down">
+                              <h5 className="font-bold text-sm text-purple-300 mb-3">Chọn gói gia hạn:</h5>
+                              <div className="space-y-2 mb-4">
+                                {packages.map(pkg => (
+                                  <div 
+                                    key={pkg.id} 
+                                    onClick={() => setExtendPkg(pkg.id)}
+                                    className={`p-3 rounded-lg border cursor-pointer transition-all ${extendPkg === pkg.id ? 'bg-purple-900/40 border-purple-500' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                                  >
+                                    <div className="flex justify-between items-center text-sm">
+                                      <span>{pkg.name}</span>
+                                      <span className="font-bold text-purple-400">{pkg.price.toLocaleString('vi-VN')}đ</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <button 
+                                onClick={handleExtend}
+                                disabled={extending || !extendPkg}
+                                className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                {extending ? "Đang xử lý..." : "Xác nhận & Thanh toán"}
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </>
                   )}
                 </div>
               )}

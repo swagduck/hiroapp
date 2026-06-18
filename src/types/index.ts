@@ -39,6 +39,8 @@ export interface Session {
   package?: Package;
   user?: User;
   savedMinutesUsed?: number;
+  extraMinutes?: number;
+  orders?: Order[];
 }
 
 export interface Order {
@@ -46,6 +48,8 @@ export interface Order {
   status: 'PENDING' | 'PREPARING' | 'SERVED' | 'CANCELLED';
   totalAmount: number;
   createdAt: string;
+  isExtension?: boolean;
+  extensionPackageId?: string;
 }
 
 export interface PosCartItem extends MenuItem {

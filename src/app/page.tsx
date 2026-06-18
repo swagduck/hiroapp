@@ -336,7 +336,8 @@ export default function Dashboard() {
                         const startTime = new Date(session.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                         
                         let timeStatus: React.ReactNode = "Không giới hạn";
-                        const duration = session.savedMinutesUsed || session.package?.duration;
+                        let baseDuration = session.savedMinutesUsed || session.package?.duration;
+                        const duration = baseDuration ? baseDuration + (session.extraMinutes || 0) : null;
                         
                         let canPause = false;
                         if (duration) {
@@ -351,6 +352,18 @@ export default function Dashboard() {
                             const minutes = Math.floor((remaining % 3600000) / 60000);
                             timeStatus = <span className="text-green-400">Còn {hours}h {minutes}m</span>;
                           }
+                        }
+
+                        const hasPendingExtension = session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+                        if (hasPendingExtension) {
+                          timeStatus = (
+                            <div className="flex flex-col gap-1">
+                              <div>{timeStatus}</div>
+                              <span className="text-[10px] text-purple-400 font-bold bg-purple-500/20 px-2 py-0.5 rounded animate-pulse w-fit">
+                                Xin gia hạn (+{hasPendingExtension.totalAmount.toLocaleString('vi-VN')}đ)
+                              </span>
+                            </div>
+                          );
                         }
 
                         return (
@@ -391,6 +404,28 @@ export default function Dashboard() {
                                   </button>
                                 ) : (
                                   <>
+                                    {session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING') && (
+                                      <button 
+                                        onClick={async () => {
+                                          const extOrder = session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+                                          if (!extOrder) return;
+                                          try {
+                                            const res = await fetch(`/api/orders/${extOrder.id}/approve-extension`, { method: "POST" });
+                                            if (res.ok) {
+                                              toast.success("Đã duyệt gia hạn thành công!");
+                                              refreshData();
+                                            } else {
+                                              toast.error("Có lỗi xảy ra");
+                                            }
+                                          } catch(e) {
+                                            toast.error("Lỗi kết nối");
+                                          }
+                                        }} 
+                                        className="text-sm px-3 py-1.5 rounded bg-purple-500 hover:bg-purple-400 text-white font-bold transition-colors shadow-[0_0_10px_rgba(168,85,247,0.4)] animate-pulse"
+                                      >
+                                        Duyệt gia hạn
+                                      </button>
+                                    )}
                                     {canPause && (
                                       <button onClick={() => { setSessionToPause(session.id); setPausePhone(""); }} className="text-sm px-3 py-1.5 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/40 transition-colors">
                                         Bảo lưu

@@ -27,7 +27,8 @@ export async function GET(request: Request) {
     let endedCount = 0;
 
     for (const session of activeSessions) {
-      const duration = session.savedMinutesUsed || session.package?.duration;
+      let baseDuration = session.savedMinutesUsed || session.package?.duration;
+      const duration = baseDuration ? baseDuration + (session.extraMinutes || 0) : null;
       
       // Nếu có giới hạn thời gian
       if (duration) {
