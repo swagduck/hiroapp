@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export default function CustomerOrderPage() {
   const params = useParams();
+  const router = useRouter();
   const sessionCode = params.sessionCode as string;
   const [activeTab, setActiveTab] = useState("menu");
   
@@ -235,10 +236,20 @@ export default function CustomerOrderPage() {
         </button>
       </div>
 
-      {/* Header */}
       <header className="glass sticky top-0 z-10 px-4 py-4 border-b border-white/10 shadow-lg">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-amber-500">Space Menu</h1>
+          <div className="flex items-center gap-2">
+            {!!session.userId && (
+              <button 
+                onClick={() => router.push('/member/dashboard')} 
+                className="w-8 h-8 flex items-center justify-center -ml-2 rounded-lg bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white transition-colors"
+                title="Quay lại Dashboard"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+            )}
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-amber-500">Space Menu</h1>
+          </div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-1 rounded bg-emerald-600/20 text-purple-300 font-mono text-sm font-bold border border-emerald-600/30">
               #{sessionCode.toUpperCase()}
