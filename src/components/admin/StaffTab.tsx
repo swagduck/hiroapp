@@ -21,6 +21,8 @@ export default function StaffTab() {
   };
 
   const handleChangeRole = async (id: string, newRole: string) => {
+    if (!confirm(`Bạn có chắc chắn muốn đổi quyền của tài khoản này thành ${newRole}?`)) return;
+
     try {
       const res = await fetch(`/api/admin/users/${id}`, {
         method: "PUT",
