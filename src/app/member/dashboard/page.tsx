@@ -90,8 +90,15 @@ export default function MemberDashboard() {
       return;
     }
     
-    setSubmitting(true);
     const pkg = packages.find(p => p.id === selectedPkg);
+
+    if (pkg?.includesDrink && cart.length === 0) {
+      toast.error("Gói này được tặng 1 ly nước! Vui lòng chọn nước trước khi thanh toán.");
+      setActiveTab("menu");
+      return;
+    }
+
+    setSubmitting(true);
     const totalAmount = getCartTotal();
 
     // The orderItems will just be sent, API will trust the totalAmount for simplicity in this MVP
