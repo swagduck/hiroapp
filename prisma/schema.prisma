@@ -57,6 +57,7 @@ model Package {
 }
 
 enum SessionStatus {
+  PRE_BOOKED
   PENDING
   ACTIVE
   COMPLETED

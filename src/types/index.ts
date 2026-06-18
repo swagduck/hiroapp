@@ -31,7 +31,7 @@ export interface MenuItem {
 export interface Session {
   id: string;
   accessCode: string;
-  status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  status: 'PRE_BOOKED' | 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
   startTime: string;
   endTime?: string;
   totalAmount?: number;

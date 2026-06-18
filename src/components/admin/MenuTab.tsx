@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export default function MenuTab() {
+export default function MenuTab({ role }: { role?: "ADMIN" | "STAFF" | null }) {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -106,9 +106,11 @@ export default function MenuTab() {
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></svg>
           Quản lý Menu Đồ uống
         </h3>
-        <button onClick={openAddModal} className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors shadow-[0_0_15px_rgba(4,120,87,0.4)]">
-          + Thêm Món
-        </button>
+        {role === 'ADMIN' && (
+          <button onClick={openAddModal} className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors shadow-[0_0_15px_rgba(4,120,87,0.4)]">
+            + Thêm Món
+          </button>
+        )}
       </div>
       
       <div className="flex-1 overflow-auto p-6 custom-scrollbar">
@@ -116,10 +118,12 @@ export default function MenuTab() {
           {items.map(item => (
             <div key={item.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col relative group hover:bg-white/10 transition-colors">
               {/* Nút thao tác ẩn hiện khi hover */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                <button onClick={() => openEditModal(item)} className="p-1.5 bg-blue-500/80 hover:bg-blue-500 text-white rounded-md transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
-                <button onClick={() => handleDelete(item.id)} className="p-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-md transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-              </div>
+              {role === 'ADMIN' && (
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                  <button onClick={() => openEditModal(item)} className="p-1.5 bg-blue-500/80 hover:bg-blue-500 text-white rounded-md transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+                  <button onClick={() => handleDelete(item.id)} className="p-1.5 bg-red-500/80 hover:bg-red-500 text-white rounded-md transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                </div>
+              )}
               
               <div className="flex-1 flex flex-col items-center justify-center text-center mt-4">
                 <div className="text-6xl mb-4 drop-shadow-xl select-none">{item.imageUrl || "🍹"}</div>

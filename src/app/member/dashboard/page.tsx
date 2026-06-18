@@ -18,7 +18,7 @@ export default function MemberDashboard() {
   const [hasNotifiedWarning, setHasNotifiedWarning] = useState(false);
   const [hasNotifiedExpired, setHasNotifiedExpired] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<"menu" | "cart" | "history" | "profile">("menu");
+  const [activeTab, setActiveTab] = useState<"menu" | "cart" | "history" | "profile" | "prebook">("menu");
   const [dobInput, setDobInput] = useState("");
   const [updatingProfile, setUpdatingProfile] = useState(false);
 
@@ -106,7 +106,7 @@ export default function MemberDashboard() {
 
       if (sessionRes.ok) {
         const s = await sessionRes.json();
-        if (s && (s.status === "ACTIVE" || s.status === "PENDING")) {
+        if (s && (s.status === "ACTIVE" || s.status === "PENDING" || s.status === "PRE_BOOKED")) {
           setActiveSession(s);
         } else {
           setActiveSession(null);
@@ -280,6 +280,29 @@ export default function MemberDashboard() {
     return totalDrinksOriginal * 0.1;
   };
 
+  const handlePreBook = async (pkgId: string) => {
+    try {
+      setExtending(true);
+      const res = await fetch("/api/member/prebook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packageId: pkgId })
+      });
+      if (res.ok) {
+        toast.success("Đặt chỗ thành công! Vui lòng lưu mã QR để Check-in khi đến quán.");
+        fetchData();
+        setActiveTab("menu");
+      } else {
+        toast.error("Lỗi đặt chỗ");
+      }
+    } catch (e) {
+      toast.error("Lỗi kết nối");
+    } finally {
+      setExtending(false);
+      setExtendPkg(null);
+    }
+  };
+
   const handleExtend = async () => {
     if (!extendPkg) return toast.error("Vui lòng chọn 1 gói!");
     setExtending(true);
@@ -402,6 +425,20 @@ export default function MemberDashboard() {
               Đăng xuất
             </button>
           </div>
+        </div>
+
+        {/* Navigation Bar */}
+        <div className="flex bg-black/40 p-2 overflow-x-auto whitespace-nowrap hide-scrollbar border-b border-white/5">
+          <button onClick={() => setActiveTab("menu")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "menu" ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white'}`}>Phục Vụ</button>
+          {!activeSession && (
+            <button onClick={() => setActiveTab("prebook")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === "prebook" ? 'bg-purple-600/20 text-purple-400 border border-purple-500/30' : 'text-stone-400 hover:text-white'}`}>
+              <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span></span>
+              Đặt Chỗ
+            </button>
+          )}
+          <button onClick={() => setActiveTab("cart")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "cart" ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white'}`}>Giỏ Hàng {cart.length > 0 && `(${cart.length})`}</button>
+          <button onClick={() => setActiveTab("history")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "history" ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white'}`}>Lịch Sử</button>
+          <button onClick={() => setActiveTab("profile")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "profile" ? 'bg-white/10 text-white' : 'text-stone-400 hover:text-white'}`}>Cá Nhân</button>
         </div>
 
         {/* Content based on Tab */}
@@ -536,6 +573,46 @@ export default function MemberDashboard() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "prebook" && !activeSession && (
+            <div className="space-y-6 animate-page-transition">
+              <div>
+                <h3 className="font-bold text-xl text-purple-400 mb-2 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Đặt Chỗ & Mua Gói Trước
+                </h3>
+                <p className="text-stone-400 text-sm mb-4">Mua gói trực tuyến, giữ chỗ và chỉ bắt đầu tính giờ khi bạn đến quán check-in.</p>
+              </div>
+
+              <div className="space-y-4">
+                {packages.map(pkg => (
+                  <div key={pkg.id} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/50 transition-colors">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-bold text-lg text-white">{pkg.name}</span>
+                      <span className="text-purple-400 font-bold">{pkg.price.toLocaleString('vi-VN')}đ</span>
+                    </div>
+                    {pkg.includesDrink && <p className="text-xs text-amber-400 mb-4">✨ Tặng kèm 1 ly nước tự chọn</p>}
+                    
+                    <div className="bg-black/30 p-4 rounded-lg mt-3 flex flex-col items-center">
+                      <p className="text-xs text-stone-400 mb-2">Quét mã để thanh toán</p>
+                      <img 
+                        src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${pkg.price}&addInfo=DAT CHO SPACE CAFE&accountName=SPACE CAFE`} 
+                        alt="VietQR" 
+                        className="w-[140px] h-[160px] object-contain rounded bg-white p-1" 
+                      />
+                      <button 
+                        onClick={() => handlePreBook(pkg.id)}
+                        disabled={extending}
+                        className="mt-4 w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] disabled:opacity-50"
+                      >
+                        {extending ? "Đang xử lý..." : "Xác nhận đã Chuyển Khoản"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -696,6 +773,25 @@ export default function MemberDashboard() {
                         <p>Số tiền: <strong className="text-emerald-600 text-sm">{(activeSession.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
                         <p>Mã phiên: <strong className="text-stone-900">{activeSession.accessCode}</strong></p>
                       </div>
+                    </div>
+                  )}
+
+                  {activeSession.status === 'PRE_BOOKED' && (
+                    <div className="mt-4 flex flex-col items-center bg-white p-4 rounded-xl mx-auto max-w-[240px]">
+                      <div className="flex items-center gap-2 mb-2 text-purple-600 font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        Mã Check-in Tự Động
+                      </div>
+                      <QRCodeCanvas 
+                        value={activeSession.accessCode} 
+                        size={180} 
+                        level={"H"} 
+                        includeMargin={true}
+                        fgColor={"#000000"} 
+                        bgColor={"#ffffff"} 
+                      />
+                      <p className="text-stone-500 font-mono mt-2 text-xl tracking-widest text-center">{activeSession.accessCode}</p>
+                      <p className="text-[10px] text-stone-400 mt-2 text-center leading-tight">Đưa mã này vào máy quét tại quầy để kích hoạt giờ</p>
                     </div>
                   )}
 

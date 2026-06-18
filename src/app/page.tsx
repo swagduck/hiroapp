@@ -10,6 +10,7 @@ import PackagesTab from "@/components/admin/PackagesTab";
 import OrdersTab from "@/components/admin/OrdersTab";
 import AnalyticsTab from "@/components/AnalyticsTab";
 import ActivityLogTab from "@/components/admin/ActivityLogTab";
+import StaffTab from "@/components/admin/StaffTab";
 
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Package, PosCartItem, Session } from "@/types";
@@ -37,6 +38,7 @@ export default function Dashboard() {
   const [posLoading, setPosLoading] = useState(false);
   const [posPaymentStatus, setPosPaymentStatus] = useState<"PAID" | "UNPAID">("PAID");
   const [receiptData, setReceiptData] = useState<Session | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<"ADMIN" | "STAFF" | null>(null);
 
   // Pause Session States
   const [sessionToPause, setSessionToPause] = useState<string | null>(null);
@@ -206,8 +208,21 @@ export default function Dashboard() {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Cập nhật mỗi phút
+    
+    // Fetch current user role
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.role) {
+          setCurrentUserRole(data.role);
+        }
+      })
+      .catch(e => console.error("Error fetching user:", e));
+
+    return () => clearInterval(interval);
   }, []);
 
   // Client-side fallback for auto-ending sessions
@@ -236,10 +251,17 @@ export default function Dashboard() {
           </h1>
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          <button onClick={() => setActiveTab("overview")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "overview" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Tổng quan (POS)</button>
-          <button onClick={() => setActiveTab("analytics")} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "analytics" ? "bg-blue-600/20 text-blue-400 font-bold border border-blue-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
-            Báo cáo doanh thu
+          <button onClick={() => setActiveTab("overview")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "overview" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Tổng quan (POS)
           </button>
+          
+          {currentUserRole === 'ADMIN' && (
+            <button onClick={() => setActiveTab("analytics")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "analytics" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
+              Báo cáo doanh thu
+            </button>
+          )}
+
           <button onClick={() => setActiveTab("sessions")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "sessions" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Phiên sử dụng</button>
           <button onClick={() => setActiveTab("activity")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "activity" ? "bg-amber-600/20 text-amber-500 font-bold border border-amber-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
             Nhật ký Giao dịch
@@ -247,13 +269,17 @@ export default function Dashboard() {
           <button onClick={() => setActiveTab("orders")} className={`w-full flex justify-between items-center px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
             <span>Đơn pha chế</span>
             {pendingOrdersCount > 0 && (
-              <span className="bg-amber-500 text-stone-900 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
-                {pendingOrdersCount}
-              </span>
+              <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full animate-pulse">{pendingOrdersCount}</span>
             )}
           </button>
           <button onClick={() => setActiveTab("menu")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "menu" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Menu Đồ uống</button>
-          <button onClick={() => setActiveTab("settings")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "settings" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Cài đặt Gói cước</button>
+          
+          {currentUserRole === 'ADMIN' && (
+            <>
+              <button onClick={() => setActiveTab("packages")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "packages" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Cài đặt Gói cước</button>
+              <button onClick={() => setActiveTab("staff")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "staff" ? "bg-blue-600/20 text-blue-500 font-bold border border-blue-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Quản lý Tài khoản</button>
+            </>
+          )}
         </nav>
         <div className="p-4 border-t border-white/10">
           <div className="flex items-center justify-between">
@@ -549,9 +575,11 @@ export default function Dashboard() {
           ) : activeTab === "orders" ? (
             <OrdersTab />
           ) : activeTab === "menu" ? (
-            <MenuTab />
-          ) : activeTab === "settings" ? (
+            <MenuTab role={currentUserRole} />
+          ) : activeTab === "packages" && currentUserRole === 'ADMIN' ? (
             <PackagesTab />
+          ) : activeTab === "staff" && currentUserRole === 'ADMIN' ? (
+            <StaffTab />
           ) : null}
         </div>
       </main>
