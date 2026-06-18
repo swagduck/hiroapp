@@ -23,7 +23,10 @@ export async function POST(
       // Update order status to SERVED (meaning paid/done)
       await tx.order.update({
         where: { id },
-        data: { status: "SERVED" }
+        data: { 
+          status: "SERVED",
+          paymentStatus: "PAID"
+        }
       });
 
       // Add extra minutes to session

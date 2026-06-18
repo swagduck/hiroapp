@@ -21,7 +21,10 @@ export async function PUT(
 
     const updatedOrder = await prisma.order.update({
       where: { id },
-      data: { status }
+      data: { 
+        status,
+        ...(status === 'PREPARING' || status === 'SERVED' ? { paymentStatus: "PAID" } : {})
+      }
     });
 
     // Add points if served
