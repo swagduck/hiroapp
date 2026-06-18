@@ -405,26 +405,53 @@ export default function Dashboard() {
                                 ) : (
                                   <>
                                     {session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING') && (
-                                      <button 
-                                        onClick={async () => {
-                                          const extOrder = session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
-                                          if (!extOrder) return;
-                                          try {
-                                            const res = await fetch(`/api/orders/${extOrder.id}/approve-extension`, { method: "POST" });
-                                            if (res.ok) {
-                                              toast.success("Đã duyệt gia hạn thành công!");
-                                              refreshData();
-                                            } else {
-                                              toast.error("Có lỗi xảy ra");
+                                      <div className="flex gap-2">
+                                        <button 
+                                          onClick={async () => {
+                                            const extOrder = session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+                                            if (!extOrder) return;
+                                            try {
+                                              const res = await fetch(`/api/orders/${extOrder.id}/approve-extension`, { method: "POST" });
+                                              if (res.ok) {
+                                                toast.success("Đã duyệt gia hạn thành công!");
+                                                refreshData();
+                                              } else {
+                                                toast.error("Có lỗi xảy ra");
+                                              }
+                                            } catch(e) {
+                                              toast.error("Lỗi kết nối");
                                             }
-                                          } catch(e) {
-                                            toast.error("Lỗi kết nối");
-                                          }
-                                        }} 
-                                        className="text-sm px-3 py-1.5 rounded bg-purple-500 hover:bg-purple-400 text-white font-bold transition-colors shadow-[0_0_10px_rgba(168,85,247,0.4)] animate-pulse"
-                                      >
-                                        Duyệt gia hạn
-                                      </button>
+                                          }} 
+                                          className="text-sm px-3 py-1.5 rounded bg-purple-500 hover:bg-purple-400 text-white font-bold transition-colors shadow-[0_0_10px_rgba(168,85,247,0.4)] animate-pulse"
+                                        >
+                                          Duyệt gia hạn
+                                        </button>
+                                        <button 
+                                          onClick={async () => {
+                                            const extOrder = session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+                                            if (!extOrder) return;
+                                            if (!confirm("Bạn có chắc muốn từ chối yêu cầu gia hạn này?")) return;
+                                            try {
+                                              const res = await fetch(`/api/orders/${extOrder.id}`, { 
+                                                method: "PUT",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({ status: "CANCELLED" })
+                                              });
+                                              if (res.ok) {
+                                                toast.success("Đã từ chối gia hạn!");
+                                                refreshData();
+                                              } else {
+                                                toast.error("Có lỗi xảy ra");
+                                              }
+                                            } catch(e) {
+                                              toast.error("Lỗi kết nối");
+                                            }
+                                          }} 
+                                          className="text-sm px-3 py-1.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-colors"
+                                        >
+                                          Từ chối
+                                        </button>
+                                      </div>
                                     )}
                                     {canPause && (
                                       <button onClick={() => { setSessionToPause(session.id); setPausePhone(""); }} className="text-sm px-3 py-1.5 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/40 transition-colors">

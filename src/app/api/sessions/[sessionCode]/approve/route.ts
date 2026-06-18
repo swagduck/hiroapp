@@ -16,8 +16,8 @@ export async function POST(request: Request, context: { params: Promise<{ sessio
     }
 
     // Points logic: 10,000 VND = 1 point
-    // totalAmount might be set, if not use package.price
-    const priceToPay = session.totalAmount ?? session.package.price;
+    // Chỉ tính điểm dựa trên giá gói giờ (không tính tiền nước để tránh cộng 2 lần khi Barista duyệt)
+    const priceToPay = session.package.price;
     const earnedPoints = Math.floor(priceToPay / 10000);
 
     // Cập nhật lại startTime và chuyển sang ACTIVE
