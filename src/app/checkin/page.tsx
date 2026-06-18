@@ -1,6 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+
+const QrScanner = dynamic(() => import("@/components/QRScanner"), {
+  ssr: false,
+  loading: () => <div className="text-stone-400 p-4 text-center min-h-[300px] flex items-center justify-center">Đang khởi động Camera...</div>
+});
 
 export default function CheckinPage() {
   const [code, setCode] = useState("");
@@ -59,6 +66,18 @@ export default function CheckinPage() {
     }
   };
 
+  const handleScanSuccess = (decodedText: string) => {
+    let scannedCode = decodedText;
+    if (scannedCode.includes("/customer/")) {
+      scannedCode = scannedCode.split("/customer/")[1].split("?")[0].replace("/", "");
+    }
+    scannedCode = scannedCode.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+    if (scannedCode.length === 5) {
+      setCode(scannedCode);
+      handleCheckin(scannedCode);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0d1310] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md text-center">
@@ -82,6 +101,14 @@ export default function CheckinPage() {
               </div>
             ) : (
               <div className="py-4">
+                <div className="bg-black border border-white/10 p-2 rounded-2xl shadow-xl mb-6 overflow-hidden relative min-h-[250px] flex items-center justify-center">
+                  <QrScanner 
+                    elementId="reader-checkin"
+                    onScanSuccess={handleScanSuccess}
+                  />
+                </div>
+
+                <p className="text-stone-500 text-sm mb-2 font-medium">Hoặc nhập mã thủ công:</p>
                 <input 
                   ref={inputRef}
                   type="text" 
@@ -106,6 +133,13 @@ export default function CheckinPage() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-8">
+          <Link href="/" className="text-stone-500 hover:text-emerald-400 transition-colors flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            Quay lại trang Quản trị
+          </Link>
         </div>
       </div>
     </div>
