@@ -115,6 +115,20 @@ export default function MemberDashboard() {
         const s = await sessionRes.json();
         if (s && (s.status === "ACTIVE" || s.status === "PENDING" || s.status === "PRE_BOOKED" || s.status === "PENDING_PAYMENT")) {
           setActiveSession(s);
+          
+          // Chủ động truy vấn ZaloPay nếu đang chờ thanh toán
+          if (s.status === "PENDING_PAYMENT" && s.transId) {
+            fetch("/api/member/check-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ transId: s.transId })
+            }).then(r => r.json()).then(data => {
+              if (data.status === "PRE_BOOKED" || data.status === "CANCELLED") {
+                // Fetch lại toàn bộ data nếu trạng thái thay đổi
+                fetchData();
+              }
+            }).catch(console.error);
+          }
         } else {
           setActiveSession(null);
         }
