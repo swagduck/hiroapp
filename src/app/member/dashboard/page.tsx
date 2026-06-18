@@ -756,6 +756,17 @@ export default function MemberDashboard() {
                   <span className="text-[10px] text-pink-500/80 font-bold uppercase tracking-widest mt-1">Nước Tặng Kèm</span>
                 </div>
               </div>
+              
+              <div className="bg-emerald-900/10 border border-emerald-500/20 rounded-xl p-4 text-xs text-stone-300 space-y-2">
+                <p className="flex items-start gap-2">
+                  <span className="text-amber-400">💡</span> 
+                  <span><strong>Điểm Tích Lũy:</strong> Mỗi 10.000đ chi tiêu (tiền giờ, tiền nước, gia hạn) bạn sẽ nhận được 1 điểm. Khi đạt <strong>100 điểm</strong>, hệ thống sẽ hiện nút để bạn có thể quy đổi thành <strong>1 giờ ngồi miễn phí</strong> (cộng vào số dư Bảo lưu).</span>
+                </p>
+                <p className="flex items-start gap-2">
+                  <span className="text-pink-400">🎁</span> 
+                  <span><strong>Nước Tặng Kèm:</strong> Bạn sẽ được tặng ly nước miễn phí vào tháng sinh nhật (Nhớ cập nhật ngày sinh bên dưới nhé). Nước sẽ tự động trừ tiền khi bạn gọi món.</span>
+                </p>
+              </div>
 
               <h3 className="font-bold text-lg text-emerald-400">Thông tin Cá nhân</h3>
               
