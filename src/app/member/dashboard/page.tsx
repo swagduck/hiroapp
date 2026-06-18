@@ -287,6 +287,22 @@ export default function MemberDashboard() {
     return totalDrinksOriginal * 0.1;
   };
 
+  const handleCancelPayment = async () => {
+    try {
+      const res = await fetch("/api/member/cancel-payment", {
+        method: "POST"
+      });
+      if (res.ok) {
+        toast.success("Đã hủy giao dịch");
+        fetchData();
+      } else {
+        toast.error("Lỗi khi hủy");
+      }
+    } catch (e) {
+      toast.error("Lỗi kết nối");
+    }
+  };
+
   const handlePreBook = async (pkgId: string) => {
     try {
       setExtending(true);
@@ -796,7 +812,14 @@ export default function MemberDashboard() {
                     <div className="bg-white text-black p-6 rounded-2xl w-full max-w-sm mx-auto shadow-2xl relative overflow-hidden flex flex-col items-center justify-center">
                       <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
                       <p className="font-bold text-center text-blue-600 mb-2">Đang chờ xác nhận thanh toán</p>
-                      <p className="text-sm text-center text-stone-500">Hệ thống đang đồng bộ với ZaloPay. Nếu bạn đã thanh toán thành công, vui lòng chờ giây lát...</p>
+                      <p className="text-sm text-center text-stone-500 mb-4">Hệ thống đang đồng bộ với ZaloPay. Nếu bạn đã thanh toán thành công, vui lòng chờ giây lát...</p>
+                      
+                      <button 
+                        onClick={handleCancelPayment}
+                        className="text-red-500 font-medium text-sm hover:underline"
+                      >
+                        Hủy giao dịch
+                      </button>
                     </div>
                   )}
 
