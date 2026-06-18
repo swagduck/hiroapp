@@ -19,13 +19,42 @@ export async function POST(request: Request) {
         const appTransId = dataJson.app_trans_id;
 
         // Cập nhật trạng thái Session từ PENDING_PAYMENT sang PRE_BOOKED
-        await prisma.session.updateMany({
+        const updateSession = await prisma.session.updateMany({
           where: { transId: appTransId, status: "PENDING_PAYMENT" },
           data: {
             status: "PRE_BOOKED",
             paymentStatus: "PAID"
           }
         });
+
+        // Nếu không có session nào được update, thử tìm trong bảng Order
+        if (updateSession.count === 0) {
+          const order = await prisma.order.findFirst({ where: { transId: appTransId, paymentStatus: "UNPAID" }});
+          if (order) {
+            await prisma.order.update({
+              where: { id: order.id },
+              data: {
+                paymentStatus: "PAID",
+                // Nếu là đơn gọi nước thì chuyển sang PREPARING (bếp làm)
+                // Nếu là đơn gia hạn thì coi như xong (SERVED/COMPLETED) 
+                // nhưng OrderStatus không có COMPLETED, ta sẽ dùng PENDING/PREPARING
+                // Thực tế nếu isExtension thì chỉ cần paymentStatus = PAID, sau đó cron/logic sẽ cộng giờ.
+                status: order.isExtension ? "SERVED" : "PREPARING" 
+              }
+            });
+
+            // Nếu là gia hạn, cộng giờ vào session
+            if (order.isExtension && order.extensionPackageId && order.sessionId) {
+              const extPkg = await prisma.package.findUnique({ where: { id: order.extensionPackageId }});
+              if (extPkg && extPkg.duration) {
+                await prisma.session.update({
+                  where: { id: order.sessionId },
+                  data: { extraMinutes: { increment: extPkg.duration } }
+                });
+              }
+            }
+          }
+        }
 
         result.return_code = 1;
         result.return_message = "success";

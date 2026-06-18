@@ -356,14 +356,21 @@ export default function MemberDashboard() {
         body: JSON.stringify({ packageId: extendPkg })
       });
       if (res.ok) {
-        toast.success("Đã gửi yêu cầu gia hạn! Vui lòng ra quầy hoặc đợi thu ngân duyệt.");
-        setIsExtending(false);
-        setExtendPkg(null);
+        const resData = await res.json();
+        if (resData.orderurl) {
+          window.location.href = resData.orderurl;
+          return;
+        }
+        toast.success("Đã gửi đơn, bếp đang chuẩn bị!");
+        setCart([]);
+        setSubmitting(false);
+        setActiveTab("history");
         fetchData();
       } else {
-        toast.error("Có lỗi xảy ra");
+        toast.error("Có lỗi xảy ra, thử lại sau.");
+        setSubmitting(false);
       }
-    } catch(e) {
+    } catch (e) {
       toast.error("Lỗi kết nối");
     } finally {
       setExtending(false);
@@ -522,20 +529,15 @@ export default function MemberDashboard() {
                   {activeSession.status === 'ACTIVE' && (
                     <div className="mt-2 border-t border-white/5 pt-3">
                       {(() => {
-                        const pendingExtension = activeSession.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+                        const pendingExtension = activeSession.orders?.find((o: any) => o.isExtension && o.paymentStatus === 'UNPAID');
                         if (pendingExtension) {
                           return (
-                            <div className="mt-2 flex flex-col items-center bg-white p-3 rounded-xl mx-auto border border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-                              <p className="text-stone-900 font-bold mb-2 text-center text-xs">Thanh toán gia hạn</p>
-                              <img 
-                                src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${pendingExtension.totalAmount || 0}&addInfo=${activeSession.accessCode}&accountName=SPACE CAFE`} 
-                                alt="VietQR" 
-                                className="w-[120px] h-[140px] object-contain rounded shadow-sm border border-stone-200" 
-                              />
-                              <div className="text-stone-600 text-xs mt-2 text-center space-y-1">
-                                <p>Số tiền: <strong className="text-emerald-600">{(pendingExtension.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
+                            <div className="mt-2 flex flex-col items-center bg-stone-900/50 p-3 rounded-xl mx-auto border border-amber-500/30">
+                              <p className="text-stone-300 font-bold mb-1 text-center text-xs">Giao dịch chờ ZaloPay</p>
+                              <div className="text-stone-500 text-xs mt-1 text-center space-y-1">
+                                <p>Số tiền: <strong className="text-amber-500">{(pendingExtension.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
                               </div>
-                              <p className="text-amber-500 font-bold mt-1 text-[10px] text-center animate-pulse">Đang chờ thu ngân duyệt...</p>
+                              <p className="text-stone-500 italic text-[10px] text-center mt-2">Vui lòng chờ giây lát nếu bạn đã thanh toán.</p>
                             </div>
                           );
                         }
@@ -780,15 +782,10 @@ export default function MemberDashboard() {
                           </div>
                         ))}
                       </div>
-                      {order.status === 'PENDING' && (
+                      {order.paymentStatus === 'UNPAID' && (
                         <div className="mt-3 pt-3 border-t border-emerald-500/20 flex flex-col items-center bg-black/20 rounded-lg pb-3">
-                          <p className="text-xs mt-3 mb-2 text-amber-400">Quét mã thanh toán đơn này</p>
-                          <img 
-                            src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${order.totalAmount || 0}&addInfo=${activeSession.accessCode}&accountName=SPACE CAFE`} 
-                            className="w-32 h-32 mx-auto rounded border border-white/10" 
-                            alt="QR Thanh toán"
-                          />
-                          <p className="text-sm font-bold text-emerald-400 mt-2">{(order.totalAmount || 0).toLocaleString('vi-VN')}đ</p>
+                          <p className="text-xs mt-3 mb-1 text-stone-400">Đơn hàng này chờ thanh toán ZaloPay</p>
+                          <p className="text-sm font-bold text-amber-500 mt-1">{(order.totalAmount || 0).toLocaleString('vi-VN')}đ</p>
                         </div>
                       )}
                     </div>
@@ -807,20 +804,7 @@ export default function MemberDashboard() {
                   </h4>
                   <p className="text-sm text-stone-300 mb-4">Gói: <span className="text-white font-medium">{activeSession.package?.name}</span></p>
                   
-                  {activeSession.status === 'PENDING' && activeSession.paymentStatus === 'UNPAID' && (
-                    <div className="mt-4 flex flex-col items-center bg-white p-4 rounded-xl mx-auto">
-                      <p className="text-stone-900 font-bold mb-2 text-center text-sm">Mã QR Thanh Toán</p>
-                      <img 
-                        src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${activeSession.totalAmount || 0}&addInfo=${activeSession.accessCode}&accountName=SPACE CAFE`} 
-                        alt="VietQR" 
-                        className="w-[160px] h-[180px] object-contain rounded shadow-sm border border-stone-200" 
-                      />
-                      <div className="text-stone-600 text-xs mt-3 text-center space-y-1">
-                        <p>Số tiền: <strong className="text-emerald-600 text-sm">{(activeSession.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
-                        <p>Mã phiên: <strong className="text-stone-900">{activeSession.accessCode}</strong></p>
-                      </div>
-                    </div>
-                  )}
+
 
                   {activeSession.status === 'PENDING_PAYMENT' && (
                     <div className="bg-white text-black p-6 rounded-2xl w-full max-w-sm mx-auto shadow-2xl relative overflow-hidden flex flex-col items-center justify-center">

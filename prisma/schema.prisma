@@ -133,7 +133,9 @@ model Order {
   user        User?    @relation(fields: [userId], references: [id])
   
   status      OrderStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID)
   totalAmount Float
+  transId     String?
   
   items       OrderItem[]
   

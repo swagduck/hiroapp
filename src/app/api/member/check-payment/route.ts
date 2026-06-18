@@ -19,11 +19,16 @@ export async function POST(request: Request) {
     if (!transId) return NextResponse.json({ error: "Missing transId" }, { status: 400 });
 
     const session = await prisma.session.findFirst({ where: { transId } });
-    if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    const order = !session ? await prisma.order.findFirst({ where: { transId } }) : null;
+
+    if (!session && !order) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
 
     // Nếu đã update qua Webhook rồi thì trả về luôn
-    if (session.status !== "PENDING_PAYMENT") {
+    if (session && session.status !== "PENDING_PAYMENT") {
       return NextResponse.json({ success: true, status: session.status });
+    }
+    if (order && order.paymentStatus === "PAID") {
+      return NextResponse.json({ success: true, status: order.status });
     }
 
     // Nếu vẫn PENDING_PAYMENT, gọi API Truy vấn ZaloPay
@@ -48,14 +53,38 @@ export async function POST(request: Request) {
 
     // return_code: 1 = Thành công, 2 = Thất bại, 3 = Đang xử lý
     if (queryData.return_code === 1) {
-      await prisma.session.update({
-        where: { id: session.id },
-        data: { status: "PRE_BOOKED", paymentStatus: "PAID" }
-      });
-      return NextResponse.json({ success: true, status: "PRE_BOOKED" });
+      if (session) {
+        await prisma.session.update({
+          where: { id: session.id },
+          data: { status: "PRE_BOOKED", paymentStatus: "PAID" }
+        });
+        return NextResponse.json({ success: true, status: "PRE_BOOKED" });
+      } else if (order) {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: {
+            paymentStatus: "PAID",
+            status: order.isExtension ? "SERVED" : "PREPARING" 
+          }
+        });
+        if (order.isExtension && order.extensionPackageId && order.sessionId) {
+          const extPkg = await prisma.package.findUnique({ where: { id: order.extensionPackageId }});
+          if (extPkg && extPkg.duration) {
+            await prisma.session.update({
+              where: { id: order.sessionId },
+              data: { extraMinutes: { increment: extPkg.duration } }
+            });
+          }
+        }
+        return NextResponse.json({ success: true, status: order.isExtension ? "SERVED" : "PREPARING" });
+      }
     } else if (queryData.return_code === 2) {
       // Giao dịch thất bại / bị hủy
-      await prisma.session.delete({ where: { id: session.id } });
+      if (session) {
+        await prisma.session.delete({ where: { id: session.id } });
+      } else if (order) {
+        await prisma.order.delete({ where: { id: order.id } });
+      }
       return NextResponse.json({ success: true, status: "CANCELLED" });
     } else {
       // Vẫn đang xử lý

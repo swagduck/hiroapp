@@ -176,12 +176,15 @@ export default function CustomerOrderPage() {
       });
 
       if (res.ok) {
+        const resData = await res.json();
+        if (resData.orderurl) {
+          window.location.href = resData.orderurl;
+          return;
+        }
         toast.success("Order thành công! Nhân viên sẽ mang nước ra cho bạn.");
         setCart([]);
         setActiveTab("account");
-        // refresh session to see orders
-        const resSession = await fetch(`/api/sessions/${sessionCode}`);
-        if (resSession.ok) setSession(await resSession.json());
+        fetchSession();
       } else {
         toast.error("Có lỗi xảy ra, vui lòng thử lại.");
       }
@@ -201,7 +204,12 @@ export default function CustomerOrderPage() {
         body: JSON.stringify({ packageId: extendPkg })
       });
       if (res.ok) {
-        toast.success("Đã gửi yêu cầu gia hạn! Nhân viên sẽ ra hỗ trợ bạn thanh toán.");
+        const resData = await res.json();
+        if (resData.orderurl) {
+          window.location.href = resData.orderurl;
+          return;
+        }
+        toast.success("Đã gia hạn thành công!");
         setIsExtending(false);
         setExtendPkg(null);
         fetchSession();
@@ -332,21 +340,15 @@ export default function CustomerOrderPage() {
       {/* EXTEND UI */}
       <div className="mx-4 mt-4">
         {(() => {
-          const pendingExtension = session?.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
+          const pendingExtension = session?.orders?.find((o: any) => o.isExtension && o.paymentStatus === 'UNPAID');
           if (pendingExtension) {
             return (
-              <div className="mt-4 flex flex-col items-center bg-white p-4 rounded-xl mx-auto border border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-                <p className="text-stone-900 font-bold mb-2 text-center text-sm">Quét mã để thanh toán gia hạn</p>
-                <img 
-                  src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${pendingExtension.totalAmount || 0}&addInfo=${session.accessCode}&accountName=SPACE CAFE`} 
-                  alt="VietQR" 
-                  className="w-[160px] h-[180px] object-contain rounded shadow-sm border border-stone-200" 
-                />
-                <div className="text-stone-600 text-xs mt-3 text-center space-y-1">
-                  <p>Số tiền: <strong className="text-emerald-600 text-sm">{(pendingExtension.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
-                  <p>Mã chuyển khoản: <strong className="text-stone-900">{session.accessCode}</strong></p>
+              <div className="mt-4 flex flex-col items-center bg-stone-900/50 p-4 rounded-xl mx-auto border border-stone-500/30">
+                <p className="text-stone-300 font-medium mb-2 text-center text-sm">Bạn đang có giao dịch gia hạn chờ thanh toán ZaloPay</p>
+                <div className="text-stone-500 text-xs mt-1 text-center space-y-1 mb-3">
+                  <p>Số tiền: <strong className="text-amber-500 text-sm">{(pendingExtension.totalAmount || 0).toLocaleString('vi-VN')}đ</strong></p>
                 </div>
-                <p className="text-amber-500 font-bold mt-2 text-xs text-center animate-pulse">Đang chờ thu ngân duyệt...</p>
+                <p className="text-stone-400 text-xs italic text-center">Nếu bạn đã thanh toán, xin vui lòng chờ vài giây để hệ thống cập nhật.</p>
               </div>
             );
           }
@@ -515,15 +517,10 @@ export default function CustomerOrderPage() {
                       </div>
                     ))}
                     
-                    {order.status === 'PENDING' && !order.isExtension && (
-                      <div className="mt-3 pt-3 border-t border-white/10 flex flex-col items-center">
-                        <p className="text-xs mb-2 text-amber-400">Quét mã thanh toán đơn nước này</p>
-                        <img 
-                          src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${order.totalAmount || 0}&addInfo=${session.accessCode}&accountName=SPACE CAFE`} 
-                          className="w-24 h-24 mx-auto rounded border border-white/10" 
-                          alt="QR Thanh toán"
-                        />
-                        <p className="text-xs font-bold text-emerald-400 mt-2">{(order.totalAmount || 0).toLocaleString('vi-VN')}đ</p>
+                    {order.paymentStatus === 'UNPAID' && !order.isExtension && (
+                      <div className="mt-3 pt-3 border-t border-white/10 flex flex-col items-center text-center">
+                        <p className="text-xs mb-2 text-stone-400">Đơn hàng này chưa hoàn tất thanh toán ZaloPay.</p>
+                        <p className="text-xs font-bold text-amber-500 mt-1">{(order.totalAmount || 0).toLocaleString('vi-VN')}đ</p>
                       </div>
                     )}
                   </div>

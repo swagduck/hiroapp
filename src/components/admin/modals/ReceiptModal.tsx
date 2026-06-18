@@ -37,17 +37,6 @@ export default function ReceiptModal({ receiptData, onClose, onApprove }: Receip
               </div>
               <p className="text-xs text-stone-500 mt-2 font-bold">Quét QR tại cổng</p>
             </div>
-
-            <div className="text-center print-hidden">
-              <div className="p-2 border-2 border-black rounded-xl inline-block bg-white">
-                <img 
-                  src={`https://img.vietqr.io/image/MB-123456789-compact2.png?amount=${receiptData.totalAmount || receiptData.package?.price || 0}&addInfo=${receiptData.accessCode}&accountName=SPACE CAFE`} 
-                  alt="VietQR" 
-                  className="w-[160px] h-[180px] object-contain" 
-                />
-              </div>
-              <p className="text-xs text-stone-500 mt-2 font-bold">Quét VietQR Thanh toán</p>
-            </div>
           </div>
         </div>
         
