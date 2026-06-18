@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const { transId } = await request.json();
     if (!transId) return NextResponse.json({ error: "Missing transId" }, { status: 400 });
 
-    const session = await prisma.session.findUnique({ where: { transId } });
+    const session = await prisma.session.findFirst({ where: { transId } });
     if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
 
     // Nếu đã update qua Webhook rồi thì trả về luôn
