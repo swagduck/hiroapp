@@ -36,7 +36,7 @@ export default function CustomerPortal() {
     try {
       const res = await fetch(`/api/sessions/${cleanCode}`);
       if (res.ok) {
-        toast.loading("Đang tải dữ liệu bàn...");
+        toast.success("Đang tải dữ liệu bàn...", { duration: 1500 });
         router.push(`/customer/${cleanCode}`);
       } else {
         toast.error("Mã phiên không tồn tại hoặc đã kết thúc! Vui lòng kiểm tra lại.");
@@ -121,7 +121,7 @@ export default function CustomerPortal() {
 
             <div className="text-center">
               <p className="text-sm text-stone-400 mb-4">Bạn muốn đặt bàn và tích điểm?</p>
-              <Link href="/login" onClick={() => toast.loading("Đang chuyển trang...")} className="inline-block w-full py-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-all">
+              <Link href="/login" onClick={() => toast("Đang chuyển trang...", { duration: 1500 })} className="inline-block w-full py-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-all">
                 Đăng nhập / Đăng ký Thành viên
               </Link>
             </div>

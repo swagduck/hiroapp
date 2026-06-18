@@ -278,7 +278,7 @@ export default function CustomerOrderPage() {
             {!!session.userId && (
               <button 
                 onClick={() => {
-                  toast.loading("Đang chuyển trang...");
+                  toast("Đang chuyển trang...", { duration: 1500 });
                   router.push('/member/dashboard');
                 }} 
                 className="w-8 h-8 flex items-center justify-center -ml-2 rounded-lg bg-white/5 hover:bg-white/10 text-stone-400 hover:text-white transition-colors"

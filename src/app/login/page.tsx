@@ -35,7 +35,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        toast.loading("Đăng nhập thành công! Đang chuyển hướng...");
+        toast.success("Đăng nhập thành công! Đang chuyển hướng...", { duration: 2000 });
         setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
         // Add a slight delay so user can read the success message
         setTimeout(() => {
@@ -80,7 +80,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        toast.loading("Đăng ký thành công! Đang chuyển hướng...");
+        toast.success("Đăng ký thành công! Đang chuyển hướng...", { duration: 2000 });
         setSuccess("Đăng ký thành công! Đang chuyển hướng...");
         setTimeout(() => {
           router.push("/member/dashboard");
@@ -109,7 +109,7 @@ export default function LoginPage() {
           </h1>
           <p className="text-gray-400 text-sm mb-8">Chào mừng bạn đến với hệ thống</p>
 
-          <Link href="/customer" onClick={() => toast.loading("Đang chuyển trang...")} className="inline-block w-full py-5 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-600/20 to-emerald-800/20 hover:from-emerald-600/30 hover:to-emerald-800/30 text-emerald-400 font-bold text-lg shadow-[0_0_30px_rgba(16,185,129,0.15)] transition-all">
+          <Link href="/customer" onClick={() => toast("Đang chuyển trang...", { duration: 1500 })} className="inline-block w-full py-5 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-600/20 to-emerald-800/20 hover:from-emerald-600/30 hover:to-emerald-800/30 text-emerald-400 font-bold text-lg shadow-[0_0_30px_rgba(16,185,129,0.15)] transition-all">
             🚶 Khách Vãng Lai (Vào Đây)
           </Link>
           <p className="text-xs text-slate-400 mt-3">Không cần tài khoản. Nhấn vào đây để xem Menu và Gọi nước trực tiếp.</p>
