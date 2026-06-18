@@ -843,15 +843,17 @@ export default function MemberDashboard() {
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         Mã Check-in Tự Động
                       </div>
-                      <QRCodeCanvas 
-                        value={activeSession.accessCode} 
-                        size={180} 
-                        level={"H"} 
-                        includeMargin={true}
-                        fgColor={"#000000"} 
-                        bgColor={"#ffffff"} 
-                      />
-                      <p className="text-stone-500 font-mono mt-2 text-xl tracking-widest text-center">{activeSession.accessCode}</p>
+                      <div className="flex justify-center my-4">
+                        <QRCodeCanvas 
+                          value={activeSession.accessCode} 
+                          size={180} 
+                          level={"H"} 
+                          includeMargin={true}
+                          fgColor={"#000000"} 
+                          bgColor={"#ffffff"} 
+                        />
+                      </div>
+                      <p className="text-stone-500 font-mono text-xl tracking-widest text-center">{activeSession.accessCode}</p>
                       <p className="text-[10px] text-stone-400 mt-2 text-center leading-tight">Đưa mã này vào máy quét tại quầy để kích hoạt giờ</p>
                     </div>
                   )}
