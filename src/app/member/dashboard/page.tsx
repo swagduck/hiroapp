@@ -11,6 +11,7 @@ export default function MemberDashboard() {
   const [activeSession, setActiveSession] = useState<any>(null);
   const [historySessions, setHistorySessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(new Date());
 
   const [activeTab, setActiveTab] = useState<"menu" | "cart" | "history" | "profile">("menu");
   const [dobInput, setDobInput] = useState("");
@@ -83,7 +84,11 @@ export default function MemberDashboard() {
     const interval = setInterval(() => {
       fetchData();
     }, 10000); // Auto-refresh every 10 seconds
-    return () => clearInterval(interval);
+    const timerInterval = setInterval(() => setNow(new Date()), 30000);
+    return () => {
+      clearInterval(interval);
+      clearInterval(timerInterval);
+    };
   }, [router]);
 
   const addToCart = (item: any) => {
@@ -244,6 +249,12 @@ export default function MemberDashboard() {
     }
   };
 
+  const baseDuration = activeSession?.savedMinutesUsed || activeSession?.package?.duration;
+  const duration = baseDuration ? baseDuration + (activeSession?.extraMinutes || 0) : null;
+  const expireTime = duration ? new Date(activeSession.startTime).getTime() + duration * 60000 : null;
+  const remainingMs = expireTime ? expireTime - now.getTime() : null;
+  const isExpired = remainingMs !== null && remainingMs <= 0;
+
   if (loading) return <div className="min-h-screen bg-stone-950 flex justify-center items-center"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-500"></div></div>;
 
   return (
@@ -307,13 +318,75 @@ export default function MemberDashboard() {
             <div className="space-y-6">
               {/* Active Session Banner */}
               {activeSession && (
-                <div className={`p-4 rounded-2xl border ${activeSession.status === 'PENDING' ? 'bg-amber-900/20 border-amber-500/30' : 'bg-emerald-900/20 border-emerald-500/30'} cursor-pointer`} onClick={() => setActiveTab("history")}>
-                  <div className="flex justify-between items-center">
+                <div className={`p-4 rounded-2xl border ${activeSession.status === 'PENDING' ? 'bg-amber-900/20 border-amber-500/30' : 'bg-emerald-900/20 border-emerald-500/30'}`}>
+                  <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="font-bold text-sm text-stone-300">Bạn đang có 1 phiên {activeSession.status === 'PENDING' ? 'chờ duyệt' : 'hoạt động'}</h3>
-                      <p className="text-xs text-emerald-400 mt-1">Giao diện đã chuyển sang chế độ Gọi Thêm Nước.</p>
+                      <h3 className="font-bold text-sm text-stone-300">Phiên {activeSession.status === 'PENDING' ? 'đang chờ duyệt' : 'hiện tại'}</h3>
+                      <p className="text-xs text-emerald-400 mt-1">Bạn có thể gọi thêm nước tại đây.</p>
+                    </div>
+                    <div className="text-right">
+                      {activeSession.status === 'ACTIVE' && (
+                        <>
+                          <p className="text-xs text-stone-400 mb-0.5">Thời gian</p>
+                          {(() => {
+                            if (remainingMs === null) return <p className="font-medium text-sm">Không giới hạn</p>;
+                            if (isExpired) return <p className="font-bold text-red-500 text-sm animate-pulse">Đã hết giờ!</p>;
+                            const hours = Math.floor(remainingMs / 3600000);
+                            const minutes = Math.floor((remainingMs % 3600000) / 60000);
+                            return <p className="font-bold text-emerald-400 text-sm">{hours}h {minutes}m</p>;
+                          })()}
+                        </>
+                      )}
                     </div>
                   </div>
+
+                  {activeSession.status === 'ACTIVE' && (
+                    <div className="mt-2 border-t border-white/5 pt-3">
+                      {activeSession.orders?.find((o: any) => o.isExtension && o.status === 'PENDING') ? (
+                        <div className="p-3 border border-amber-500/30 bg-amber-900/20 rounded-xl text-center">
+                          <p className="text-amber-400 text-sm font-bold animate-pulse">Đang chờ duyệt gia hạn...</p>
+                        </div>
+                      ) : (
+                        duration && (
+                          <div className="flex flex-col gap-2">
+                            <button 
+                              onClick={() => setIsExtending(!isExtending)}
+                              className="w-full bg-purple-600/20 border border-purple-500 hover:bg-purple-600/30 text-purple-400 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                            >
+                              <span>{isExtending ? "Đóng" : "⏳ Gia Hạn Thêm Giờ"}</span>
+                            </button>
+
+                            {isExtending && (
+                              <div className="p-4 border border-purple-500/30 bg-purple-900/10 rounded-xl animate-slide-down">
+                                <h5 className="font-bold text-sm text-purple-300 mb-3">Chọn gói gia hạn:</h5>
+                                <div className="space-y-2 mb-4">
+                                  {packages.map(pkg => (
+                                    <div 
+                                      key={pkg.id} 
+                                      onClick={() => setExtendPkg(pkg.id)}
+                                      className={`p-3 rounded-lg border cursor-pointer transition-all ${extendPkg === pkg.id ? 'bg-purple-900/40 border-purple-500' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                                    >
+                                      <div className="flex justify-between items-center text-sm">
+                                        <span>{pkg.name}</span>
+                                        <span className="font-bold text-purple-400">{pkg.price.toLocaleString('vi-VN')}đ</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                <button 
+                                  onClick={handleExtend}
+                                  disabled={extending || !extendPkg}
+                                  className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg transition-colors disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                                >
+                                  {extending ? "Đang xử lý..." : "Xác nhận Gia hạn"}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -491,55 +564,6 @@ export default function MemberDashboard() {
                       />
                       <p className="text-stone-500 font-mono mt-2 text-xs text-center">{activeSession.accessCode}</p>
                     </div>
-                  )}
-
-                  {activeSession.status === 'ACTIVE' && (
-                    <>
-                      {activeSession.orders?.find((o: any) => o.isExtension && o.status === 'PENDING') ? (
-                        <div className="mt-4 p-3 border border-amber-500/30 bg-amber-900/20 rounded-xl text-center">
-                          <p className="text-amber-400 text-sm font-bold animate-pulse">Đang chờ thu ngân duyệt gia hạn...</p>
-                          <p className="text-xs text-amber-500/70 mt-1">Bạn có thể ra quầy thanh toán hoặc đợi nhân viên tới.</p>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex gap-2 mt-4">
-                            <button onClick={() => setActiveTab("menu")} className="flex-1 bg-emerald-600/20 border border-emerald-500 hover:bg-emerald-600/30 text-emerald-400 py-3 rounded-xl font-bold transition-colors">
-                              Menu Nước
-                            </button>
-                            <button onClick={() => setIsExtending(!isExtending)} className="flex-1 bg-purple-600/20 border border-purple-500 hover:bg-purple-600/30 text-purple-400 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-1">
-                              <span>{isExtending ? "Đóng" : "+ Gia Hạn"}</span>
-                            </button>
-                          </div>
-                          
-                          {isExtending && (
-                            <div className="mt-4 p-4 border border-purple-500/30 bg-purple-900/10 rounded-xl animate-slide-down">
-                              <h5 className="font-bold text-sm text-purple-300 mb-3">Chọn gói gia hạn:</h5>
-                              <div className="space-y-2 mb-4">
-                                {packages.map(pkg => (
-                                  <div 
-                                    key={pkg.id} 
-                                    onClick={() => setExtendPkg(pkg.id)}
-                                    className={`p-3 rounded-lg border cursor-pointer transition-all ${extendPkg === pkg.id ? 'bg-purple-900/40 border-purple-500' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
-                                  >
-                                    <div className="flex justify-between items-center text-sm">
-                                      <span>{pkg.name}</span>
-                                      <span className="font-bold text-purple-400">{pkg.price.toLocaleString('vi-VN')}đ</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                              <button 
-                                onClick={handleExtend}
-                                disabled={extending || !extendPkg}
-                                className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg transition-colors disabled:opacity-50"
-                              >
-                                {extending ? "Đang xử lý..." : "Xác nhận & Thanh toán"}
-                              </button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </>
                   )}
                 </div>
               )}
