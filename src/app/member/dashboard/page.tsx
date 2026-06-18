@@ -47,6 +47,8 @@ export default function MemberDashboard() {
         const s = await sessionRes.json();
         if (s && (s.status === "ACTIVE" || s.status === "PENDING")) {
           setActiveSession(s);
+        } else {
+          setActiveSession(null);
         }
       }
 
@@ -73,6 +75,10 @@ export default function MemberDashboard() {
 
   useEffect(() => {
     fetchData();
+    const interval = setInterval(() => {
+      fetchData();
+    }, 10000); // Auto-refresh every 10 seconds
+    return () => clearInterval(interval);
   }, [router]);
 
   const addToCart = (item: any) => {
