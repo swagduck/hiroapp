@@ -123,7 +123,7 @@ export default function OrdersTab() {
                 <div key={order.id} className="bg-stone-900 border-l-4 border-l-amber-500 border border-white/10 rounded-xl p-4 shadow-lg relative overflow-hidden animate-slide-up">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <span className="bg-stone-800 text-stone-300 text-xs px-2 py-1 rounded font-mono">Mã bàn: {order.session?.tableNumber || order.session?.code}</span>
+                      <span className="bg-stone-800 text-stone-300 text-xs px-2 py-1 rounded font-mono">Phiên/Mã: {order.session?.accessCode || "Không rõ"}</span>
                       <p className="text-xs text-stone-500 mt-1">{new Date(order.createdAt).toLocaleTimeString('vi-VN')}</p>
                     </div>
                     <button 
@@ -167,7 +167,7 @@ export default function OrdersTab() {
               completedOrders.map(order => (
                 <div key={order.id} className="bg-stone-900/50 border border-white/5 rounded-xl p-3 flex justify-between items-center">
                   <div>
-                    <span className="text-stone-300 font-medium text-sm">Bàn {order.session?.tableNumber || order.session?.code}</span>
+                    <span className="text-stone-300 font-medium text-sm">Phiên: {order.session?.accessCode || "Không rõ"}</span>
                     <p className="text-xs text-stone-500">{new Date(order.updatedAt).toLocaleTimeString('vi-VN')}</p>
                     <div className="text-xs text-stone-400 mt-1">
                       {order.items.map((i: any) => `${i.quantity}x ${i.menuItem.name}`).join(', ')}
