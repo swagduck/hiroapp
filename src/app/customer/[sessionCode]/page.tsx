@@ -12,9 +12,15 @@ export default function CustomerOrderPage() {
   
   const [session, setSession] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [packages, setPackages] = useState<any[]>([]);
   const [cart, setCart] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
+
+  // Extend States
+  const [isExtending, setIsExtending] = useState(false);
+  const [extendPkg, setExtendPkg] = useState<string | null>(null);
+  const [extending, setExtending] = useState(false);
 
   // Notification States
   const [notificationPermission, setNotificationPermission] = useState("default");
@@ -93,9 +99,10 @@ export default function CustomerOrderPage() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [resSession, resMenu] = await Promise.all([
+        const [resSession, resMenu, resPackages] = await Promise.all([
           fetch(`/api/sessions/${sessionCode}?t=${new Date().getTime()}`, { cache: 'no-store' }),
-          fetch(`/api/menu`)
+          fetch(`/api/menu`),
+          fetch(`/api/packages`)
         ]);
         
         if (resSession.ok) {
@@ -106,6 +113,11 @@ export default function CustomerOrderPage() {
         if (resMenu.ok) {
           const dataMenu = await resMenu.json();
           setMenuItems(dataMenu);
+        }
+
+        if (resPackages.ok) {
+          const dataPackages = await resPackages.json();
+          setPackages(dataPackages.filter((p: any) => p.isActive));
         }
       } catch (error) {
         console.error("Lỗi lấy dữ liệu:", error);
@@ -176,6 +188,30 @@ export default function CustomerOrderPage() {
     } catch (error) {
       console.error(error);
       toast.error("Lỗi kết nối");
+    }
+  };
+
+  const handleExtend = async () => {
+    if (!extendPkg) return toast.error("Vui lòng chọn 1 gói!");
+    setExtending(true);
+    try {
+      const res = await fetch(`/api/sessions/${sessionCode}/extend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packageId: extendPkg })
+      });
+      if (res.ok) {
+        toast.success("Đã gửi yêu cầu gia hạn! Nhân viên sẽ ra hỗ trợ bạn thanh toán.");
+        setIsExtending(false);
+        setExtendPkg(null);
+        fetchSession();
+      } else {
+        toast.error("Có lỗi xảy ra");
+      }
+    } catch(e) {
+      toast.error("Lỗi kết nối");
+    } finally {
+      setExtending(false);
     }
   };
 
@@ -286,9 +322,57 @@ export default function CustomerOrderPage() {
       {isExpired && (
         <div className="bg-red-600/30 border border-red-500 text-red-200 p-3 mx-4 mt-4 rounded-xl flex items-center shadow-lg">
           <span className="mr-2 text-lg">⏰</span>
-          <span className="text-sm font-bold">Đã hết thời gian. Vui lòng đến quầy gia hạn nếu muốn ngồi thêm!</span>
+          <span className="text-sm font-bold">Đã hết thời gian. Vui lòng gia hạn nếu muốn ngồi thêm!</span>
         </div>
       )}
+
+      {/* EXTEND UI */}
+      <div className="mx-4 mt-4">
+        {session?.orders?.find((o: any) => o.isExtension && o.status === 'PENDING') ? (
+          <div className="p-3 border border-amber-500/30 bg-amber-900/20 rounded-xl text-center">
+            <p className="text-amber-400 text-sm font-bold animate-pulse">Đang chờ thu ngân duyệt gia hạn...</p>
+            <p className="text-xs text-amber-500/70 mt-1">Nhân viên sẽ ra hỗ trợ bạn thanh toán.</p>
+          </div>
+        ) : (
+          duration && (
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={() => setIsExtending(!isExtending)}
+                className="w-full bg-purple-600/20 border border-purple-500 hover:bg-purple-600/30 text-purple-400 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+              >
+                <span>{isExtending ? "Đóng" : "⏳ Gia Hạn Thêm Giờ"}</span>
+              </button>
+
+              {isExtending && (
+                <div className="p-4 border border-purple-500/30 bg-purple-900/10 rounded-xl animate-slide-down">
+                  <h5 className="font-bold text-sm text-purple-300 mb-3">Chọn gói gia hạn:</h5>
+                  <div className="space-y-2 mb-4">
+                    {packages.map(pkg => (
+                      <div 
+                        key={pkg.id} 
+                        onClick={() => setExtendPkg(pkg.id)}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${extendPkg === pkg.id ? 'bg-purple-900/40 border-purple-500' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                      >
+                        <div className="flex justify-between items-center text-sm">
+                          <span>{pkg.name}</span>
+                          <span className="font-bold text-purple-400">{pkg.price.toLocaleString('vi-VN')}đ</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    onClick={handleExtend}
+                    disabled={extending || !extendPkg}
+                    className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg transition-colors disabled:opacity-50 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                  >
+                    {extending ? "Đang xử lý..." : "Xác nhận Gia hạn"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        )}
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 p-4 relative overflow-hidden">
