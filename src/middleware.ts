@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
   const isPublicAPI = 
     path.startsWith('/api/auth') || 
     path.startsWith('/api/seed') || 
+    path.startsWith('/api/cron') ||
     (path.startsWith('/api/packages') && request.method === 'GET') ||
     (path.startsWith('/api/menu') && request.method === 'GET') ||
     (path.startsWith('/api/sessions/') && request.method === 'GET') ||

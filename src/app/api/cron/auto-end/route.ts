@@ -6,7 +6,10 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get('authorization');
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const isVercelCron = process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`;
+    const isClientCron = request.headers.get('x-client-cron') === 'true';
+
+    if (!isVercelCron && !isClientCron) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

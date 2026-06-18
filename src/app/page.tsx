@@ -206,6 +206,22 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
+  // Client-side fallback for auto-ending sessions
+  useEffect(() => {
+    const autoEndInterval = setInterval(() => {
+      fetch('/api/cron/auto-end', {
+        headers: { 'x-client-cron': 'true' }
+      }).catch(() => {});
+    }, 5 * 60 * 1000); // 5 phút
+
+    // Chạy lần đầu khi load dashboard
+    fetch('/api/cron/auto-end', {
+      headers: { 'x-client-cron': 'true' }
+    }).catch(() => {});
+
+    return () => clearInterval(autoEndInterval);
+  }, []);
+
   return (
     <div className="flex h-screen bg-[#0a0f0d] overflow-hidden text-stone-200">
       {/* Sidebar (Desktop only) */}
