@@ -74,15 +74,26 @@ export default function StaffTab() {
                   </span>
                 </td>
                 <td className="p-4 text-right">
-                  <select 
-                    value={user.role} 
-                    onChange={(e) => handleChangeRole(user.id, e.target.value)}
-                    className="bg-stone-900 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
-                  >
-                    <option value="CUSTOMER">Thành viên</option>
-                    <option value="STAFF">Nhân viên (STAFF)</option>
-                    <option value="ADMIN">Chủ quán (ADMIN)</option>
-                  </select>
+                  <div className="flex bg-black/40 rounded-lg border border-white/5 p-1 w-max ml-auto shadow-inner">
+                    <button 
+                      onClick={() => handleChangeRole(user.id, "CUSTOMER")}
+                      className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${user.role === 'CUSTOMER' ? 'bg-stone-700 text-white shadow-md' : 'text-stone-500 hover:text-stone-300 hover:bg-white/5'}`}
+                    >
+                      Khách
+                    </button>
+                    <button 
+                      onClick={() => handleChangeRole(user.id, "STAFF")}
+                      className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${user.role === 'STAFF' ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.4)]' : 'text-stone-500 hover:text-blue-400 hover:bg-blue-500/10'}`}
+                    >
+                      Nhân viên
+                    </button>
+                    <button 
+                      onClick={() => handleChangeRole(user.id, "ADMIN")}
+                      className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all ${user.role === 'ADMIN' ? 'bg-red-600 text-white shadow-[0_0_10px_rgba(220,38,38,0.4)]' : 'text-stone-500 hover:text-red-400 hover:bg-red-500/10'}`}
+                    >
+                      Quản lý
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
