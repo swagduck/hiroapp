@@ -37,7 +37,13 @@ export async function POST(request: Request) {
       // Fetch package to get the price
       const pkg = await tx.package.findUnique({ where: { id: packageId } });
       const pkgPrice = pkg?.price || 0;
-      const totalAmount = pkgPrice + (orderTotal || 0);
+      
+      // orderTotal is passed from getCartTotal() which ALREADY includes pkgPrice
+      // So we just use orderTotal (if client provides it accurately)
+      // But it's better to recalculate safely:
+      // However, client already handled the free drink logic in getCartTotal(),
+      // so using orderTotal is safer for now to keep logic consistent.
+      const totalAmount = orderTotal || pkgPrice;
       
       const claimed = (pkg?.includesDrink || updateFreeDrink) ? true : false;
 
@@ -63,7 +69,7 @@ export async function POST(request: Request) {
           data: {
             sessionId: newSession.id,
             status: "PENDING",
-            totalAmount: orderTotal,
+            totalAmount: Math.max(0, orderTotal - pkgPrice),
             paymentStatus: "UNPAID",
             transId, 
             items: {
