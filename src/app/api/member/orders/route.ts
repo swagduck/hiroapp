@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyJwtToken } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { config as zaloConfig, createMac } from "@/lib/zalopay";
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -23,6 +26,12 @@ export async function POST(request: Request) {
     // Sinh mã truy cập ngẫu nhiên
     const accessCode = Math.random().toString(36).substring(2, 7).toUpperCase();
 
+    const date = new Date();
+    const yymmdd = date.getFullYear().toString().substring(2) + 
+                  ('0' + (date.getMonth() + 1)).slice(-2) + 
+                  ('0' + date.getDate()).slice(-2);
+    const transId = `${yymmdd}_${Math.floor(Math.random() * 1000000)}`;
+
     // Dùng transaction
     const session = await prisma.$transaction(async (tx) => {
       // Fetch package to get the price
@@ -37,11 +46,12 @@ export async function POST(request: Request) {
           userId: payload.userId,
           packageId,
           accessCode,
-          startTime: new Date(), // Giờ bắt đầu tạm, khi staff duyệt sẽ update lại nếu cần
-          status: "PENDING",
+          startTime: new Date(), 
+          status: "PENDING_PAYMENT",
           paymentStatus: "UNPAID",
           totalAmount,
-          freeDrinkClaimed: claimed // Đánh dấu đã dùng quyền lợi ly nước
+          transId,
+          freeDrinkClaimed: claimed 
         },
         include: {
           package: true
@@ -54,6 +64,8 @@ export async function POST(request: Request) {
             sessionId: newSession.id,
             status: "PENDING",
             totalAmount: orderTotal,
+            paymentStatus: "UNPAID",
+            transId, 
             items: {
               create: orderItems.map((item: any) => ({
                 menuItemId: item.id,
@@ -74,6 +86,59 @@ export async function POST(request: Request) {
 
       return newSession;
     });
+
+    if (session.totalAmount && session.totalAmount > 0) {
+      // Call ZaloPay Gateway
+      const host = request.headers.get("host");
+      const protocol = host?.includes("localhost") ? "http" : "https";
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+      
+      const embed_data = JSON.stringify({ redirecturl: `${appUrl}/member/dashboard` });
+      const orderItemsZalo = JSON.stringify([{ id: session.id, name: "Thanh toán Gói và Nước" }]);
+      const amount = session.totalAmount;
+      const description = `Thanh toán phiên #${transId}`;
+      const app_time = Date.now();
+      const app_user = "member";
+
+      const dataForMac = [
+        zaloConfig.app_id,
+        transId,
+        app_user,
+        amount,
+        app_time,
+        embed_data,
+        orderItemsZalo
+      ].join('|');
+
+      const mac = createMac(dataForMac);
+
+      const orderReq = {
+        app_id: zaloConfig.app_id,
+        app_user,
+        app_time,
+        amount,
+        app_trans_id: transId,
+        embed_data,
+        item: orderItemsZalo,
+        description,
+        callback_url: `${appUrl}/api/webhooks/zalopay`,
+        mac,
+        bank_code: "" 
+      };
+
+      const zaloRes = await fetch(zaloConfig.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(orderReq as any).toString()
+      });
+
+      const zaloData = await zaloRes.json();
+      if (zaloData.return_code === 1) {
+        return NextResponse.json({ success: true, session, orderurl: zaloData.order_url });
+      } else {
+        console.error("ZaloPay order error:", zaloData);
+      }
+    }
 
     return NextResponse.json({ success: true, session });
 

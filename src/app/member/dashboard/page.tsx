@@ -286,6 +286,12 @@ export default function MemberDashboard() {
       });
 
       if (res.ok) {
+        const resData = await res.json();
+        if (resData.orderurl) {
+          toast.loading("Đang chuyển hướng ZaloPay...");
+          window.location.href = resData.orderurl;
+          return;
+        }
         toast.success("Gửi đơn thành công! Vui lòng ra quầy hoặc đợi thu ngân duyệt.");
         setTimeout(() => window.location.reload(), 1500);
       } else {
