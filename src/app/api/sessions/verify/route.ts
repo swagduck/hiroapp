@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   try {
     const session = await prisma.session.findUnique({
       where: { accessCode: code.toUpperCase() },
-      include: { package: true }
+      include: { package: true, user: true }
     });
 
     if (!session) {

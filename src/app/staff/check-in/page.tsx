@@ -21,6 +21,38 @@ export default function CheckInPage() {
     verifyCode(code);
   };
 
+  const playSound = (isValid: boolean) => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      if (isValid) {
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); 
+        oscillator.frequency.setValueAtTime(1108.73, audioCtx.currentTime + 0.1); 
+        gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.3);
+      } else {
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        for (let i = 0; i < 3; i++) {
+            gainNode.gain.setValueAtTime(1, audioCtx.currentTime + i * 0.2);
+            gainNode.gain.setValueAtTime(0.01, audioCtx.currentTime + i * 0.2 + 0.1);
+        }
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.6);
+      }
+    } catch (e) {
+      console.error("Audio playback failed", e);
+    }
+  };
+
   const verifyCode = async (code: string) => {
     if (!code) return;
     setLoading(true);
@@ -28,9 +60,11 @@ export default function CheckInPage() {
       const res = await fetch(`/api/sessions/verify?code=${code}`);
       const data = await res.json();
       setScanResult(data);
+      playSound(data.valid);
     } catch (error) {
       console.error(error);
       setScanResult({ valid: false, message: "Lỗi kết nối máy chủ" });
+      playSound(false);
     } finally {
       setLoading(false);
       setManualCode("");
@@ -95,6 +129,12 @@ export default function CheckInPage() {
               <h2 className={`text-2xl font-bold mb-2 ${scanResult.valid ? 'text-green-400' : 'text-red-400'}`}>
                 {scanResult.valid ? "HỢP LỆ - MỜI VÀO" : "VÉ KHÔNG HỢP LỆ"}
               </h2>
+              {scanResult.session?.user && (
+                <div className="bg-amber-500/20 border border-amber-500/50 text-amber-400 px-4 py-2 rounded-xl mb-2 flex items-center justify-center gap-2">
+                  <span className="text-xl">🌟</span>
+                  <span className="font-bold text-lg">Hội viên - {scanResult.session.user.name}</span>
+                </div>
+              )}
               <p className="text-stone-300 text-lg">{scanResult.message}</p>
               
               {scanResult.session && (
