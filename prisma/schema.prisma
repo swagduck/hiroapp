@@ -58,6 +58,32 @@ model Package {
   sessions    Session[]
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+model Voucher {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  code          String       @unique
+  description   String?
+  discountType  DiscountType @default(PERCENTAGE)
+  discountValue Float        // e.g. 20 (for 20%) or 15000 (for 15k)
+  maxDiscount   Float?       // Optional max discount amount for percentage type
+  minOrderValue Float?       // Minimum order value to apply
+  validFrom     DateTime?
+  validUntil    DateTime?
+  isActive      Boolean      @default(true)
+  usageLimit    Int?         // Total number of times this voucher can be used
+  usedCount     Int          @default(0)
+  
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  orders        Order[]
+  sessions      Session[]
+}
+
 enum SessionStatus {
   PENDING_PAYMENT
   PRE_BOOKED
@@ -91,6 +117,11 @@ model Session {
   savedMinutesUsed Int? // Số phút bảo lưu được dùng cho phiên này (nếu có)
   extraMinutes Int @default(0) // Số phút được gia hạn thêm
   
+  // Voucher info
+  voucherId   String?  @db.ObjectId
+  voucher     Voucher? @relation(fields: [voucherId], references: [id])
+  discountAmount Float? @default(0)
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -137,6 +168,11 @@ model Order {
   totalAmount Float
   transId     String?
   
+  // Voucher info
+  voucherId   String?  @db.ObjectId
+  voucher     Voucher? @relation(fields: [voucherId], references: [id])
+  discountAmount Float? @default(0)
+
   items       OrderItem[]
   
   // Extension Fields

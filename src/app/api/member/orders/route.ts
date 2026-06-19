@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { packageId, orderItems, orderTotal, updateFreeDrink } = body;
+    const { packageId, orderItems, orderTotal, updateFreeDrink, voucherCode } = body;
 
     // Sinh mã truy cập ngẫu nhiên
     const accessCode = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -38,13 +38,45 @@ export async function POST(request: Request) {
       const pkg = await tx.package.findUnique({ where: { id: packageId } });
       const pkgPrice = pkg?.price || 0;
       
-      // orderTotal is passed from getCartTotal() which ALREADY includes pkgPrice
-      // So we just use orderTotal (if client provides it accurately)
-      // But it's better to recalculate safely:
-      // However, client already handled the free drink logic in getCartTotal(),
-      // so using orderTotal is safer for now to keep logic consistent.
-      const totalAmount = orderTotal || pkgPrice;
-      
+      let baseTotalAmount = orderTotal || pkgPrice;
+      let finalDiscountAmount = 0;
+      let usedVoucherId = null;
+
+      // Validate Voucher if provided
+      if (voucherCode) {
+        const voucher = await tx.voucher.findUnique({ where: { code: voucherCode } });
+        if (voucher && voucher.isActive) {
+          const now = new Date();
+          const validFromOk = !voucher.validFrom || now >= voucher.validFrom;
+          const validUntilOk = !voucher.validUntil || now <= voucher.validUntil;
+          const usageOk = !voucher.usageLimit || voucher.usedCount < voucher.usageLimit;
+          const minOrderOk = !voucher.minOrderValue || baseTotalAmount >= voucher.minOrderValue;
+
+          if (validFromOk && validUntilOk && usageOk && minOrderOk) {
+            let discount = 0;
+            if (voucher.discountType === "PERCENTAGE") {
+              discount = baseTotalAmount * (voucher.discountValue / 100);
+              if (voucher.maxDiscount && discount > voucher.maxDiscount) {
+                discount = voucher.maxDiscount;
+              }
+            } else {
+              discount = voucher.discountValue;
+            }
+            if (discount > baseTotalAmount) discount = baseTotalAmount;
+            
+            finalDiscountAmount = Math.floor(discount);
+            usedVoucherId = voucher.id;
+
+            // Increment usage
+            await tx.voucher.update({
+              where: { id: voucher.id },
+              data: { usedCount: { increment: 1 } }
+            });
+          }
+        }
+      }
+
+      const finalTotalAmount = Math.max(0, baseTotalAmount - finalDiscountAmount);
       const claimed = (pkg?.includesDrink || updateFreeDrink) ? true : false;
 
       const newSession = await tx.session.create({
@@ -55,9 +87,11 @@ export async function POST(request: Request) {
           startTime: new Date(), 
           status: "PENDING_PAYMENT",
           paymentStatus: "UNPAID",
-          totalAmount,
+          totalAmount: finalTotalAmount,
           transId,
-          freeDrinkClaimed: claimed 
+          freeDrinkClaimed: claimed,
+          voucherId: usedVoucherId,
+          discountAmount: finalDiscountAmount
         },
         include: {
           package: true

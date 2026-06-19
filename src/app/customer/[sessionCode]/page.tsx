@@ -23,6 +23,11 @@ export default function CustomerOrderPage() {
   const [extendPkg, setExtendPkg] = useState<string | null>(null);
   const [extending, setExtending] = useState(false);
 
+  // Voucher States
+  const [voucherCode, setVoucherCode] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState<{code: string, discountAmount: number} | null>(null);
+  const [validatingVoucher, setValidatingVoucher] = useState(false);
+
   // Notification States
   const [notificationPermission, setNotificationPermission] = useState("default");
   const [hasNotifiedWarning, setHasNotifiedWarning] = useState(false);
@@ -172,29 +177,84 @@ export default function CustomerOrderPage() {
     toast.success(`Đã thêm ${item.name} vào giỏ hàng!`);
   };
 
+  const getCartTotal = () => {
+    let totalAmount = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const isMember = !!session?.userId;
+    if (isMember) {
+      totalAmount = totalAmount * 0.9;
+    }
+    return totalAmount;
+  };
+
+  const getBaseTotal = () => {
+    let totalAmount = getCartTotal();
+    const isMember = !!session?.userId;
+    
+    // Trừ 1 ly nước nếu gói có kèm nước và chưa claim
+    if (session?.package?.includesDrink && !session?.freeDrinkClaimed && cart.length > 0) {
+      const firstDrinkPrice = isMember ? cart[0].price * 0.9 : cart[0].price;
+      totalAmount -= firstDrinkPrice;
+    }
+    return Math.max(0, totalAmount);
+  };
+
+  const getFinalTotal = () => {
+    const base = getBaseTotal();
+    if (appliedVoucher && appliedVoucher.discountAmount > 0) {
+      return Math.max(0, base - appliedVoucher.discountAmount);
+    }
+    return base;
+  };
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setValidatingVoucher(true);
+    try {
+      const res = await fetch("/api/vouchers/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: voucherCode.trim(), orderTotal: getBaseTotal() })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAppliedVoucher({ code: data.code, discountAmount: data.discountAmount });
+        toast.success(`Áp dụng mã giảm giá thành công! Giảm ${data.discountAmount.toLocaleString('vi-VN')}đ`);
+      } else {
+        setAppliedVoucher(null);
+        toast.error(data.error || "Mã giảm giá không hợp lệ");
+      }
+    } catch (e) {
+      toast.error("Lỗi kiểm tra mã giảm giá");
+    } finally {
+      setValidatingVoucher(false);
+    }
+  };
+
+  useEffect(() => {
+    if (appliedVoucher) {
+      fetch("/api/vouchers/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: appliedVoucher.code, orderTotal: getBaseTotal() })
+      }).then(res => res.json()).then(data => {
+        if (!data.success) {
+          setAppliedVoucher(null);
+          setVoucherCode("");
+          toast.error(`Mã giảm giá đã bị gỡ: ${data.error}`);
+        } else if (data.discountAmount !== appliedVoucher.discountAmount) {
+          setAppliedVoucher({ ...appliedVoucher, discountAmount: data.discountAmount });
+        }
+      });
+    }
+  }, [cart]);
+
   const submitOrder = async () => {
     if (cart.length === 0 || !session) return;
     const toastId = toast.loading("Đang khởi tạo thanh toán...");
     
     const isMember = !!session.userId;
-    let totalAmount = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    
-    if (isMember) {
-      totalAmount = totalAmount * 0.9;
-    }
-
-    const orderItems = cart.map(item => ({
-      menuItemId: item.id,
-      quantity: item.quantity,
-      price: isMember ? item.price * 0.9 : item.price
-    }));
-
+    const totalAmount = getFinalTotal();
     const isComboAvailable = session?.package?.includesDrink && !session?.freeDrinkClaimed;
-    if (isComboAvailable && cart.length > 0) {
-      const firstDrinkPrice = isMember ? cart[0].price * 0.9 : cart[0].price;
-      totalAmount -= firstDrinkPrice;
-      orderItems[0].price = 0;
-    }
 
     try {
       const res = await fetch('/api/orders', {
@@ -521,21 +581,57 @@ export default function CustomerOrderPage() {
                     </div>
                   </div>
                 )})}
-                <div className="pt-4 border-t border-white/10 flex justify-between items-center">
-                  <span className="font-medium">Tổng cộng:</span>
-                  <span className="text-xl font-bold text-emerald-500">
-                    {(() => {
-                      const isMember = !!session?.userId;
-                      let total = cart.reduce((a, b) => a + b.price * b.quantity, 0);
-                      if (isMember) total = total * 0.9;
-                      
-                      if (session?.package?.includesDrink && !session?.freeDrinkClaimed && cart.length > 0) {
-                        const firstPrice = isMember ? cart[0].price * 0.9 : cart[0].price;
-                        total -= firstPrice;
-                      }
-                      return total.toLocaleString('vi-VN');
-                    })()}đ
-                  </span>
+                <div className="pt-4 border-t border-white/10 space-y-3 mt-2">
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      placeholder="Mã giảm giá" 
+                      value={voucherCode}
+                      onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                      disabled={validatingVoucher}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 uppercase placeholder:normal-case text-sm"
+                    />
+                    {appliedVoucher ? (
+                      <button 
+                        onClick={() => {
+                          setAppliedVoucher(null);
+                          setVoucherCode("");
+                        }}
+                        className="bg-rose-500/20 text-rose-400 px-4 py-2 rounded-xl text-sm font-bold border border-rose-500/30 whitespace-nowrap"
+                      >
+                        Bỏ mã
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={handleApplyVoucher}
+                        disabled={!voucherCode.trim() || validatingVoucher}
+                        className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-500 border border-emerald-500/30 disabled:opacity-50 px-4 py-2 rounded-xl text-sm font-bold transition-colors whitespace-nowrap"
+                      >
+                        {validatingVoucher ? "..." : "Áp dụng"}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Tạm tính:</span>
+                    <span className="text-xl font-bold text-white">
+                      {getBaseTotal().toLocaleString('vi-VN')}đ
+                    </span>
+                  </div>
+                  
+                  {appliedVoucher && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-emerald-500">Giảm giá ({appliedVoucher.code}):</span>
+                      <span className="text-emerald-500 font-bold">-{appliedVoucher.discountAmount.toLocaleString('vi-VN')}đ</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center border-t border-white/10 pt-3">
+                    <span className="font-bold">Tổng thanh toán:</span>
+                    <span className="text-2xl font-black text-emerald-500">
+                      {getFinalTotal().toLocaleString('vi-VN')}đ
+                    </span>
+                  </div>
                 </div>
                 {!!session?.userId && cart.length > 0 && (
                   <div className="bg-emerald-900/10 text-emerald-400 text-xs p-3 rounded-lg border border-emerald-500/20 flex items-center gap-2 mt-2">

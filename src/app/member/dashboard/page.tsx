@@ -28,13 +28,18 @@ export default function MemberDashboard() {
   const [extendPkg, setExtendPkg] = useState<string | null>(null);
   const [extending, setExtending] = useState(false);
 
-  // Mua hàng
+  // Menu / Booking
+  const [categories, setCategories] = useState<any[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
-  const [menuItems, setMenuItems] = useState<any[]>([]);
-  const [selectedPkg, setSelectedPkg] = useState<string | null>(null);
   const [cart, setCart] = useState<any[]>([]);
+  const [selectedPkg, setSelectedPkg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [useFreeDrink, setUseFreeDrink] = useState(false);
+
+  // Voucher States
+  const [voucherCode, setVoucherCode] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState<{code: string, discountAmount: number} | null>(null);
+  const [validatingVoucher, setValidatingVoucher] = useState(false);
 
   useEffect(() => {
     if ("Notification" in window) {
@@ -281,7 +286,8 @@ export default function MemberDashboard() {
           packageId: selectedPkg,
           orderItems,
           orderTotal: totalAmount,
-          updateFreeDrink
+          updateFreeDrink,
+          voucherCode: appliedVoucher?.code
         })
       });
 
@@ -326,6 +332,58 @@ export default function MemberDashboard() {
 
     return pkgPrice + Math.max(0, totalDrinks);
   };
+
+  const getFinalTotal = () => {
+    const total = getCartTotal();
+    if (appliedVoucher && appliedVoucher.discountAmount > 0) {
+      return Math.max(0, total - appliedVoucher.discountAmount);
+    }
+    return total;
+  };
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setValidatingVoucher(true);
+    try {
+      const res = await fetch("/api/vouchers/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: voucherCode.trim(), orderTotal: getCartTotal() })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAppliedVoucher({ code: data.code, discountAmount: data.discountAmount });
+        toast.success(`Áp dụng mã giảm giá thành công! Giảm ${data.discountAmount.toLocaleString('vi-VN')}đ`);
+      } else {
+        setAppliedVoucher(null);
+        toast.error(data.error || "Mã giảm giá không hợp lệ");
+      }
+    } catch (e) {
+      toast.error("Lỗi kiểm tra mã giảm giá");
+    } finally {
+      setValidatingVoucher(false);
+    }
+  };
+
+  // Tự động gỡ voucher nếu giỏ hàng thay đổi khiến đơn hàng không đủ điều kiện
+  useEffect(() => {
+    if (appliedVoucher) {
+      // Re-validate silently when cart changes
+      fetch("/api/vouchers/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: appliedVoucher.code, orderTotal: getCartTotal() })
+      }).then(res => res.json()).then(data => {
+        if (!data.success) {
+          setAppliedVoucher(null);
+          setVoucherCode("");
+          toast.error(`Mã giảm giá đã bị gỡ: ${data.error}`);
+        } else if (data.discountAmount !== appliedVoucher.discountAmount) {
+          setAppliedVoucher({ ...appliedVoucher, discountAmount: data.discountAmount });
+        }
+      });
+    }
+  }, [cart, selectedPkg]);
 
   const getDiscountAmount = () => {
     let totalDrinksOriginal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -800,9 +858,53 @@ export default function MemberDashboard() {
                 </div>
               )}
 
-              <div className="flex justify-between items-center pt-4">
-                <span className="text-stone-400">Tổng thanh toán:</span>
-                <span className="text-2xl font-black text-emerald-400">{getCartTotal().toLocaleString('vi-VN')}đ</span>
+              <div className="pt-4 border-t border-white/5 space-y-3 mt-4">
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Mã giảm giá (nếu có)" 
+                    value={voucherCode}
+                    onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                    disabled={validatingVoucher}
+                    className="flex-1 bg-stone-900 border border-white/10 rounded-xl px-4 py-2 uppercase placeholder:normal-case text-sm"
+                  />
+                  {appliedVoucher ? (
+                    <button 
+                      onClick={() => {
+                        setAppliedVoucher(null);
+                        setVoucherCode("");
+                      }}
+                      className="bg-rose-500/20 text-rose-400 px-4 py-2 rounded-xl text-sm font-bold border border-rose-500/30 whitespace-nowrap"
+                    >
+                      Bỏ mã
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={handleApplyVoucher}
+                      disabled={!voucherCode.trim() || validatingVoucher}
+                      className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors whitespace-nowrap"
+                    >
+                      {validatingVoucher ? "..." : "Áp dụng"}
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-stone-400">Tạm tính:</span>
+                  <span className="text-xl font-bold text-white">{getCartTotal().toLocaleString('vi-VN')}đ</span>
+                </div>
+                
+                {appliedVoucher && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-emerald-400">Giảm giá ({appliedVoucher.code}):</span>
+                    <span className="text-emerald-400 font-bold">-{appliedVoucher.discountAmount.toLocaleString('vi-VN')}đ</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center border-t border-white/10 pt-3">
+                  <span className="text-stone-400 font-bold">Tổng thanh toán:</span>
+                  <span className="text-2xl font-black text-emerald-400">{getFinalTotal().toLocaleString('vi-VN')}đ</span>
+                </div>
               </div>
 
               <button 

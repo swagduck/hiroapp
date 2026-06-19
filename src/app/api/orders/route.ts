@@ -29,7 +29,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { sessionId, items, totalAmount, updateFreeDrink } = body;
+    const { sessionId, items, totalAmount: requestTotal, updateFreeDrink, voucherCode } = body;
 
     const date = new Date();
     const yymmdd = date.getFullYear().toString().substring(2) + 
@@ -38,13 +38,55 @@ export async function POST(request: Request) {
     const transId = `${yymmdd}_${Math.floor(Math.random() * 1000000)}`;
 
     const newOrder = await prisma.$transaction(async (tx) => {
+      let finalTotalAmount = requestTotal;
+      let finalDiscountAmount = 0;
+      let usedVoucherId = null;
+
+      // Validate Voucher if provided
+      if (voucherCode) {
+        const voucher = await tx.voucher.findUnique({ where: { code: voucherCode } });
+        if (voucher && voucher.isActive) {
+          const now = new Date();
+          const validFromOk = !voucher.validFrom || now >= voucher.validFrom;
+          const validUntilOk = !voucher.validUntil || now <= voucher.validUntil;
+          const usageOk = !voucher.usageLimit || voucher.usedCount < voucher.usageLimit;
+          const minOrderOk = !voucher.minOrderValue || requestTotal >= voucher.minOrderValue;
+
+          if (validFromOk && validUntilOk && usageOk && minOrderOk) {
+            let discount = 0;
+            if (voucher.discountType === "PERCENTAGE") {
+              discount = requestTotal * (voucher.discountValue / 100);
+              if (voucher.maxDiscount && discount > voucher.maxDiscount) {
+                discount = voucher.maxDiscount;
+              }
+            } else {
+              discount = voucher.discountValue;
+            }
+            if (discount > requestTotal) discount = requestTotal;
+            
+            finalDiscountAmount = Math.floor(discount);
+            usedVoucherId = voucher.id;
+
+            // Increment usage
+            await tx.voucher.update({
+              where: { id: voucher.id },
+              data: { usedCount: { increment: 1 } }
+            });
+          }
+        }
+      }
+      
+      finalTotalAmount = Math.max(0, requestTotal - finalDiscountAmount);
+
       const order = await tx.order.create({
         data: {
           sessionId,
-          totalAmount,
+          totalAmount: finalTotalAmount,
           status: "PENDING",
           paymentStatus: "UNPAID",
           transId,
+          voucherId: usedVoucherId,
+          discountAmount: finalDiscountAmount,
           items: {
             create: items.map((item: any) => ({
               menuItemId: item.menuItemId,
