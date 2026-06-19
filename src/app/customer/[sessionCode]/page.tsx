@@ -11,6 +11,7 @@ export default function CustomerOrderPage() {
   const [activeTab, setActiveTab] = useState("menu");
   
   const [session, setSession] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
   const [cart, setCart] = useState<any[]>([]);
@@ -82,6 +83,14 @@ export default function CustomerOrderPage() {
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30000);
+    
+    // Check if user is logged in as member
+    fetch("/api/auth/me").then(res => res.json()).then(data => {
+      if (data && data.user) {
+        setCurrentUser(data.user);
+      }
+    }).catch(() => {});
+
     return () => clearInterval(interval);
   }, []);
 
@@ -305,9 +314,24 @@ export default function CustomerOrderPage() {
           Test Thử
         </button>
       </div>
-
-      <header className="glass sticky top-0 z-10 px-4 py-4 border-b border-white/10 shadow-lg">
-        <div className="flex justify-between items-center mb-4">
+      
+      {/* Header */}
+      <div className="bg-stone-900/80 backdrop-blur border-b border-white/10 p-4 sticky top-0 z-40 shadow-lg">
+          {currentUser?.role === 'USER' && (
+            <div className="mb-3 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl p-3 flex justify-between items-center shadow-lg">
+              <div>
+                <p className="text-xs text-emerald-100 font-medium">Chào Hội viên,</p>
+                <p className="text-sm text-white font-bold">{currentUser.name}</p>
+              </div>
+              <button 
+                onClick={() => router.push('/member/dashboard')}
+                className="bg-white text-emerald-600 text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-emerald-50 transition-colors"
+              >
+                Về Dashboard
+              </button>
+            </div>
+          )}
+          <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             {!!session.userId && (
               <button 
@@ -346,7 +370,7 @@ export default function CustomerOrderPage() {
             })()}
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Cảnh báo sắp hết giờ */}
       {showWarning && (
