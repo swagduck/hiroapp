@@ -164,6 +164,7 @@ export default function CustomerOrderPage() {
 
   const submitOrder = async () => {
     if (cart.length === 0 || !session) return;
+    const toastId = toast.loading("Đang khởi tạo thanh toán...");
     
     const isMember = !!session.userId;
     let totalAmount = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
