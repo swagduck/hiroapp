@@ -169,6 +169,7 @@ export default function CustomerOrderPage() {
     } else {
       setCart([...cart, { ...item, quantity: 1 }]);
     }
+    toast.success(`Đã thêm ${item.name} vào giỏ hàng!`);
   };
 
   const submitOrder = async () => {
@@ -419,7 +420,10 @@ export default function CustomerOrderPage() {
                     {packages.map(pkg => (
                       <div 
                         key={pkg.id} 
-                        onClick={() => setExtendPkg(pkg.id)}
+                        onClick={() => {
+                          setExtendPkg(pkg.id);
+                          toast.success(`Đã chọn ${pkg.name}!`);
+                        }}
                         className={`p-3 rounded-lg border cursor-pointer transition-all ${extendPkg === pkg.id ? 'bg-purple-900/40 border-purple-500' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                       >
                         <div className="flex justify-between items-center text-sm">

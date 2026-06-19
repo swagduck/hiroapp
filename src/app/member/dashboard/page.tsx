@@ -191,6 +191,7 @@ export default function MemberDashboard() {
     } else {
       setCart([...cart, { ...item, quantity: 1 }]);
     }
+    toast.success(`Đã thêm ${item.name} vào giỏ hàng!`);
   };
 
   const submitOrder = async () => {
@@ -638,7 +639,10 @@ export default function MemberDashboard() {
                     {packages.map(pkg => (
                       <div 
                         key={pkg.id} 
-                        onClick={() => setSelectedPkg(pkg.id)}
+                        onClick={() => {
+                          setSelectedPkg(pkg.id);
+                          toast.success(`Đã chọn ${pkg.name}!`);
+                        }}
                         className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedPkg === pkg.id ? 'bg-emerald-900/40 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                       >
                         <div className="flex justify-between items-center">
