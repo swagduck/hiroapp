@@ -245,46 +245,66 @@ export default function Dashboard() {
     <div className="flex h-screen bg-[#0a0f0d] overflow-hidden text-stone-200">
       {/* Sidebar (Desktop only) */}
       <aside className="hidden md:flex w-64 glass border-r border-white/10 flex-col transition-all duration-300">
-        <div className="h-16 flex items-center justify-center border-b border-white/10">
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-amber-600">
-            SpaceManager
+        <div className="h-16 flex items-center justify-center border-b border-white/10 px-2">
+          <h1 className="text-lg text-center font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-amber-600">
+            Hiro coffee and Study space
           </h1>
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          <button onClick={() => setActiveTab("overview")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "overview" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <button onClick={() => setActiveTab("overview")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "overview" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Tổng quan (POS)
           </button>
           
           {currentUserRole === 'ADMIN' && (
-            <button onClick={() => setActiveTab("analytics")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "analytics" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
+            <button onClick={() => setActiveTab("analytics")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "analytics" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
               Báo cáo doanh thu
             </button>
           )}
 
-          <button onClick={() => setActiveTab("sessions")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "sessions" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Phiên sử dụng</button>
-          <button onClick={() => setActiveTab("activity")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "activity" ? "bg-amber-600/20 text-amber-500 font-bold border border-amber-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
+          <button onClick={() => setActiveTab("sessions")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "sessions" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Phiên sử dụng
+          </button>
+          <button onClick={() => setActiveTab("activity")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "activity" ? "bg-amber-600/20 text-amber-500 font-bold border border-amber-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             Nhật ký Giao dịch
           </button>
-          <button onClick={() => setActiveTab("orders")} className={`w-full flex justify-between items-center px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>
-            <span>Đơn pha chế</span>
+          <button onClick={() => setActiveTab("orders")} className={`w-full flex justify-between items-center px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+            <div className="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+              <span>Đơn pha chế</span>
+            </div>
             {pendingOrdersCount > 0 && (
-              <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full animate-pulse">{pendingOrdersCount}</span>
+              <span className="bg-emerald-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse">{pendingOrdersCount}</span>
             )}
           </button>
-          <button onClick={() => setActiveTab("menu")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "menu" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Menu Đồ uống</button>
+          <button onClick={() => setActiveTab("menu")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "menu" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+            Menu Đồ uống
+          </button>
           
           {currentUserRole === 'ADMIN' && (
             <>
-              <button onClick={() => setActiveTab("packages")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "packages" ? "bg-white/10 text-white font-medium" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Cài đặt Gói cước</button>
-              <button onClick={() => setActiveTab("staff")} className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "staff" ? "bg-blue-600/20 text-blue-500 font-bold border border-blue-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white"}`}>Quản lý Tài khoản</button>
+              <button onClick={() => setActiveTab("packages")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "packages" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                Cài đặt Gói cước
+              </button>
+              <button onClick={() => setActiveTab("staff")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "staff" ? "bg-blue-600/20 text-blue-500 font-bold border border-blue-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Quản lý Tài khoản
+              </button>
             </>
           )}
 
           <div className="pt-4 mt-2 border-t border-white/5">
-            <button onClick={() => window.open("/checkin", "_blank")} className="w-full text-left px-4 py-3 rounded-xl bg-purple-600/20 text-purple-400 font-bold border border-purple-500/30 hover:bg-purple-600/30 transition-all duration-200 flex items-center justify-between group">
-              <span>Màn hình Check-in</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50 group-hover:opacity-100 transition-opacity"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            <button onClick={() => window.open("/checkin", "_blank")} className="w-full flex items-center justify-between px-5 py-3 rounded-full bg-purple-600/10 text-purple-400 font-bold border border-purple-500/20 hover:bg-purple-600/20 hover:border-purple-500/40 transition-all duration-300 group hover-glow">
+              <div className="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                <span>Màn hình Check-in</span>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </button>
           </div>
         </nav>
@@ -310,24 +330,23 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative w-full">
-        <header className="h-auto py-3 md:h-16 glass border-b border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 z-10 relative gap-3 md:gap-0">
+        <header className="sticky top-0 h-auto py-3 md:h-16 glass-panel border-b border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 z-30 relative gap-3 md:gap-0 backdrop-blur-xl">
           <div className="w-full md:w-auto flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-white capitalize">{activeTab === "overview" ? "Tổng quan hoạt động" : activeTab === "settings" ? "Cài đặt & Khác" : activeTab}</h2>
-            <button onClick={handleLogout} className="md:hidden p-2 bg-red-500/10 text-red-400 text-sm rounded-lg font-medium">Đăng xuất</button>
+            <h2 className="text-xl font-bold text-white capitalize tracking-tight">{activeTab === "overview" ? "Tổng quan hoạt động" : activeTab === "settings" ? "Cài đặt & Khác" : activeTab}</h2>
+            <button onClick={handleLogout} className="md:hidden p-2 bg-red-500/10 text-red-400 text-sm rounded-full font-medium">Đăng xuất</button>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <a href="/staff/check-in" target="_blank" rel="noreferrer" className="px-3 md:px-4 py-2 bg-stone-900 border border-white/10 hover:bg-stone-800 text-stone-300 rounded-lg text-xs md:text-sm font-medium transition-colors flex items-center gap-1 md:gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+          <div className="flex flex-wrap items-center gap-3">
+            <a href="/staff/check-in" target="_blank" rel="noreferrer" className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-stone-300 rounded-full text-xs md:text-sm font-medium transition-all flex items-center gap-2 hover-glow">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
               <span className="hidden md:inline">Máy quét vé</span>
-              <span className="md:hidden">Quét vé</span>
             </a>
-            <a href="/customer" target="_blank" rel="noreferrer" className="px-3 md:px-4 py-2 bg-stone-900 border border-white/10 hover:bg-stone-800 text-stone-300 rounded-lg text-xs md:text-sm font-medium transition-colors flex items-center gap-1 md:gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+            <a href="/customer" target="_blank" rel="noreferrer" className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-stone-300 rounded-full text-xs md:text-sm font-medium transition-all flex items-center gap-2 hover-glow">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
               <span className="hidden md:inline">App Khách hàng</span>
-              <span className="md:hidden">Khách</span>
             </a>
-            <button onClick={handleCreateSession} className="px-3 md:px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs md:text-sm font-medium transition-colors shadow-[0_0_15px_rgba(4,120,87,0.4)] ml-auto md:ml-2">
-              + Tạo Phiên
+            <button onClick={handleCreateSession} className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white rounded-full text-sm font-bold transition-all premium-shadow hover:-translate-y-0.5 ml-auto md:ml-2 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              Tạo Phiên
             </button>
           </div>
         </header>
@@ -366,22 +385,37 @@ export default function Dashboard() {
                 );
               })()}
 
-              <div className="glass-card p-6">
-                <h3 className="text-stone-400 text-sm font-medium mb-1">Phiên đang hoạt động</h3>
-                <p className="text-3xl font-bold text-white">{sessions.length} <span className="text-sm text-green-400 font-normal">người</span></p>
+              <div className="glass-panel p-6 flex justify-between items-center hover-glow transition-all group">
+                <div>
+                  <h3 className="text-stone-400 text-sm font-bold uppercase tracking-wider mb-2 group-hover:text-emerald-400 transition-colors">Phiên đang hoạt động</h3>
+                  <p className="text-4xl font-black text-white">{sessions.length} <span className="text-sm text-green-400 font-medium">người</span></p>
+                </div>
+                <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
               </div>
-              <div className="glass-card p-6">
-                <h3 className="text-stone-400 text-sm font-medium mb-1">Gói cước khả dụng</h3>
-                <p className="text-3xl font-bold text-white">{packages.length} <span className="text-sm text-stone-500 font-normal">gói</span></p>
+              <div className="glass-panel p-6 flex justify-between items-center hover-glow transition-all group">
+                <div>
+                  <h3 className="text-stone-400 text-sm font-bold uppercase tracking-wider mb-2 group-hover:text-blue-400 transition-colors">Gói cước khả dụng</h3>
+                  <p className="text-4xl font-black text-white">{packages.length} <span className="text-sm text-blue-400 font-medium">gói</span></p>
+                </div>
+                <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
               </div>
-              <div className="glass-card p-6">
-                <h3 className="text-stone-400 text-sm font-medium mb-1">Doanh thu tạm tính</h3>
-                <p className="text-3xl font-bold text-white">
-                  {sessions.reduce((acc, curr) => acc + (curr.package?.price || 0), 0).toLocaleString('vi-VN')}đ
-                </p>
+              <div className="glass-panel p-6 flex justify-between items-center hover-glow transition-all group">
+                <div>
+                  <h3 className="text-stone-400 text-sm font-bold uppercase tracking-wider mb-2 group-hover:text-amber-400 transition-colors">Doanh thu tạm tính</h3>
+                  <p className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-200 to-amber-500">
+                    {sessions.reduce((acc, curr) => acc + (curr.package?.price || 0), 0).toLocaleString('vi-VN')}đ
+                  </p>
+                </div>
+                <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                </div>
               </div>
 
-              <div className="col-span-1 md:col-span-3 glass-card mt-4 overflow-hidden">
+              <div className="col-span-1 md:col-span-3 glass-panel mt-4 overflow-hidden">
                 <div className="p-6 border-b border-white/5 flex justify-between items-center">
                   <h3 className="text-lg font-medium text-white">Danh sách Phiên</h3>
                 </div>
@@ -603,59 +637,71 @@ export default function Dashboard() {
                     const hasPendingExtension = session.orders?.find((o: any) => o.isExtension && o.status === 'PENDING');
 
                     return (
-                      <div key={session.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden">
-                        {session.status === 'PENDING' && (
-                          <div className="absolute top-0 right-0 bg-amber-500 text-stone-900 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
-                            Chờ duyệt
-                          </div>
-                        )}
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-mono text-emerald-500 font-bold text-lg">#{session.accessCode}</span>
-                              {hasPendingExtension && (
-                                <span className="text-[10px] text-purple-400 font-bold bg-purple-500/20 px-2 py-0.5 rounded animate-pulse">
-                                  +Xin gia hạn
-                               </span>
+                      <div key={session.id} className="bg-[#141c16] border border-stone-800 rounded-2xl flex flex-col relative overflow-hidden premium-shadow">
+                        {/* Top half */}
+                        <div className="p-5 pb-6 bg-gradient-to-br from-stone-900 to-[#141c16] relative">
+                          {session.status === 'PENDING' && (
+                            <div className="absolute top-0 right-0 bg-amber-500 text-stone-900 text-[10px] font-bold px-3 py-1 rounded-bl-xl shadow-md">
+                              Chờ duyệt
+                            </div>
+                          )}
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-mono text-emerald-500 font-black text-xl tracking-tight">#{session.accessCode}</span>
+                                {hasPendingExtension && (
+                                  <span className="text-[10px] text-purple-400 font-bold bg-purple-500/20 px-2 py-0.5 rounded animate-pulse border border-purple-500/30">
+                                    +Xin gia hạn
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm font-bold text-stone-200">{session.package?.name || "Không rõ"}</p>
+                              {session.user ? (
+                                <p className="text-xs text-amber-400 mt-1 font-medium flex items-center gap-1">👑 Hội viên: {session.user.name}</p>
+                              ) : (
+                                <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">Khách vãng lai</p>
                               )}
                             </div>
-                            <p className="text-sm font-medium text-stone-300">{session.package?.name || "Không rõ"}</p>
-                            {session.user ? (
-                              <p className="text-xs text-amber-400 mt-1">👑 Hội viên: {session.user.name}</p>
-                            ) : (
-                              <p className="text-xs text-stone-500 mt-1">Khách vãng lai</p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-stone-400 mb-1">{session.status === 'PENDING' ? '---' : startTime}</p>
-                            <div>{timeStatus}</div>
+                            <div className="text-right">
+                              <p className="text-xs text-stone-400 mb-1">{session.status === 'PENDING' ? '---' : startTime}</p>
+                              <div className="font-medium bg-stone-950/50 px-2 py-1 rounded-lg inline-block border border-stone-800">{timeStatus}</div>
+                            </div>
                           </div>
                         </div>
 
-                        <div className="flex justify-between items-end border-t border-white/5 pt-3 mt-1">
-                          <div>
-                            <p className="text-xs text-stone-400 mb-1">Cần thu</p>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-white">{(session.totalAmount || session.package?.price || 0).toLocaleString('vi-VN')}đ</span>
-                              {session.paymentStatus === 'UNPAID' ? (
-                                <span className="text-[9px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">Chưa thu</span>
-                              ) : (
-                                <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">Đã thu</span>
-                              )}
+                        {/* Cutout Divider */}
+                        <div className="relative flex items-center justify-center -my-3 z-10">
+                           <div className="w-6 h-6 rounded-full bg-[#0a0f0d] absolute -left-3 border-r border-stone-800 shadow-[inset_-2px_0_4px_rgba(0,0,0,0.5)]"></div>
+                           <div className="w-full border-t-2 border-dashed border-stone-700/50"></div>
+                           <div className="w-6 h-6 rounded-full bg-[#0a0f0d] absolute -right-3 border-l border-stone-800 shadow-[inset_2px_0_4px_rgba(0,0,0,0.5)]"></div>
+                        </div>
+
+                        {/* Bottom half */}
+                        <div className="p-5 pt-6 bg-[#141c16]">
+                          <div className="flex justify-between items-end">
+                            <div>
+                              <p className="text-[10px] text-stone-500 font-bold mb-1 uppercase tracking-widest">Cần thu</p>
+                              <div className="flex items-center gap-2">
+                                <span className="font-black text-2xl text-white">{(session.totalAmount || session.package?.price || 0).toLocaleString('vi-VN')}đ</span>
+                                {session.paymentStatus === 'UNPAID' ? (
+                                  <span className="text-[10px] bg-red-500/20 text-red-400 font-bold px-2 py-1 rounded border border-red-500/20">Chưa thu</span>
+                                ) : (
+                                  <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-1 rounded border border-emerald-500/20">Đã thu</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <a href={`/customer/${session.accessCode}`} target="_blank" rel="noreferrer" className="w-10 h-10 flex items-center justify-center bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-xl transition-colors border border-blue-500/10" title="Mở Menu KH">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+                              </a>
+                              <button onClick={() => setReceiptData(session)} className="w-10 h-10 flex items-center justify-center bg-stone-800 text-stone-300 hover:bg-stone-700 hover:text-white rounded-xl transition-colors border border-stone-700" title="In Biên Lai">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                              </button>
+                              <button onClick={() => setSessionToEnd(session.id)} className="w-10 h-10 flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl transition-colors border border-red-500/10" title="Kết thúc">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+                              </button>
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <a href={`/customer/${session.accessCode}`} target="_blank" rel="noreferrer" className="p-2 bg-blue-500/20 text-blue-400 rounded-lg" title="Mở Menu KH">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-                            </a>
-                            <button onClick={() => setReceiptData(session)} className="p-2 bg-white/10 text-white rounded-lg" title="In Biên Lai">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-                            </button>
-                            <button onClick={() => setSessionToEnd(session.id)} className="p-2 bg-red-500/20 text-red-400 rounded-lg" title="Kết thúc">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
-                            </button>
-                          </div>
-                        </div>
                         
                         {/* Mobile Action Buttons for Pending or Unpaid */}
                         {(session.status === 'PENDING' || session.paymentStatus === 'UNPAID' || hasPendingExtension) && (
@@ -858,33 +904,35 @@ export default function Dashboard() {
       />
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 w-full glass border-t border-white/10 flex justify-around p-2 z-50 pb-6 bg-stone-950/90 backdrop-blur-md">
-        <button onClick={() => setActiveTab("overview")} className={`flex flex-col items-center p-2 transition-colors ${activeTab === "overview" ? "text-emerald-500" : "text-stone-500 hover:text-stone-400"}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-          <span className="text-[10px] font-bold tracking-wide uppercase">POS</span>
-        </button>
-        <button onClick={() => setActiveTab("sessions")} className={`flex flex-col items-center p-2 transition-colors ${activeTab === "sessions" ? "text-emerald-500" : "text-stone-500 hover:text-stone-400"}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span className="text-[10px] font-bold tracking-wide uppercase">Phiên</span>
-        </button>
-        <button onClick={() => setActiveTab("orders")} className={`relative flex flex-col items-center p-2 transition-colors ${activeTab === "orders" ? "text-emerald-500 font-bold" : "text-stone-500 hover:text-stone-400"}`}>
-          {pendingOrdersCount > 0 && (
-            <span className="absolute top-0 right-1 w-4 h-4 bg-amber-500 text-stone-900 text-[10px] font-bold flex items-center justify-center rounded-full animate-pulse border border-[#0a0f0d]">
-              {pendingOrdersCount}
-            </span>
-          )}
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
-          <span className="text-[10px] font-bold tracking-wide uppercase">Đơn Pha</span>
-        </button>
-        <button onClick={() => setActiveTab("menu")} className={`flex flex-col items-center p-2 transition-colors ${activeTab === "menu" ? "text-emerald-500" : "text-stone-500 hover:text-stone-400"}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
-          <span className="text-[10px] font-bold tracking-wide uppercase">Menu</span>
-        </button>
-        <button onClick={() => setActiveTab("settings")} className={`flex flex-col items-center p-2 transition-colors ${activeTab === "settings" ? "text-emerald-500" : "text-stone-500 hover:text-stone-400"}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span className="text-[10px] font-bold tracking-wide uppercase">Cài đặt</span>
-        </button>
-      </nav>
+      <div className="md:hidden fixed bottom-6 left-4 right-4 z-50 pointer-events-none">
+        <nav className="pointer-events-auto bg-stone-900/95 backdrop-blur-xl border border-stone-800 flex justify-around p-2 rounded-2xl mobile-nav-pill">
+          <button onClick={() => setActiveTab("overview")} className={`flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-all duration-300 ${activeTab === "overview" ? "bg-emerald-500/15 text-emerald-400" : "text-stone-500 hover:text-stone-400 hover:bg-white/5"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`mb-0.5 ${activeTab === "overview" ? "scale-110" : ""}`}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            <span className="text-[9px] font-bold tracking-wider uppercase">POS</span>
+          </button>
+          <button onClick={() => setActiveTab("sessions")} className={`flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-all duration-300 ${activeTab === "sessions" ? "bg-emerald-500/15 text-emerald-400" : "text-stone-500 hover:text-stone-400 hover:bg-white/5"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`mb-0.5 ${activeTab === "sessions" ? "scale-110" : ""}`}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span className="text-[9px] font-bold tracking-wider uppercase">Phiên</span>
+          </button>
+          <button onClick={() => setActiveTab("orders")} className={`relative flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-all duration-300 ${activeTab === "orders" ? "bg-emerald-500/15 text-emerald-400" : "text-stone-500 hover:text-stone-400 hover:bg-white/5"}`}>
+            {pendingOrdersCount > 0 && (
+              <span className="absolute top-0.5 right-1.5 w-4 h-4 bg-amber-500 text-stone-900 text-[10px] font-black flex items-center justify-center rounded-full animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.5)]">
+                {pendingOrdersCount}
+              </span>
+            )}
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`mb-0.5 ${activeTab === "orders" ? "scale-110" : ""}`}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+            <span className="text-[9px] font-bold tracking-wider uppercase">Đơn Pha</span>
+          </button>
+          <button onClick={() => setActiveTab("menu")} className={`flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-all duration-300 ${activeTab === "menu" ? "bg-emerald-500/15 text-emerald-400" : "text-stone-500 hover:text-stone-400 hover:bg-white/5"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`mb-0.5 ${activeTab === "menu" ? "scale-110" : ""}`}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
+            <span className="text-[9px] font-bold tracking-wider uppercase">Menu</span>
+          </button>
+          <button onClick={() => setActiveTab("settings")} className={`flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-all duration-300 ${activeTab === "settings" ? "bg-emerald-500/15 text-emerald-400" : "text-stone-500 hover:text-stone-400 hover:bg-white/5"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`mb-0.5 ${activeTab === "settings" ? "scale-110" : ""}`}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span className="text-[9px] font-bold tracking-wider uppercase">Cài đặt</span>
+          </button>
+        </nav>
+      </div>
 
     </div>
   );

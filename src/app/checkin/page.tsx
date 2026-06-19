@@ -82,7 +82,7 @@ export default function CheckinPage() {
     <div className="min-h-screen bg-[#0d1310] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md text-center">
         <h1 className="text-4xl font-black text-emerald-400 mb-2 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">
-          SPACE CAFE
+          HIRO COFFEE AND STUDY SPACE
         </h1>
         <p className="text-stone-400 mb-8 font-medium">Nhập hoặc quét mã Phiên để bắt đầu tính giờ</p>
 

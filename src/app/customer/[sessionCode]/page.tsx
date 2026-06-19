@@ -38,7 +38,7 @@ export default function CustomerOrderPage() {
     const permission = await Notification.requestPermission();
     setNotificationPermission(permission);
     if (permission === "granted") {
-      new Notification("SpaceManager", { body: "Thông báo đã bật. Bạn sẽ nhận được cảnh báo khi sắp hết giờ!" });
+      new Notification("Hiro coffee and Study space", { body: "Thông báo đã bật. Bạn sẽ nhận được cảnh báo khi sắp hết giờ!" });
     }
   };
 
@@ -320,7 +320,7 @@ export default function CustomerOrderPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               </button>
             )}
-            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-amber-500">Space Menu</h1>
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-amber-500">Thực đơn Hiro</h1>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-1 rounded bg-emerald-600/20 text-purple-300 font-mono text-sm font-bold border border-emerald-600/30">

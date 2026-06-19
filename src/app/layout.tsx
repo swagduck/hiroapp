@@ -6,8 +6,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Time-Café & Co-working Space",
-  description: "Phần mềm quản lý Time-Café và Co-working Space hiện đại",
+  title: "Hiro coffee and Study space",
+  description: "Phần mềm quản lý Hiro coffee and Study space",
 };
 
 export default function RootLayout({
