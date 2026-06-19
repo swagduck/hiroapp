@@ -31,6 +31,7 @@ export default function MemberDashboard() {
   // Menu / Booking
   const [categories, setCategories] = useState<any[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
   const [cart, setCart] = useState<any[]>([]);
   const [selectedPkg, setSelectedPkg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);

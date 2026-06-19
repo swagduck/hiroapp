@@ -256,6 +256,17 @@ export default function CustomerOrderPage() {
     const totalAmount = getFinalTotal();
     const isComboAvailable = session?.package?.includesDrink && !session?.freeDrinkClaimed;
 
+    const orderItems = cart.map(item => ({
+      menuItemId: item.id,
+      quantity: item.quantity,
+      price: isMember ? item.price * 0.9 : item.price
+    }));
+
+    // If combo available, first drink is free
+    if (isComboAvailable && cart.length > 0) {
+      orderItems[0].price = 0;
+    }
+
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -264,7 +275,8 @@ export default function CustomerOrderPage() {
           sessionId: session.id,
           totalAmount,
           items: orderItems,
-          updateFreeDrink: isComboAvailable
+          updateFreeDrink: isComboAvailable,
+          voucherCode: appliedVoucher?.code
         })
       });
 

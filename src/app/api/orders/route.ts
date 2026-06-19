@@ -106,14 +106,14 @@ export async function POST(request: Request) {
           where: { id: sessionId },
           data: { 
             freeDrinkClaimed: true,
-            totalAmount: { increment: totalAmount }
+            totalAmount: { increment: finalTotalAmount }
           }
         });
       } else {
         await tx.session.update({
           where: { id: sessionId },
           data: { 
-            totalAmount: { increment: totalAmount }
+            totalAmount: { increment: finalTotalAmount }
           }
         });
       }
@@ -121,7 +121,7 @@ export async function POST(request: Request) {
       return order;
     });
 
-    if (totalAmount > 0) {
+    if (newOrder.totalAmount > 0) {
       // Call ZaloPay Gateway
       const host = request.headers.get("host");
       const protocol = host?.includes("localhost") ? "http" : "https";
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
       
       const embed_data = JSON.stringify({ redirecturl: `${appUrl}/customer/${newOrder.session?.accessCode}?payment=order` });
       const orderItems = JSON.stringify([{ id: newOrder.id, name: "Thanh toán Order Cafe" }]);
-      const amount = totalAmount;
+      const amount = newOrder.totalAmount;
       const description = `Thanh toán đơn món #${transId}`;
       const app_time = Date.now();
       const app_user = "guest";
