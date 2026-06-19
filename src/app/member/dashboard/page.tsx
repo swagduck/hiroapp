@@ -455,53 +455,71 @@ export default function MemberDashboard() {
         </div>
 
         {/* Header User */}
-        <div className="p-5 bg-gradient-to-b from-emerald-900/40 to-transparent border-b border-white/5 sticky top-0 z-10 backdrop-blur-xl">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center font-bold text-xl shadow-[0_0_15px_rgba(16,185,129,0.5)]">
-              {member?.name?.charAt(0) || "U"}
-            </div>
-            <div className="flex-1">
-              <h2 className="font-bold text-lg">{member?.name}</h2>
-              <div className="flex items-center gap-2 text-sm text-emerald-400 flex-wrap">
-                <span className="font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
-                  {member?.customerCode || "KH MỚI"}
-                </span>
-                <span className="text-stone-400">|</span>
-                <span>Bảo lưu: {member?.savedMinutes || 0}p</span>
-                <span className="text-stone-400">|</span>
-                <span className="text-amber-400">Điểm: {member?.points || 0}</span>
-                <button 
-                  disabled={!member || member.points < 100}
+        <div className="p-4 bg-stone-950 sticky top-0 z-10 backdrop-blur-xl border-b border-white/5">
+          <div className="bg-stone-900 border border-stone-800 rounded-2xl p-4 shadow-lg relative overflow-hidden premium-shadow">
+             {/* Background glow */}
+             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none"></div>
+             
+             <div className="flex justify-between items-start mb-4 relative z-10">
+               <div className="flex items-center gap-3">
+                 <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-full flex items-center justify-center font-bold text-xl text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+                   {member?.name?.charAt(0)?.toUpperCase() || "U"}
+                 </div>
+                 <div>
+                   <h2 className="font-bold text-lg text-white leading-tight">{member?.name}</h2>
+                   <span className="inline-block mt-1 font-mono text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
+                     {member?.customerCode || "KH MỚI"}
+                   </span>
+                 </div>
+               </div>
+               <button
                   onClick={async () => {
-                    if (!confirm("Đổi 100 điểm lấy 60 phút bảo lưu?")) return;
-                    try {
-                      const res = await fetch("/api/users/redeem-points", { method: "POST" });
-                      if (res.ok) {
-                        toast.success("Đổi điểm thành công!");
-                        fetchData();
-                      } else {
-                        toast.error("Lỗi đổi điểm!");
-                      }
-                    } catch (e) {
-                      toast.error("Lỗi kết nối");
-                    }
+                    toast("Đang đăng xuất...", { duration: 1500 });
+                    await fetch("/api/auth/logout", { method: "POST" });
+                    router.push("/customer");
                   }}
-                  className={`ml-1 px-2 py-0.5 rounded text-xs font-bold transition-colors ${member?.points >= 100 ? 'bg-amber-500/20 border border-amber-500/50 text-amber-400 hover:bg-amber-500/40' : 'bg-stone-800 border border-stone-700 text-stone-500 cursor-not-allowed'}`}
+                  className="w-8 h-8 flex items-center justify-center bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors border border-red-500/20"
+                  title="Đăng xuất"
                 >
-                  Đổi 1h
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
                 </button>
-              </div>
-            </div>
-            <button
-              onClick={async () => {
-                toast("Đang đăng xuất...", { duration: 1500 });
-                await fetch("/api/auth/logout", { method: "POST" });
-                router.push("/customer");
-              }}
-              className="px-3 py-1.5 text-xs font-bold bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors"
-            >
-              Đăng xuất
-            </button>
+             </div>
+
+             <div className="grid grid-cols-2 gap-3 relative z-10">
+                <div className="bg-white/5 border border-white/5 rounded-xl p-3 flex flex-col justify-center">
+                   <span className="text-[10px] text-stone-400 uppercase tracking-wider font-bold mb-1">Giờ bảo lưu</span>
+                   <span className="font-bold text-emerald-400 text-lg leading-none">{member?.savedMinutes || 0}<span className="text-xs text-stone-500 ml-1 font-normal">phút</span></span>
+                </div>
+                <div className="bg-white/5 border border-white/5 rounded-xl p-3 flex flex-col justify-center relative">
+                   <div className="flex justify-between items-start">
+                     <div>
+                       <span className="text-[10px] text-stone-400 uppercase tracking-wider font-bold mb-1">Điểm tích lũy</span>
+                       <span className="font-bold text-amber-400 text-lg block leading-none">{member?.points || 0}<span className="text-xs text-stone-500 ml-1 font-normal">pts</span></span>
+                     </div>
+                     <button 
+                        disabled={!member || member.points < 100}
+                        onClick={async () => {
+                          if (!confirm("Đổi 100 điểm lấy 60 phút bảo lưu?")) return;
+                          try {
+                            const res = await fetch("/api/users/redeem-points", { method: "POST" });
+                            if (res.ok) {
+                              toast.success("Đổi điểm thành công!");
+                              fetchData();
+                            } else {
+                              toast.error("Lỗi đổi điểm!");
+                            }
+                          } catch (e) {
+                            toast.error("Lỗi kết nối");
+                          }
+                        }}
+                        className={`px-2 py-1 rounded border text-[10px] font-bold transition-all whitespace-nowrap ${member?.points >= 100 ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 hover:bg-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.2)] cursor-pointer' : 'bg-stone-800/50 border-stone-700/50 text-stone-600 cursor-not-allowed'}`}
+                        title="Đổi 100 điểm lấy 60 phút"
+                      >
+                        Đổi 1h
+                      </button>
+                   </div>
+                </div>
+             </div>
           </div>
         </div>
 
