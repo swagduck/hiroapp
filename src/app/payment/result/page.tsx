@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -8,15 +8,42 @@ function PaymentResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const status = searchParams.get("status");
-  const isSuccess = status === "1";
+  const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (status !== "1") {
+      setIsSuccess(false);
+      return;
+    }
+
+    const verify = async () => {
+      const searchObj = Object.fromEntries(searchParams.entries());
+      try {
+        const res = await fetch('/api/payment/verify-redirect', {
+          method: 'POST',
+          body: JSON.stringify(searchObj)
+        });
+        const data = await res.json();
+        setIsSuccess(data.isValid);
+      } catch (e) {
+        setIsSuccess(false);
+      }
+    };
+    verify();
+  }, [searchParams, status]);
+
+  useEffect(() => {
+    if (isSuccess === null) return;
     // Tự động quay về Dashboard sau 5 giây
     const timeout = setTimeout(() => {
       router.push("/member/dashboard");
     }, 5000);
     return () => clearTimeout(timeout);
-  }, [router]);
+  }, [router, isSuccess]);
+
+  if (isSuccess === null) {
+    return <div className="min-h-screen bg-stone-950 flex items-center justify-center"><div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>;
+  }
 
   return (
     <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center p-4">

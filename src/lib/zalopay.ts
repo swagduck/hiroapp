@@ -15,3 +15,9 @@ export function verifyCallbackMac(dataStr: string, requestMac: string) {
   const mac = crypto.createHmac('sha256', config.key2).update(dataStr).digest('hex');
   return mac === requestMac;
 }
+
+export function verifyRedirectMac(data: any) {
+  const checksumData = `${data.appid}|${data.apptransid}|${data.pmcid}|${data.bankcode}|${data.amount}|${data.discountamount}|${data.status}`;
+  const mac = crypto.createHmac('sha256', config.key2).update(checksumData).digest('hex');
+  return mac === data.checksum;
+}
