@@ -3,23 +3,51 @@ import { useState, useEffect } from "react";
 export default function HistoryTab() {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const fetchHistory = async (pageNumber: number) => {
+    try {
+      if (pageNumber === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      const res = await fetch(`/api/sessions?all=true&page=${pageNumber}&limit=20`);
+      const responseData = await res.json();
+      
+      if (responseData.data) {
+        if (pageNumber === 1) {
+          setHistory(responseData.data);
+        } else {
+          setHistory(prev => [...prev, ...responseData.data]);
+        }
+        setTotal(responseData.total);
+        setHasMore(pageNumber < responseData.totalPages);
+      } else {
+        setHistory(responseData);
+        setTotal(responseData.length);
+        setHasMore(false);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const res = await fetch('/api/sessions?all=true');
-        const data = await res.json();
-        setHistory(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchHistory();
+    fetchHistory(1);
   }, []);
 
-  if (loading) {
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchHistory(nextPage);
+  };
+
+  if (loading && page === 1) {
     return <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600"></div></div>;
   }
 
@@ -30,7 +58,7 @@ export default function HistoryTab() {
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
           Lịch sử Phiên giao dịch
         </h3>
-        <p className="text-sm text-stone-400">Tổng số: {history.length} phiên</p>
+        <p className="text-sm text-stone-400">Tổng số: {total} phiên</p>
       </div>
       <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden mt-6 overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[800px]">
@@ -68,6 +96,17 @@ export default function HistoryTab() {
           </tbody>
         </table>
       </div>
+      {hasMore && (
+        <div className="flex justify-center mt-4 pb-4">
+          <button 
+            onClick={loadMore} 
+            disabled={loadingMore}
+            className="px-6 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-stone-300 font-medium transition-colors disabled:opacity-50"
+          >
+            {loadingMore ? "Đang tải..." : "Tải thêm"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -92,6 +92,8 @@ export async function GET(request: Request) {
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5); // Top 5
 
+    const isToday = startDate.toDateString() === new Date().toDateString();
+    
     return NextResponse.json({
       date: startDate.toISOString().split('T')[0],
       metrics: {
@@ -103,6 +105,12 @@ export async function GET(request: Request) {
         totalOrders: orders.length
       },
       topDrinks
+    }, {
+      headers: {
+        'Cache-Control': isToday 
+          ? 's-maxage=60, stale-while-revalidate' 
+          : 's-maxage=86400, stale-while-revalidate'
+      }
     });
   } catch (error) {
     console.error("Error fetching analytics:", error);

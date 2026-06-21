@@ -208,3 +208,15 @@ model OrderItem {
   quantity    Int      @default(1)
   price       Float    // Price at the time of order
 }
+
+model ArchivedRecord {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  collection  String   // "Session" or "Order"
+  originalId  String
+  data        Json
+  archivedAt  DateTime @default(now())
+
+  @@index([collection])
+  @@index([originalId])
+  @@index([archivedAt])
+}

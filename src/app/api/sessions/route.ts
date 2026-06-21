@@ -7,16 +7,30 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const all = searchParams.get('all') === 'true';
+    const page = parseInt(searchParams.get('page') || "1");
+    const limit = parseInt(searchParams.get('limit') || "50");
+    const skip = (page - 1) * limit;
 
-    const sessions = await prisma.session.findMany({
-      where: all ? undefined : { status: { in: ["ACTIVE", "PENDING"] } },
-      include: {
-        package: true,
-        orders: true,
-        user: true // Thêm user để hiển thị tên khách
-      },
-      orderBy: { startTime: 'desc' }
-    });
+    const whereClause = all ? undefined : { status: { in: ["ACTIVE", "PENDING"] } };
+
+    const [sessions, total] = await Promise.all([
+      prisma.session.findMany({
+        where: whereClause,
+        include: {
+          package: true,
+          orders: true,
+          user: true
+        },
+        orderBy: { startTime: 'desc' },
+        ...(searchParams.has('page') ? { skip, take: limit } : {})
+      }),
+      prisma.session.count({ where: whereClause })
+    ]);
+
+    if (searchParams.has('page')) {
+      return NextResponse.json({ data: sessions, total, page, totalPages: Math.ceil(total / limit) });
+    }
+
     return NextResponse.json(sessions);
   } catch (error) {
     console.error("Error fetching sessions:", error);

@@ -4,21 +4,36 @@ import { config as zaloConfig, createMac } from "@/lib/zalopay";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const orders = await prisma.order.findMany({
-      where: { isExtension: false },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-      include: {
-        items: {
-          include: {
-            menuItem: true
-          }
-        },
-        session: true
-      }
-    });
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || "1");
+    const limit = parseInt(searchParams.get('limit') || "50");
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where: { isExtension: false },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          items: {
+            include: {
+              menuItem: true
+            }
+          },
+          session: true
+        }
+      }),
+      prisma.order.count({ where: { isExtension: false } })
+    ]);
+
+    if (searchParams.has('page')) {
+      return NextResponse.json({ data: orders, total, page, totalPages: Math.ceil(total / limit) });
+    }
+    
+    // Fallback for legacy calls
     return NextResponse.json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
