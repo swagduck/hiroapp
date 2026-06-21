@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { pusherServer } from "@/lib/pusher";
 import { verifyJwtToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { config as zaloConfig, createMac } from "@/lib/zalopay";
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     const transId = `${yymmdd}_${Math.floor(Math.random() * 1000000)}`;
 
     // Dùng transaction
-    const session = await prisma.$transaction(async (tx) => {
+    const txResult = await prisma.$transaction(async (tx) => {
       // Fetch package to get the price
       const pkg = await tx.package.findUnique({ where: { id: packageId } });
       const pkgPrice = pkg?.price || 0;
@@ -98,8 +99,9 @@ export async function POST(request: Request) {
         }
       });
 
+      let createdOrder = null;
       if (orderItems && orderItems.length > 0) {
-        await tx.order.create({
+        createdOrder = await tx.order.create({
           data: {
             sessionId: newSession.id,
             status: "PENDING",
@@ -113,6 +115,10 @@ export async function POST(request: Request) {
                 price: item.price
               }))
             }
+          },
+          include: {
+            items: { include: { menuItem: true } },
+            session: true
           }
         });
       }
@@ -124,8 +130,19 @@ export async function POST(request: Request) {
         });
       }
 
-      return newSession;
+      return { newSession, createdOrder };
     });
+
+    const session = txResult.newSession;
+    const createdOrder = txResult.createdOrder;
+
+    if (createdOrder) {
+      try {
+        await pusherServer.trigger('orders-channel', 'new-order', createdOrder);
+      } catch (e) {
+        console.error("Pusher error:", e);
+      }
+    }
 
     if (session.totalAmount && session.totalAmount > 0) {
       // Call ZaloPay Gateway

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { pusherServer } from "@/lib/pusher";
 import { config as zaloConfig, createMac } from "@/lib/zalopay";
 
 export const dynamic = 'force-dynamic';
@@ -111,7 +112,9 @@ export async function POST(request: Request) {
           }
         },
         include: {
-          items: true,
+          items: {
+            include: { menuItem: true }
+          },
           session: true
         }
       });
@@ -187,6 +190,12 @@ export async function POST(request: Request) {
       } else {
         console.error("ZaloPay order error:", zaloData);
       }
+    }
+
+    try {
+      await pusherServer.trigger('orders-channel', 'new-order', newOrder);
+    } catch (e) {
+      console.error("Pusher error:", e);
     }
 
     return NextResponse.json(newOrder, { status: 201 });

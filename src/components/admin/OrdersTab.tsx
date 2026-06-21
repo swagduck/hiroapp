@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+import { pusherClient } from "@/lib/pusherClient";
+
 export default function OrdersTab() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const prevPendingCount = useRef(0);
 
   const playDing = () => {
     try {
@@ -31,17 +31,7 @@ export default function OrdersTab() {
       const res = await fetch(`/api/orders?t=${new Date().getTime()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        const newPendingCount = data.filter((o: any) => o.status === "PENDING").length;
-        
-        if (newPendingCount > prevPendingCount.current && prevPendingCount.current !== -1) {
-          // Prevent alerting on initial load
-          if (orders.length > 0) {
-            toast.success(`Có ${newPendingCount - prevPendingCount.current} đơn pha chế mới!`);
-            playDing();
-          }
-        }
-        prevPendingCount.current = newPendingCount;
-        setOrders(data);
+        setOrders(data.data || data); // handle both paginated and legacy arrays
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -52,8 +42,24 @@ export default function OrdersTab() {
 
   useEffect(() => {
     fetchOrders();
-    const interval = setInterval(fetchOrders, 10000); // 10s auto refresh
-    return () => clearInterval(interval);
+
+    const channel = pusherClient.subscribe('orders-channel');
+    
+    channel.bind('new-order', (newOrder: any) => {
+      setOrders(prev => {
+        if (prev.find(o => o.id === newOrder.id)) return prev;
+        
+        toast.success(`Có đơn pha chế mới!`);
+        playDing();
+        
+        return [newOrder, ...prev];
+      });
+    });
+
+    return () => {
+      channel.unbind('new-order');
+      pusherClient.unsubscribe('orders-channel');
+    };
   }, []);
 
   const updateOrderStatus = async (id: string, status: string) => {
