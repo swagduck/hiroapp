@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || "50");
     const skip = (page - 1) * limit;
 
-    const whereClause = all ? undefined : { status: { in: ["ACTIVE", "PENDING"] } };
+    const whereClause: any = all ? undefined : { status: { in: ["ACTIVE", "PENDING"] } };
 
     const [sessions, total] = await Promise.all([
       prisma.session.findMany({
