@@ -34,6 +34,9 @@ model User {
 
   sessions  Session[]
   orders    Order[]
+
+  @@index([phone])
+  @@index([role])
 }
 
 enum PackageType {
@@ -56,6 +59,9 @@ model Package {
 
   // Quan hệ
   sessions    Session[]
+
+  @@index([isActive])
+  @@index([price])
 }
 
 enum DiscountType {
@@ -126,6 +132,10 @@ model Session {
   updatedAt   DateTime @updatedAt
 
   orders      Order[]
+
+  @@index([status])
+  @@index([startTime])
+  @@index([packageId])
 }
 
 model Category {
@@ -147,6 +157,8 @@ model MenuItem {
   updatedAt   DateTime @updatedAt
 
   orderItems  OrderItem[]
+
+  @@index([isAvailable])
 }
 
 enum OrderStatus {
@@ -181,6 +193,10 @@ model Order {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([isExtension])
+  @@index([createdAt])
+  @@index([sessionId])
 }
 
 model OrderItem {
