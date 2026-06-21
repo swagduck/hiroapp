@@ -3,24 +3,25 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 
-import HistoryTab from "@/components/admin/HistoryTab";
-import MenuTab from "@/components/admin/MenuTab";
-import PackagesTab from "@/components/admin/PackagesTab";
-import OrdersTab from "@/components/admin/OrdersTab";
-import AnalyticsTab from "@/components/AnalyticsTab";
-import ActivityLogTab from "@/components/admin/ActivityLogTab";
-import StaffTab from "@/components/admin/StaffTab";
-import VouchersTab from "@/components/admin/VouchersTab";
+const HistoryTab = dynamic(() => import("@/components/admin/HistoryTab"));
+const MenuTab = dynamic(() => import("@/components/admin/MenuTab"));
+const PackagesTab = dynamic(() => import("@/components/admin/PackagesTab"));
+const OrdersTab = dynamic(() => import("@/components/admin/OrdersTab"));
+const AnalyticsTab = dynamic(() => import("@/components/AnalyticsTab"));
+const ActivityLogTab = dynamic(() => import("@/components/admin/ActivityLogTab"));
+const StaffTab = dynamic(() => import("@/components/admin/StaffTab"));
+const VouchersTab = dynamic(() => import("@/components/admin/VouchersTab"));
 
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Package, PosCartItem, Session } from "@/types";
 
 // Modals
-import PosModal from "@/components/admin/modals/PosModal";
-import EndSessionModal from "@/components/admin/modals/EndSessionModal";
-import PauseSessionModal from "@/components/admin/modals/PauseSessionModal";
-import ReceiptModal from "@/components/admin/modals/ReceiptModal";
+const PosModal = dynamic(() => import("@/components/admin/modals/PosModal"));
+const EndSessionModal = dynamic(() => import("@/components/admin/modals/EndSessionModal"));
+const PauseSessionModal = dynamic(() => import("@/components/admin/modals/PauseSessionModal"));
+const ReceiptModal = dynamic(() => import("@/components/admin/modals/ReceiptModal"));
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
