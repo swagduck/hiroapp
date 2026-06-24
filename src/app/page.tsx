@@ -39,7 +39,7 @@ export default function Dashboard() {
   const [posSelectedPackage, setPosSelectedPackage] = useState<Package | null>(null);
   const [posCart, setPosCart] = useState<PosCartItem[]>([]);
   const [posLoading, setPosLoading] = useState(false);
-  const [posPaymentStatus, setPosPaymentStatus] = useState<"PAID" | "UNPAID">("PAID");
+  const [posPaymentStatus, setPosPaymentStatus] = useState<"PAID" | "UNPAID" | "QR">("PAID");
   const [receiptData, setReceiptData] = useState<Session | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<"ADMIN" | "STAFF" | null>(null);
 
@@ -187,7 +187,7 @@ export default function Dashboard() {
           packageId: posSelectedPackage?.id,
           orderItems: modifiedOrderItems,
           orderTotal: drinkTotal,
-          paymentStatus: posPaymentStatus
+          paymentStatus: posPaymentStatus === "QR" ? "PAID" : posPaymentStatus
         })
       });
       

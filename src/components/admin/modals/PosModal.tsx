@@ -21,8 +21,8 @@ interface PosModalProps {
   handleUseSavedTime: () => void;
   
   posLoading: boolean;
-  posPaymentStatus?: "PAID" | "UNPAID";
-  setPosPaymentStatus?: (status: "PAID" | "UNPAID") => void;
+  posPaymentStatus?: "PAID" | "UNPAID" | "QR";
+  setPosPaymentStatus?: (status: "PAID" | "UNPAID" | "QR") => void;
   handleCompleteOrder: () => void;
 }
 
@@ -285,7 +285,17 @@ export default function PosModal({
                           : "text-stone-500 hover:text-stone-300"
                       }`}
                     >
-                      Đã Thu Tiền Ngay
+                      Tiền mặt
+                    </button>
+                    <button
+                      onClick={() => setPosPaymentStatus("QR")}
+                      className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
+                        posPaymentStatus === "QR" 
+                          ? "bg-blue-600/50 border border-blue-500/50 text-white shadow-lg" 
+                          : "text-stone-500 hover:text-stone-300"
+                      }`}
+                    >
+                      QR Ngân hàng
                     </button>
                     <button
                       onClick={() => setPosPaymentStatus("UNPAID")}
@@ -295,8 +305,28 @@ export default function PosModal({
                           : "text-stone-500 hover:text-stone-300"
                       }`}
                     >
-                      Khách Trả Sau (Ghi Nợ)
+                      Khách Ghi Nợ
                     </button>
+                  </div>
+                )}
+
+                {posPaymentStatus === "QR" && (
+                  <div className="flex flex-col items-center justify-center mb-6 bg-white p-4 rounded-2xl mx-auto w-fit animate-fade-in shadow-xl">
+                    <div className="relative">
+                      <img 
+                        src={`https://img.vietqr.io/image/970436-0123456789-compact2.png?amount=${(() => {
+                          let drinkTotal = posCart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+                          if (posSelectedPackage?.includesDrink && posCart.length > 0) {
+                            drinkTotal -= posCart[0].price;
+                          }
+                          return (posSelectedPackage?.price || 0) + drinkTotal;
+                        })()}&addInfo=Thanh toan Hiro App&accountName=HIRO COFFEE`} 
+                        alt="VietQR" 
+                        className="w-56 h-56 rounded-xl border border-stone-200" 
+                      />
+                    </div>
+                    <p className="text-stone-900 font-bold mt-3 text-sm uppercase tracking-wide">Vietcombank - HIRO COFFEE</p>
+                    <p className="text-stone-500 text-xs text-center mt-1">Đưa mã này cho khách quét để chuyển khoản</p>
                   </div>
                 )}
                 
