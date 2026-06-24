@@ -128,7 +128,7 @@ export default function InventoryTab() {
     }
   };
 
-  if (loading) return <div className="text-stone-400">Đang tải dữ liệu kho...</div>;
+  if (loading) return <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div></div>;
 
   return (
     <div className="space-y-8 relative">

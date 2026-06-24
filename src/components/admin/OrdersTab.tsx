@@ -84,7 +84,7 @@ export default function OrdersTab() {
   const completedOrders = orders.filter(o => o.status === "SERVED" || o.status === "CANCELLED");
 
   if (loading) {
-    return <div className="p-6 text-white text-center">Đang tải đơn hàng...</div>;
+    return <div className="flex justify-center items-center p-12"><div className="w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div></div>;
   }
 
   return (

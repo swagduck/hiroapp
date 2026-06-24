@@ -142,7 +142,7 @@ export default function VouchersTab() {
 
       <div className="glass bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-stone-400">Đang tải...</div>
+          <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div></div>
         ) : vouchers.length === 0 ? (
           <div className="p-12 text-center">
             <div className="text-stone-500 mb-3 text-4xl">🏷️</div>

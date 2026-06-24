@@ -20,7 +20,7 @@ export default function ActivityLogTab() {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-full text-stone-400">Đang tải nhật ký...</div>;
+    return <div className="flex justify-center items-center h-full"><div className="w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div></div>;
   }
 
   return (

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 const QrScanner = dynamic(() => import("@/components/QRScanner"), {
   ssr: false,
-  loading: () => <div className="text-stone-400 p-4 text-center">Đang tải máy quét...</div>
+  loading: () => <div className="p-4 flex justify-center"><div className="w-6 h-6 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div></div>
 });
 
 export default function CustomerPortal() {
