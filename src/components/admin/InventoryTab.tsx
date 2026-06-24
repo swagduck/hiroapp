@@ -137,7 +137,21 @@ export default function InventoryTab() {
         
         <form onSubmit={handleAddIngredient} className="flex gap-4 mb-6 bg-stone-900 p-4 rounded-xl border border-white/5">
           <input type="text" placeholder="Tên NL (VD: Cà phê hạt)" className="flex-1 bg-stone-800 border-white/10 rounded-lg px-4 text-white" value={newIng.name} onChange={e => setNewIng({...newIng, name: e.target.value})} required />
-          <input type="text" placeholder="Đơn vị (g, ml, chai)" className="w-32 bg-stone-800 border-white/10 rounded-lg px-4 text-white" value={newIng.unit} onChange={e => setNewIng({...newIng, unit: e.target.value})} required />
+          <select 
+            className="w-36 bg-stone-800 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+            value={newIng.unit} 
+            onChange={e => setNewIng({...newIng, unit: e.target.value})} 
+            required
+          >
+            <option value="g">g (Gram)</option>
+            <option value="kg">kg (Kilogram)</option>
+            <option value="ml">ml (Mililit)</option>
+            <option value="l">l (Lít)</option>
+            <option value="cái">Cái/Chiếc</option>
+            <option value="hộp">Hộp</option>
+            <option value="chai">Chai</option>
+            <option value="ly">Ly/Cốc</option>
+          </select>
           <input type="number" placeholder="Tồn tối thiểu" className="w-32 bg-stone-800 border-white/10 rounded-lg px-4 text-white" value={newIng.minStock || ''} onChange={e => setNewIng({...newIng, minStock: Number(e.target.value)})} />
           <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg font-medium">Thêm NL</button>
         </form>
