@@ -6,8 +6,15 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Hiro coffee and Study space",
-  description: "Phần mềm quản lý Hiro coffee and Study space",
+  title: "Hiro App",
+  description: "Phần mềm quản lý Hiro Coffee and Study space",
+  manifest: "/manifest.json",
+  themeColor: "#10b981",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Hiro App",
+  },
 };
 
 export default function RootLayout({

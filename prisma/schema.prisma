@@ -157,6 +157,7 @@ model MenuItem {
   updatedAt   DateTime @updatedAt
 
   orderItems  OrderItem[]
+  recipeItems RecipeItem[]
 
   @@index([isAvailable])
 }
@@ -220,3 +221,52 @@ model ArchivedRecord {
   @@index([originalId])
   @@index([archivedAt])
 }
+
+// INVENTORY MANAGEMENT
+
+model Ingredient {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  unit          String   // e.g., 'g', 'ml', 'cái'
+  currentStock  Float    @default(0)
+  minStock      Float    @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  recipeItems   RecipeItem[]
+  transactions  InventoryTransaction[]
+
+  @@index([isActive])
+}
+
+model RecipeItem {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  menuItemId    String   @db.ObjectId
+  menuItem      MenuItem @relation(fields: [menuItemId], references: [id])
+  ingredientId  String   @db.ObjectId
+  ingredient    Ingredient @relation(fields: [ingredientId], references: [id])
+  quantity      Float    // Amount of ingredient required per 1 menuItem
+  
+  @@unique([menuItemId, ingredientId])
+}
+
+enum TransactionType {
+  RESTOCK
+  CONSUMED
+  ADJUSTED
+}
+
+model InventoryTransaction {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  ingredientId  String   @db.ObjectId
+  ingredient    Ingredient @relation(fields: [ingredientId], references: [id])
+  type          TransactionType
+  amountChanged Float    // Positive for RESTOCK, Negative for CONSUMED
+  reason        String?  // e.g. "Order #1234", "Nhập hàng tuần", "Hư hỏng"
+  createdAt     DateTime @default(now())
+
+  @@index([ingredientId])
+  @@index([createdAt])
+}
+

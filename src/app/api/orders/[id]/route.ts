@@ -12,19 +12,49 @@ export async function PUT(
 
     const existingOrder = await prisma.order.findUnique({
       where: { id },
-      include: { session: true }
+      include: { 
+        session: true,
+        items: {
+          include: { menuItem: { include: { recipeItems: true } } }
+        }
+      }
     });
 
     if (!existingOrder) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    const updatedOrder = await prisma.order.update({
-      where: { id },
-      data: { 
-        status,
-        ...(status === 'PREPARING' || status === 'SERVED' ? { paymentStatus: "PAID" } : {})
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      const updated = await tx.order.update({
+        where: { id },
+        data: { 
+          status,
+          ...(status === 'PREPARING' || status === 'SERVED' ? { paymentStatus: "PAID" } : {})
+        }
+      });
+
+      // Nếu trạng thái chuyển thành SERVED, tiến hành trừ kho
+      if (status === "SERVED" && existingOrder.status !== "SERVED") {
+        for (const item of existingOrder.items) {
+          const qty = item.quantity;
+          for (const recipe of item.menuItem.recipeItems) {
+            const consumed = qty * recipe.quantity;
+            await tx.ingredient.update({
+              where: { id: recipe.ingredientId },
+              data: { currentStock: { decrement: consumed } }
+            });
+            await tx.inventoryTransaction.create({
+              data: {
+                ingredientId: recipe.ingredientId,
+                type: "CONSUMED",
+                amountChanged: -consumed,
+                reason: `Đơn hàng #${existingOrder.id}`
+              }
+            });
+          }
+        }
       }
+      return updated;
     });
 
     // Add points if served

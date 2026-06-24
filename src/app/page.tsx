@@ -13,6 +13,7 @@ const AnalyticsTab = dynamic(() => import("@/components/AnalyticsTab"));
 const ActivityLogTab = dynamic(() => import("@/components/admin/ActivityLogTab"));
 const StaffTab = dynamic(() => import("@/components/admin/StaffTab"));
 const VouchersTab = dynamic(() => import("@/components/admin/VouchersTab"));
+const InventoryTab = dynamic(() => import("@/components/admin/InventoryTab"));
 
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Package, PosCartItem, Session } from "@/types";
@@ -783,6 +784,8 @@ export default function Dashboard() {
             <StaffTab />
           ) : activeTab === "vouchers" && currentUserRole === 'ADMIN' ? (
             <VouchersTab />
+          ) : activeTab === "inventory" && currentUserRole === 'ADMIN' ? (
+            <InventoryTab />
           ) : activeTab === "settings" ? (
             <div className="flex flex-col gap-4 max-w-md mx-auto w-full pt-4 pb-24">
               <h3 className="text-xl font-bold text-white mb-2">Cài đặt & Tính năng</h3>
@@ -796,6 +799,21 @@ export default function Dashboard() {
                     <div>
                       <h4 className="font-bold text-white text-lg">Báo cáo doanh thu</h4>
                       <p className="text-sm text-stone-400">Xem biểu đồ và thống kê</p>
+                    </div>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              )}
+
+              {currentUserRole === 'ADMIN' && (
+                <button onClick={() => setActiveTab('inventory')} className="bg-stone-900 border border-white/10 p-5 rounded-2xl flex items-center justify-between text-left hover:bg-stone-800 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white text-lg">Quản lý Kho</h4>
+                      <p className="text-sm text-stone-400">Nguyên liệu & Công thức</p>
                     </div>
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
