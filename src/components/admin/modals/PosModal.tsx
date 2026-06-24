@@ -202,148 +202,159 @@ export default function PosModal({
 
           {/* STEP 3: THANH TOÁN */}
           {posStep === 3 && (
-            <div className="flex flex-col h-full animate-slide-up max-w-3xl mx-auto w-full p-6">
-              <div className="flex items-center gap-4 mb-6">
+            <div className="flex flex-col h-full animate-slide-up max-w-6xl mx-auto w-full p-4 md:p-6">
+              <div className="flex items-center gap-4 mb-6 shrink-0">
                 <button onClick={() => setPosStep(2)} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">←</button>
                 <h3 className="text-2xl font-bold text-white">Xác nhận & Thanh toán</h3>
               </div>
 
-              <div className="flex-1 bg-[#141c16]/40 rounded-2xl border border-white/10 p-6 overflow-y-auto">
-                {/* Bill Header */}
-                <div className="flex justify-between items-start pb-4 border-b border-white/10 mb-4">
-                  <div>
-                    <p className="font-bold text-lg text-green-400">{posSelectedPackage?.name}</p>
-                    <p className="text-sm text-stone-500">Gói cước thời gian</p>
+              <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-hidden">
+                {/* Left Column: Bill Details */}
+                <div className="flex-1 bg-[#141c16]/40 rounded-2xl border border-white/10 p-6 overflow-y-auto custom-scrollbar flex flex-col">
+                  {/* Bill Header */}
+                  <div className="flex justify-between items-start pb-4 border-b border-white/10 mb-4 shrink-0">
+                    <div>
+                      <p className="font-bold text-lg text-green-400">{posSelectedPackage?.name}</p>
+                      <p className="text-sm text-stone-500">Gói cước thời gian</p>
+                    </div>
+                    <p className="font-bold text-lg text-white">{(posSelectedPackage?.price || 0).toLocaleString('vi-VN')}đ</p>
                   </div>
-                  <p className="font-bold text-lg text-white">{(posSelectedPackage?.price || 0).toLocaleString('vi-VN')}đ</p>
-                </div>
 
-                {/* Drink Items */}
-                <div className="space-y-4">
-                  {posCart.length === 0 ? (
-                    <p className="text-stone-500 text-center py-8 italic">Không kèm nước uống</p>
-                  ) : posCart.map((item, index) => {
-                    const isFreeDrink = posSelectedPackage?.includesDrink && index === 0;
-                    return (
-                    <div key={item.id} className="flex flex-col gap-1 pb-2 border-b border-white/5">
-                      <div className="flex justify-between items-start">
-                        <p className="font-medium text-gray-200">
-                          <span className="text-emerald-500 font-bold mr-2">{item.quantity}x</span>
-                          {item.name}
-                        </p>
-                        <p className="font-bold text-white">
-                          {isFreeDrink 
-                            ? (item.price * (item.quantity - 1)).toLocaleString('vi-VN') + "đ" 
-                            : (item.price * item.quantity).toLocaleString('vi-VN') + "đ"
-                          }
-                        </p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        {isFreeDrink ? (
-                          <p className="text-xs text-amber-500 font-medium bg-amber-500/10 px-2 py-0.5 rounded inline-block">🎁 Tặng kèm gói Combo (1 ly)</p>
-                        ) : (
-                          <p className="text-xs text-stone-500">{item.price.toLocaleString('vi-VN')}đ/ly</p>
-                        )}
-                        
-                        <div className="flex items-center gap-3 bg-white/5 rounded-lg px-2 py-1 mt-1">
-                          <button onClick={() => {
-                             if (item.quantity > 1) {
-                               setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity - 1 } : c));
-                             } else {
-                               setPosCart(posCart.filter(c => c.id !== item.id));
-                             }
-                          }} className="w-6 h-6 flex items-center justify-center text-stone-400 hover:text-white bg-white/5 rounded">-</button>
-                          <button onClick={() => setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c))} className="w-6 h-6 flex items-center justify-center text-stone-400 hover:text-white bg-white/5 rounded">+</button>
+                  {/* Drink Items */}
+                  <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4">
+                    {posCart.length === 0 ? (
+                      <p className="text-stone-500 text-center py-8 italic">Không kèm nước uống</p>
+                    ) : posCart.map((item, index) => {
+                      const isFreeDrink = posSelectedPackage?.includesDrink && index === 0;
+                      return (
+                      <div key={item.id} className="flex flex-col gap-1 pb-2 border-b border-white/5">
+                        <div className="flex justify-between items-start">
+                          <p className="font-medium text-gray-200">
+                            <span className="text-emerald-500 font-bold mr-2">{item.quantity}x</span>
+                            {item.name}
+                          </p>
+                          <p className="font-bold text-white">
+                            {isFreeDrink 
+                              ? (item.price * (item.quantity - 1)).toLocaleString('vi-VN') + "đ" 
+                              : (item.price * item.quantity).toLocaleString('vi-VN') + "đ"
+                            }
+                          </p>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          {isFreeDrink ? (
+                            <p className="text-xs text-amber-500 font-medium bg-amber-500/10 px-2 py-0.5 rounded inline-block">🎁 Tặng kèm gói Combo (1 ly)</p>
+                          ) : (
+                            <p className="text-xs text-stone-500">{item.price.toLocaleString('vi-VN')}đ/ly</p>
+                          )}
+                          
+                          <div className="flex items-center gap-3 bg-white/5 rounded-lg px-2 py-1 mt-1">
+                            <button onClick={() => {
+                               if (item.quantity > 1) {
+                                 setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity - 1 } : c));
+                               } else {
+                                 setPosCart(posCart.filter(c => c.id !== item.id));
+                               }
+                            }} className="w-6 h-6 flex items-center justify-center text-stone-400 hover:text-white bg-white/5 rounded">-</button>
+                            <button onClick={() => setPosCart(posCart.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c))} className="w-6 h-6 flex items-center justify-center text-stone-400 hover:text-white bg-white/5 rounded">+</button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )})}
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <div className="flex justify-between items-end mb-6 bg-emerald-900/20 p-5 rounded-2xl border border-emerald-500/30">
-                  <span className="text-emerald-400 font-medium text-lg uppercase tracking-wider">Tổng Thu</span>
-                  <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400 drop-shadow-sm">
-                    {(() => {
-                      let drinkTotal = posCart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-                      if (posSelectedPackage?.includesDrink && posCart.length > 0) {
-                        drinkTotal -= posCart[0].price; // Giảm giá 1 ly đầu tiên
-                      }
-                      return ((posSelectedPackage?.price || 0) + drinkTotal).toLocaleString('vi-VN');
-                    })()}đ
-                  </span>
-                </div>
-                
-                {setPosPaymentStatus && (
-                  <div className="flex w-full bg-black/20 p-1 rounded-2xl mb-6 border border-white/5 relative">
-                    <button
-                      onClick={() => setPosPaymentStatus("PAID")}
-                      className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
-                        posPaymentStatus === "PAID" 
-                          ? "bg-emerald-600/50 border border-emerald-500/50 text-white shadow-lg" 
-                          : "text-stone-500 hover:text-stone-300"
-                      }`}
-                    >
-                      Tiền mặt
-                    </button>
-                    <button
-                      onClick={() => setPosPaymentStatus("QR")}
-                      className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
-                        posPaymentStatus === "QR" 
-                          ? "bg-blue-600/50 border border-blue-500/50 text-white shadow-lg" 
-                          : "text-stone-500 hover:text-stone-300"
-                      }`}
-                    >
-                      QR Ngân hàng
-                    </button>
-                    <button
-                      onClick={() => setPosPaymentStatus("UNPAID")}
-                      className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
-                        posPaymentStatus === "UNPAID" 
-                          ? "bg-amber-600/50 border border-amber-500/50 text-white shadow-lg" 
-                          : "text-stone-500 hover:text-stone-300"
-                      }`}
-                    >
-                      Khách Ghi Nợ
-                    </button>
+                    )})}
                   </div>
-                )}
+                </div>
 
-                {posPaymentStatus === "QR" && (
-                  <div className="flex flex-col items-center justify-center mb-6 bg-white p-4 rounded-2xl mx-auto w-fit animate-fade-in shadow-xl">
-                    <div className="relative">
-                      <img 
-                        src={`https://img.vietqr.io/image/970436-0123456789-compact2.png?amount=${(() => {
+                {/* Right Column: Payment & Action */}
+                <div className="w-full md:w-[450px] flex flex-col gap-6 shrink-0 h-full overflow-y-auto custom-scrollbar md:overflow-visible">
+                  <div className="bg-[#141c16]/40 rounded-2xl border border-white/10 p-6 flex-1 flex flex-col">
+                    <div className="flex justify-between items-end mb-6 bg-emerald-900/20 p-5 rounded-2xl border border-emerald-500/30">
+                      <span className="text-emerald-400 font-medium text-lg uppercase tracking-wider">Tổng Thu</span>
+                      <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400 drop-shadow-sm">
+                        {(() => {
                           let drinkTotal = posCart.reduce((acc, item) => acc + item.price * item.quantity, 0);
                           if (posSelectedPackage?.includesDrink && posCart.length > 0) {
                             drinkTotal -= posCart[0].price;
                           }
-                          return (posSelectedPackage?.price || 0) + drinkTotal;
-                        })()}&addInfo=Thanh toan Hiro App&accountName=HIRO COFFEE`} 
-                        alt="VietQR" 
-                        className="w-56 h-56 rounded-xl border border-stone-200" 
-                      />
+                          return ((posSelectedPackage?.price || 0) + drinkTotal).toLocaleString('vi-VN');
+                        })()}đ
+                      </span>
                     </div>
-                    <p className="text-stone-900 font-bold mt-3 text-sm uppercase tracking-wide">Vietcombank - HIRO COFFEE</p>
-                    <p className="text-stone-500 text-xs text-center mt-1">Đưa mã này cho khách quét để chuyển khoản</p>
+                    
+                    {setPosPaymentStatus && (
+                      <div className="flex w-full bg-black/20 p-1 rounded-2xl mb-4 border border-white/5 relative">
+                        <button
+                          onClick={() => setPosPaymentStatus("PAID")}
+                          className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
+                            posPaymentStatus === "PAID" 
+                              ? "bg-emerald-600/50 border border-emerald-500/50 text-white shadow-lg" 
+                              : "text-stone-500 hover:text-stone-300"
+                          }`}
+                        >
+                          Tiền mặt
+                        </button>
+                        <button
+                          onClick={() => setPosPaymentStatus("QR")}
+                          className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
+                            posPaymentStatus === "QR" 
+                              ? "bg-blue-600/50 border border-blue-500/50 text-white shadow-lg" 
+                              : "text-stone-500 hover:text-stone-300"
+                          }`}
+                        >
+                          QR Ngân hàng
+                        </button>
+                        <button
+                          onClick={() => setPosPaymentStatus("UNPAID")}
+                          className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
+                            posPaymentStatus === "UNPAID" 
+                              ? "bg-amber-600/50 border border-amber-500/50 text-white shadow-lg" 
+                              : "text-stone-500 hover:text-stone-300"
+                          }`}
+                        >
+                          Khách Ghi Nợ
+                        </button>
+                      </div>
+                    )}
+
+                    {posPaymentStatus === "QR" ? (
+                      <div className="flex-1 flex flex-col items-center justify-center bg-white p-4 rounded-2xl mx-auto w-full animate-fade-in shadow-xl mb-2 mt-2">
+                        <div className="relative">
+                          <img 
+                            src={`https://img.vietqr.io/image/970436-0123456789-compact2.png?amount=${(() => {
+                              let drinkTotal = posCart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+                              if (posSelectedPackage?.includesDrink && posCart.length > 0) {
+                                drinkTotal -= posCart[0].price;
+                              }
+                              return (posSelectedPackage?.price || 0) + drinkTotal;
+                            })()}&addInfo=Thanh toan Hiro App&accountName=HIRO COFFEE`} 
+                            alt="VietQR" 
+                            className="w-48 h-48 sm:w-56 sm:h-56 rounded-xl border border-stone-200" 
+                          />
+                        </div>
+                        <p className="text-stone-900 font-bold mt-3 text-sm uppercase tracking-wide text-center">Vietcombank - HIRO COFFEE</p>
+                        <p className="text-stone-500 text-xs text-center mt-1">Đưa mã này cho khách quét để chuyển khoản</p>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col items-center justify-center opacity-50 py-10 border-2 border-dashed border-white/10 rounded-2xl mt-2 mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500 mb-2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                        <p className="text-stone-400 text-sm font-medium">Thanh toán không dùng QR</p>
+                      </div>
+                    )}
                   </div>
-                )}
-                
-                <button 
-                  disabled={posLoading}
-                  onClick={handleCompleteOrder}
-                  className="w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-600 to-amber-500 text-white font-bold text-xl shadow-[0_0_30px_rgba(5,150,105,0.4)] disabled:opacity-50 hover:opacity-90 transition-all active:scale-95 flex justify-center items-center gap-3"
-                >
-                  {posLoading ? (
-                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4"/><path d="M7 15h10v6H7z"/></svg>
-                      HOÀN TẤT & IN MÃ KHÁCH
-                    </>
-                  )}
-                </button>
+                  
+                  <button 
+                    disabled={posLoading}
+                    onClick={handleCompleteOrder}
+                    className="w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-600 to-amber-500 text-white font-bold text-xl shadow-[0_0_30px_rgba(5,150,105,0.4)] disabled:opacity-50 hover:opacity-90 transition-all active:scale-95 flex justify-center items-center gap-3 shrink-0"
+                  >
+                    {posLoading ? (
+                      <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4"/><path d="M7 15h10v6H7z"/></svg>
+                        HOÀN TẤT & IN MÃ KHÁCH
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
