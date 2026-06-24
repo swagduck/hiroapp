@@ -28,21 +28,21 @@ export default function PackagesTab() {
     a.click();
   };
 
-  const fetchPackages = async () => {
+  const fetchPackages = async (showLoading = false) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const res = await fetch('/api/packages');
       const data = await res.json();
       setPackages(data);
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPackages();
+    fetchPackages(true);
   }, []);
 
   const openAddModal = () => {

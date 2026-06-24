@@ -13,11 +13,11 @@ export default function InventoryTab() {
   const [restockModal, setRestockModal] = useState<{ ingredientId: string; amount: string; name: string; unit: string } | null>(null);
 
   useEffect(() => {
-    fetchData();
+    fetchData(true);
   }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     try {
       const [resIng, resRec] = await Promise.all([
         fetch("/api/inventory"),
@@ -28,7 +28,7 @@ export default function InventoryTab() {
     } catch (e) {
       toast.error("Lỗi tải dữ liệu kho");
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 

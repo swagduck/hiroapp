@@ -22,8 +22,9 @@ export default function VouchersTab() {
     isActive: true
   });
 
-  const fetchVouchers = async () => {
+  const fetchVouchers = async (showLoading = false) => {
     try {
+      if (showLoading) setLoading(true);
       const res = await fetch("/api/admin/vouchers");
       if (res.ok) {
         const data = await res.json();
@@ -32,12 +33,12 @@ export default function VouchersTab() {
     } catch (e) {
       toast.error("Lỗi lấy danh sách mã giảm giá");
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchVouchers();
+    fetchVouchers(true);
   }, []);
 
   const openModal = (voucher: any = null) => {

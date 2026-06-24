@@ -13,21 +13,21 @@ export default function MenuTab({ role }: { role?: "ADMIN" | "STAFF" | null }) {
   const [price, setPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("☕");
 
-  const fetchMenu = async () => {
+  const fetchMenu = async (showLoading = false) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const res = await fetch('/api/menu');
       const data = await res.json();
       setItems(data);
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMenu();
+    fetchMenu(true);
   }, []);
 
   const openAddModal = () => {
