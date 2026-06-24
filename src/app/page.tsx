@@ -362,7 +362,9 @@ export default function Dashboard() {
         <div className="flex-1 overflow-auto p-6 z-0 relative">
           {loading ? (
             <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600"></div></div>
-          ) : activeTab === "overview" ? (
+          ) : (
+            <>
+            <div className={activeTab === "overview" ? "block" : "hidden"}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               {/* Overtime Alerts */}
@@ -771,27 +773,44 @@ export default function Dashboard() {
                   })}
                 </div>
               </div>
+              </div>
             </div>
-          ) : activeTab === "analytics" ? (
-            <AnalyticsTab />
-          ) : activeTab === "sessions" ? (
-            <HistoryTab />
-          ) : activeTab === "activity" ? (
-            <ActivityLogTab />
-          ) : activeTab === "orders" ? (
-            <OrdersTab />
-          ) : activeTab === "menu" ? (
-            <MenuTab role={currentUserRole} />
-          ) : activeTab === "packages" && currentUserRole === 'ADMIN' ? (
-            <PackagesTab />
-          ) : activeTab === "staff" && currentUserRole === 'ADMIN' ? (
-            <StaffTab />
-          ) : activeTab === "vouchers" && currentUserRole === 'ADMIN' ? (
-            <VouchersTab />
-          ) : activeTab === "inventory" && currentUserRole === 'ADMIN' ? (
-            <InventoryTab />
-          ) : activeTab === "settings" ? (
-            <div className="flex flex-col gap-4 max-w-md mx-auto w-full pt-4 pb-24">
+            
+            <div className={activeTab === "analytics" ? "block" : "hidden"}>
+              <AnalyticsTab />
+            </div>
+            <div className={activeTab === "sessions" ? "block" : "hidden"}>
+              <HistoryTab />
+            </div>
+            <div className={activeTab === "activity" ? "block" : "hidden"}>
+              <ActivityLogTab />
+            </div>
+            <div className={activeTab === "orders" ? "block" : "hidden"}>
+              <OrdersTab />
+            </div>
+            <div className={activeTab === "menu" ? "block" : "hidden"}>
+              <MenuTab role={currentUserRole} />
+            </div>
+            
+            {currentUserRole === 'ADMIN' && (
+              <>
+                <div className={activeTab === "packages" ? "block" : "hidden"}>
+                  <PackagesTab />
+                </div>
+                <div className={activeTab === "staff" ? "block" : "hidden"}>
+                  <StaffTab />
+                </div>
+                <div className={activeTab === "vouchers" ? "block" : "hidden"}>
+                  <VouchersTab />
+                </div>
+                <div className={activeTab === "inventory" ? "block" : "hidden"}>
+                  <InventoryTab />
+                </div>
+              </>
+            )}
+
+            <div className={activeTab === "settings" ? "block" : "hidden"}>
+              <div className="flex flex-col gap-4 max-w-md mx-auto w-full pt-4 pb-24">
               <h3 className="text-xl font-bold text-white mb-2">Cài đặt & Tính năng</h3>
               
               {currentUserRole === 'ADMIN' && (
@@ -880,7 +899,9 @@ export default function Dashboard() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </a>
             </div>
-          ) : null}
+            </div>
+            </>
+          )}
         </div>
       </main>
 
