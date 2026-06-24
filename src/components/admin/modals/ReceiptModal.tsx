@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Session } from '@/types';
 
@@ -10,20 +10,40 @@ interface ReceiptModalProps {
 }
 
 export default function ReceiptModal({ receiptData, onClose, onApprove, autoPrint = true }: ReceiptModalProps) {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [dontAskAgain, setDontAskAgain] = useState(false);
+
   useEffect(() => {
     if (receiptData && autoPrint) {
-      const timer = setTimeout(() => {
-        window.print();
-      }, 500);
-      return () => clearTimeout(timer);
+      const skipUntil = localStorage.getItem('skipPrintConfirmUntil');
+      if (skipUntil && parseInt(skipUntil) > Date.now()) {
+        const timer = setTimeout(() => {
+          window.print();
+        }, 500);
+        return () => clearTimeout(timer);
+      } else {
+        const timer = setTimeout(() => {
+          setShowConfirm(true);
+        }, 300);
+        return () => clearTimeout(timer);
+      }
     }
   }, [receiptData, autoPrint]);
+
+  const handlePrint = () => {
+    if (dontAskAgain) {
+      localStorage.setItem('skipPrintConfirmUntil', (Date.now() + 3600000).toString());
+    }
+    setShowConfirm(false);
+    setTimeout(() => window.print(), 100);
+  };
 
   if (!receiptData) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#141c16]/80 backdrop-blur-md p-4 animate-page-transition">
-      <div id="print-receipt" className="bg-white text-black w-full max-w-sm rounded-xl overflow-hidden shadow-2xl relative">
+    <>
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#141c16]/80 backdrop-blur-md p-4 animate-page-transition">
+        <div id="print-receipt" className="bg-white text-black w-full max-w-sm rounded-xl overflow-hidden shadow-2xl relative">
         <button 
           onClick={() => window.print()}
           className="absolute top-4 right-4 p-2 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-600 transition-colors print-hidden"
@@ -94,5 +114,43 @@ export default function ReceiptModal({ receiptData, onClose, onApprove, autoPrin
         </div>
       </div>
     </div>
+
+    {showConfirm && (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in print-hidden">
+        <div className="bg-stone-900 border border-white/10 rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-slide-up flex flex-col">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          </div>
+          <h3 className="text-xl font-bold text-white text-center mb-2">In hoá đơn & mã khách?</h3>
+          <p className="text-stone-400 text-sm text-center mb-6">Bạn có muốn in hoá đơn và mã vào cổng cho khách hàng không?</p>
+          
+          <label className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition-colors mb-6 border border-white/5">
+            <input 
+              type="checkbox" 
+              checked={dontAskAgain}
+              onChange={(e) => setDontAskAgain(e.target.checked)}
+              className="w-5 h-5 rounded border-stone-600 text-emerald-500 focus:ring-emerald-500 bg-stone-950 accent-emerald-500 shrink-0" 
+            />
+            <span className="text-sm text-stone-300 font-medium">Không hiện lại thông báo này trong 1 tiếng tới</span>
+          </label>
+
+          <div className="flex gap-3">
+            <button 
+              onClick={() => setShowConfirm(false)}
+              className="flex-1 py-3.5 rounded-xl bg-stone-800 text-white font-bold hover:bg-stone-700 transition-colors text-sm border border-white/10"
+            >
+              Bỏ qua
+            </button>
+            <button 
+              onClick={handlePrint}
+              className="flex-1 py-3.5 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition-colors shadow-[0_0_20px_rgba(5,150,105,0.4)] text-sm"
+            >
+              In ngay
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
