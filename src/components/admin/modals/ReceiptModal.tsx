@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Session } from '@/types';
 
@@ -6,9 +6,19 @@ interface ReceiptModalProps {
   receiptData: Session | null;
   onClose: () => void;
   onApprove?: (id: string) => void;
+  autoPrint?: boolean;
 }
 
-export default function ReceiptModal({ receiptData, onClose, onApprove }: ReceiptModalProps) {
+export default function ReceiptModal({ receiptData, onClose, onApprove, autoPrint = true }: ReceiptModalProps) {
+  useEffect(() => {
+    if (receiptData && autoPrint) {
+      const timer = setTimeout(() => {
+        window.print();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [receiptData, autoPrint]);
+
   if (!receiptData) return null;
 
   return (
