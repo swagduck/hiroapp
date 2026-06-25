@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyJwtToken } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { pusherServer } from "@/lib/pusher";
 
 export async function PUT(request: NextRequest) {
   try {
@@ -50,6 +51,9 @@ export async function PUT(request: NextRequest) {
         data: { status: newOrderStatus as "SERVED" | "PREPARING" }
       });
     }
+
+    // Trigger Pusher event for POS and other KDS clients
+    await pusherServer.trigger('orders-channel', 'order-updated', { orderId, itemId, status, newOrderStatus });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -56,8 +56,14 @@ export default function OrdersTab() {
       });
     });
 
+    channel.bind('order-updated', (data: any) => {
+      // Refresh list to sync status
+      fetchOrders();
+    });
+
     return () => {
       channel.unbind('new-order');
+      channel.unbind('order-updated');
       pusherClient.unsubscribe('orders-channel');
     };
   }, []);

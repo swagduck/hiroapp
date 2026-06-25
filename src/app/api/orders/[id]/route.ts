@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { pusherServer } from "@/lib/pusher";
 
 export async function PUT(
   request: Request,
@@ -90,6 +91,8 @@ export async function PUT(
         data: { totalAmount: { decrement: existingOrder.totalAmount } }
       });
     }
+
+    await pusherServer.trigger('orders-channel', 'order-updated', { orderId: id, status });
 
     return NextResponse.json(updatedOrder);
   } catch (error) {

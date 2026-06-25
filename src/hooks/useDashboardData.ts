@@ -5,7 +5,7 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export function useDashboardData() {
   const { data: sessions, mutate: mutateSessions } = useSWR<Session[]>('/api/sessions', fetcher, { 
-    refreshInterval: 30000,
+    refreshInterval: 5000,
     revalidateOnFocus: true
   });
   
@@ -14,7 +14,7 @@ export function useDashboardData() {
   const { data: menuItems, mutate: mutateMenu } = useSWR<MenuItem[]>('/api/menu', fetcher);
   
   const { data: orders, mutate: mutateOrders } = useSWR<Order[]>('/api/orders', fetcher, { 
-    refreshInterval: 30000,
+    refreshInterval: 5000,
     revalidateOnFocus: true
   });
 
