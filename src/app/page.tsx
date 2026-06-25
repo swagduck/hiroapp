@@ -17,6 +17,7 @@ const InventoryTab = dynamic(() => import("@/components/admin/InventoryTab"));
 const CashbookTab = dynamic(() => import("@/components/admin/CashbookTab"));
 const PersonnelTab = dynamic(() => import("@/components/admin/PersonnelTab"));
 const ShiftsStaffTab = dynamic(() => import("@/components/admin/ShiftsStaffTab"));
+const CRMTab = dynamic(() => import("@/components/admin/CRMTab"));
 
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Package, PosCartItem, Session } from "@/types";
@@ -302,8 +303,12 @@ export default function Dashboard() {
                 Cài đặt Gói cước
               </button>
               <button onClick={() => setActiveTab("vouchers")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "vouchers" ? "bg-purple-600/20 text-purple-400 font-bold border border-purple-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                Khuyến Mãi
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+                <span>Khuyến Mãi</span>
+              </button>
+              <button onClick={() => setActiveTab("crm")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "crm" ? "bg-pink-600/20 text-pink-500 font-bold border border-pink-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Khách Hàng</span>
               </button>
               <button onClick={() => setActiveTab("cashbook")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "cashbook" ? "bg-amber-500/20 text-amber-400 font-bold premium-shadow border border-amber-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -824,6 +829,9 @@ export default function Dashboard() {
                 <div className={activeTab === "vouchers" ? "block" : "hidden"}>
                   <VouchersTab />
                 </div>
+                <div className={activeTab === "crm" ? "block" : "hidden"}>
+                  <CRMTab />
+                </div>
                 <div className={activeTab === "inventory" ? "block" : "hidden"}>
                   <InventoryTab />
                 </div>
@@ -906,6 +914,19 @@ export default function Dashboard() {
                       <div>
                         <h4 className="font-bold text-white text-lg">Nhân Sự & Ca Làm</h4>
                         <p className="text-sm text-stone-400">Tài khoản & Chấm công</p>
+                      </div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                  
+                  <button onClick={() => setActiveTab('crm')} className="bg-stone-900 border border-white/10 p-5 rounded-2xl flex items-center justify-between text-left hover:bg-stone-800 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-lg">Khách Hàng</h4>
+                        <p className="text-sm text-stone-400">Quản lý CRM & Quyền lợi</p>
                       </div>
                     </div>
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
