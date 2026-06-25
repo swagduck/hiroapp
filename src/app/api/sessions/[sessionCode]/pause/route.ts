@@ -51,7 +51,7 @@ export async function POST(
       return NextResponse.json({ error: "Gói cước không giới hạn thời gian không thể bảo lưu" }, { status: 400 });
     }
 
-    await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // 1. Tìm hoặc tạo User với SĐT này
       let user = await tx.user.findFirst({ where: { phone } });
       
