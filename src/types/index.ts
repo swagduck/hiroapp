@@ -8,6 +8,26 @@ export interface User {
   freeDrinkTokens: number;
 }
 
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  menuItem: MenuItem;
+  quantity: number;
+  price: number;
+  status?: "PENDING" | "PREPARING" | "SERVED" | "CANCELLED";
+}
+
+export interface Ingredient {
+  id: string;
+  name: string;
+  unit: string;
+  minStock: number;
+  currentStock: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Package {
   id: string;
   name: string;

@@ -130,8 +130,24 @@ export default function InventoryTab() {
 
   if (loading) return <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div></div>;
 
+  const lowStockIngredients = ingredients.filter(i => i.currentStock <= i.minStock);
+
   return (
     <div className="space-y-8 relative">
+      {lowStockIngredients.length > 0 && (
+        <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 flex items-start gap-4 animate-pulse">
+          <div className="mt-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <div>
+            <h4 className="font-bold text-red-500 text-lg">Cảnh báo: Có {lowStockIngredients.length} nguyên liệu sắp hết!</h4>
+            <p className="text-red-400 text-sm mt-1">
+              {lowStockIngredients.map(i => i.name).join(", ")}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div>
         <h3 className="text-xl font-semibold text-emerald-400 mb-4">Danh sách Nguyên Liệu (Kho)</h3>
         

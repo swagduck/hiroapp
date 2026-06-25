@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Session, Package, MenuItem, Order } from '@/types';
+import { Session, Package, MenuItem, Order, Ingredient } from '@/types';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -18,15 +18,22 @@ export function useDashboardData() {
     revalidateOnFocus: true
   });
 
-  const loading = !sessions || !packages || !menuItems || !orders;
+  const { data: ingredients, mutate: mutateIngredients } = useSWR<Ingredient[]>('/api/inventory', fetcher, {
+    refreshInterval: 60000,
+  });
+
+  const loading = !sessions || !packages || !menuItems || !orders || !ingredients;
   
   const pendingOrdersCount = orders ? orders.filter(o => o.status === 'PENDING').length : 0;
+  
+  const lowStockCount = ingredients ? ingredients.filter(i => i.currentStock <= i.minStock).length : 0;
 
   const refreshData = () => {
     mutateSessions();
     mutateOrders();
     mutatePackages();
     mutateMenu();
+    mutateIngredients();
   };
 
   return {
@@ -34,7 +41,9 @@ export function useDashboardData() {
     packages: packages || [],
     menuItems: menuItems || [],
     orders: orders || [],
+    ingredients: ingredients || [],
     pendingOrdersCount,
+    lowStockCount,
     loading,
     refreshData
   };
