@@ -108,7 +108,7 @@ export default function ShiftsStaffTab() {
           <div className="space-y-3">
             {shifts.map(shift => {
               // Check if already checked in to this shift today
-              const activeRecord = records.find(r => r.shift.id === shift.id && r.status === "ACTIVE");
+              const activeRecord = records.find(r => r?.shift?.id === shift.id && r.status === "ACTIVE");
               
               return (
                 <div key={shift.id} className={`p-5 rounded-2xl border ${activeRecord ? 'bg-emerald-900/10 border-emerald-500/30' : 'bg-stone-900 border-white/5'}`}>
@@ -118,7 +118,7 @@ export default function ShiftsStaffTab() {
                   {activeRecord ? (
                     <div className="space-y-3">
                       <div className="bg-emerald-500/10 text-emerald-400 px-3 py-2 rounded-xl text-sm font-medium text-center">
-                        Đã Check-in lúc: {new Date(activeRecord.checkIn).toLocaleTimeString('vi-VN')}
+                        Đã Check-in lúc: {activeRecord?.checkIn ? new Date(activeRecord.checkIn).toLocaleTimeString('vi-VN') : "-"}
                       </div>
                       <button 
                         onClick={() => handleCheckOut(activeRecord.id)}
@@ -169,14 +169,14 @@ export default function ShiftsStaffTab() {
                   records.map((record) => (
                     <tr key={record.id} className="hover:bg-white/5 transition-colors">
                       <td className="p-4">
-                        <span className="font-bold text-white block">{record.shift.name}</span>
+                        <span className="font-bold text-white block">{record?.shift?.name || "Ca không xác định"}</span>
                         {record.status === "ACTIVE" && <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded">Đang làm</span>}
                       </td>
                       <td className="p-4 text-stone-300">
-                        {new Date(record.checkIn).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}
+                        {record?.checkIn ? new Date(record.checkIn).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : "-"}
                       </td>
                       <td className="p-4 text-stone-300">
-                        {record.checkOut ? new Date(record.checkOut).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : "-"}
+                        {record?.checkOut ? new Date(record.checkOut).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : "-"}
                       </td>
                       <td className="p-4 text-stone-300">
                         {record.totalHours ? `${record.totalHours}h` : "-"}

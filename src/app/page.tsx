@@ -360,10 +360,12 @@ export default function Dashboard() {
         <div className="p-4 border-t border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-green-700 to-emerald-600 flex items-center justify-center font-bold text-white shadow-lg">AD</div>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-lg ${currentUserRole === 'ADMIN' ? 'bg-gradient-to-tr from-green-700 to-emerald-600' : 'bg-gradient-to-tr from-blue-700 to-cyan-600'}`}>
+                {currentUserRole === 'ADMIN' ? 'AD' : 'ST'}
+              </div>
               <div>
-                <p className="text-sm font-medium text-white">Admin</p>
-                <p className="text-xs text-stone-400">Quản trị viên</p>
+                <p className="text-sm font-medium text-white">{currentUserRole === 'ADMIN' ? 'Admin' : 'Nhân viên'}</p>
+                <p className="text-xs text-stone-400">{currentUserRole === 'ADMIN' ? 'Quản trị viên' : 'Nhân viên pha chế'}</p>
               </div>
             </div>
             <button 
@@ -381,7 +383,12 @@ export default function Dashboard() {
       <main className="flex-1 flex flex-col overflow-hidden relative w-full">
         <header className="sticky top-0 h-auto py-3 md:h-16 glass-panel border-b border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 z-30 relative gap-3 md:gap-0 backdrop-blur-xl">
           <div className="w-full md:w-auto flex justify-between items-center">
-            <h2 className="text-xl font-bold text-white capitalize tracking-tight">{activeTab === "overview" ? "Tổng quan hoạt động" : activeTab === "settings" ? "Cài đặt & Khác" : activeTab}</h2>
+            <h2 className="text-xl font-bold text-white capitalize tracking-tight">
+              {activeTab === "overview" ? "Tổng quan hoạt động" : 
+               activeTab === "settings" ? "Cài đặt & Khác" : 
+               activeTab === "personnel" ? (currentUserRole === 'ADMIN' ? "Nhân Sự & Ca Làm" : "Chấm Công") : 
+               activeTab}
+            </h2>
             <button onClick={handleLogout} className="md:hidden p-2 bg-red-500/10 text-red-400 text-sm rounded-full font-medium">Đăng xuất</button>
           </div>
           <div className="flex flex-wrap items-center gap-3">

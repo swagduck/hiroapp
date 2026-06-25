@@ -65,6 +65,7 @@ export async function POST(
           data: {
             phone,
             role: "CUSTOMER",
+            customerCode: "KH" + Math.floor(10000 + Math.random() * 90000).toString(),
             savedMinutes: remainingMinutes
           }
         });
