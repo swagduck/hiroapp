@@ -1,0 +1,201 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+
+interface OrderItem {
+  id: string;
+  quantity: number;
+  status: "PENDING" | "PREPARING" | "SERVED" | "CANCELLED";
+  menuItem: {
+    name: string;
+  };
+}
+
+interface Order {
+  id: string;
+  createdAt: string;
+  status: "PENDING" | "PREPARING" | "SERVED" | "CANCELLED";
+  items: OrderItem[];
+  user?: { name: string; phone: string };
+  session?: {
+    user?: { name: string; phone: string };
+  };
+}
+
+export default function KDSPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const previousOrdersCount = useRef<number>(0);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch('/api/staff/kds');
+      if (res.ok) {
+        const data: Order[] = await res.json();
+        setOrders(data);
+        
+        // Play beep sound if new order arrives
+        if (data.length > previousOrdersCount.current && previousOrdersCount.current !== 0) {
+          playBeep();
+        }
+        previousOrdersCount.current = data.length;
+      }
+    } catch (error) {
+      console.error("KDS Fetch Error", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 5000); // Poll every 5s
+    return () => clearInterval(interval);
+  }, []);
+
+  const playBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); 
+      oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1); 
+      gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.3);
+    } catch (e) {
+      // Ignore
+    }
+  };
+
+  const updateItemStatus = async (itemId: string, newStatus: string) => {
+    try {
+      // Optimistic UI update
+      setOrders(prev => prev.map(o => ({
+        ...o,
+        items: o.items.map(i => i.id === itemId ? { ...i, status: newStatus as any } : i)
+      })));
+
+      const res = await fetch('/api/staff/kds/item', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId, status: newStatus })
+      });
+      if (!res.ok) {
+        toast.error("Lỗi cập nhật trạng thái");
+        fetchOrders(); // revert
+      }
+    } catch (error) {
+      toast.error("Mất kết nối");
+    }
+  };
+
+  const getWaitTime = (createdAt: string) => {
+    const diff = new Date().getTime() - new Date(createdAt).getTime();
+    const mins = Math.floor(diff / 60000);
+    return mins;
+  };
+
+  if (loading && orders.length === 0) {
+    return <div className="min-h-screen bg-stone-950 flex items-center justify-center text-stone-400">Đang tải KDS...</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-stone-950 text-white p-4 font-sans flex flex-col h-screen overflow-hidden">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10 shrink-0">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">KITCHEN DISPLAY</h1>
+          <p className="text-stone-400 text-sm mt-1">Màn hình Barista - Đơn hàng đang chờ pha chế</p>
+        </div>
+        <div className="flex gap-4 items-center">
+          <div className="flex items-center gap-2 text-stone-400 text-sm">
+            <span className="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse"></span>
+            Chờ làm
+          </div>
+          <div className="flex items-center gap-2 text-stone-400 text-sm">
+            <span className="w-3 h-3 rounded-full bg-amber-500"></span>
+            Đang làm
+          </div>
+          <div className="flex items-center gap-2 text-stone-400 text-sm">
+            <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
+            Xong
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-x-auto overflow-y-hidden">
+        <div className="flex gap-4 h-full pb-4 items-start w-max">
+          {orders.map(order => {
+            const customerName = order.user?.name || order.session?.user?.name || "Khách Lẻ";
+            const waitTime = getWaitTime(order.createdAt);
+            const isUrgent = waitTime >= 10;
+            
+            // Only show items that are not SERVED/CANCELLED
+            const activeItems = order.items.filter(i => i.status === "PENDING" || i.status === "PREPARING");
+            
+            if (activeItems.length === 0) return null; // All done
+
+            return (
+              <div 
+                key={order.id} 
+                className={`w-[320px] h-full flex flex-col rounded-2xl border-2 shadow-2xl transition-all duration-500 bg-stone-900 ${isUrgent ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-white/10'} shrink-0 animate-slide-up`}
+              >
+                {/* Header */}
+                <div className={`p-4 rounded-t-xl border-b flex justify-between items-start ${isUrgent ? 'bg-red-500/20 border-red-500/50' : 'bg-stone-950 border-white/10'}`}>
+                  <div>
+                    <h3 className="font-bold text-lg text-white">#{order.id.slice(-4).toUpperCase()}</h3>
+                    <p className="text-stone-300 text-sm mt-0.5">{customerName}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className={`font-mono font-bold text-lg ${isUrgent ? 'text-red-400' : 'text-stone-400'}`}>{waitTime}m</div>
+                    <p className="text-[10px] text-stone-500">{new Date(order.createdAt).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})}</p>
+                  </div>
+                </div>
+
+                {/* Items */}
+                <div className="p-4 flex-1 overflow-y-auto space-y-3 custom-scrollbar">
+                  {activeItems.map((item, index) => (
+                    <div 
+                      key={item.id} 
+                      onClick={() => {
+                        const nextStatus = item.status === "PENDING" ? "PREPARING" : "SERVED";
+                        updateItemStatus(item.id, nextStatus);
+                      }}
+                      className={`p-4 rounded-xl border-2 cursor-pointer select-none transition-all duration-300 transform active:scale-95 ${
+                        item.status === "PREPARING" 
+                          ? 'bg-amber-500/10 border-amber-500/50 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]' 
+                          : 'bg-stone-950 border-white/10 text-stone-200 hover:border-white/30 hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex gap-3 items-center">
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-lg border ${
+                          item.status === "PREPARING" ? 'bg-amber-500/20 border-amber-500' : 'bg-white/10 border-white/20'
+                        }`}>
+                          {item.quantity}
+                        </div>
+                        <span className="font-medium text-lg leading-tight flex-1">
+                          {item.menuItem.name}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          
+          {orders.filter(o => o.items.some(i => i.status === "PENDING" || i.status === "PREPARING")).length === 0 && (
+            <div className="w-full flex items-center justify-center text-stone-500 font-medium text-xl mt-32">
+              Không có đơn hàng nào đang chờ.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
