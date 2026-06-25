@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { pusherClient } from "@/lib/pusherClient";
 
 interface OrderItem {
   id: string;
@@ -52,18 +51,32 @@ export default function KDSPage() {
   useEffect(() => {
     fetchOrders();
     
-    const channel = pusherClient.subscribe('orders-channel');
-    channel.bind('new-order', () => {
-      fetchOrders();
-    });
-    channel.bind('order-updated', () => {
-      fetchOrders();
-    });
+    let channel: any;
+    let pusherClientInstance: any;
+
+    const initPusher = async () => {
+      const pc = await import('@/lib/pusherClient');
+      pusherClientInstance = pc.pusherClient;
+      
+      channel = pusherClientInstance.subscribe('orders-channel');
+      channel.bind('new-order', () => {
+        fetchOrders();
+      });
+      channel.bind('order-updated', () => {
+        fetchOrders();
+      });
+    };
+
+    initPusher();
 
     return () => {
-      channel.unbind('new-order');
-      channel.unbind('order-updated');
-      pusherClient.unsubscribe('orders-channel');
+      if (channel) {
+        channel.unbind('new-order');
+        channel.unbind('order-updated');
+      }
+      if (pusherClientInstance) {
+        pusherClientInstance.unsubscribe('orders-channel');
+      }
     };
   }, []);
 

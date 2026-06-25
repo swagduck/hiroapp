@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-import { pusherClient } from "@/lib/pusherClient";
-
 export default function OrdersTab() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,28 +41,42 @@ export default function OrdersTab() {
   useEffect(() => {
     fetchOrders();
 
-    const channel = pusherClient.subscribe('orders-channel');
-    
-    channel.bind('new-order', (newOrder: any) => {
-      setOrders(prev => {
-        if (prev.find(o => o.id === newOrder.id)) return prev;
-        
-        toast.success(`Có đơn pha chế mới!`);
-        playDing();
-        
-        return [newOrder, ...prev];
-      });
-    });
+    let channel: any;
+    let pusherClientInstance: any;
 
-    channel.bind('order-updated', (data: any) => {
-      // Refresh list to sync status
-      fetchOrders();
-    });
+    const initPusher = async () => {
+      const pc = await import('@/lib/pusherClient');
+      pusherClientInstance = pc.pusherClient;
+      
+      channel = pusherClientInstance.subscribe('orders-channel');
+      
+      channel.bind('new-order', (newOrder: any) => {
+        setOrders(prev => {
+          if (prev.find((o: any) => o.id === newOrder.id)) return prev;
+          
+          toast.success(`Có đơn pha chế mới!`);
+          playDing();
+          
+          return [newOrder, ...prev];
+        });
+      });
+
+      channel.bind('order-updated', (data: any) => {
+        // Refresh list to sync status
+        fetchOrders();
+      });
+    };
+
+    initPusher();
 
     return () => {
-      channel.unbind('new-order');
-      channel.unbind('order-updated');
-      pusherClient.unsubscribe('orders-channel');
+      if (channel) {
+        channel.unbind('new-order');
+        channel.unbind('order-updated');
+      }
+      if (pusherClientInstance) {
+        pusherClientInstance.unsubscribe('orders-channel');
+      }
     };
   }, []);
 
