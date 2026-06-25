@@ -35,6 +35,7 @@ model User {
   sessions  Session[]
   orders    Order[]
   cashTransactions CashTransaction[]
+  shiftRecords ShiftRecord[]
 
   @@index([phone])
   @@index([role])
@@ -295,4 +296,32 @@ model CashTransaction {
   @@index([type])
   @@index([category])
   @@index([createdAt])
+}
+
+// SHIFT MANAGEMENT / CHẤM CÔNG
+
+model Shift {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   // "Ca Sáng", "Ca Chiều", "Ca Tối"
+  startTime   String   // "07:00"
+  endTime     String   // "15:00"
+  hourlyWage  Float    // Mức lương theo giờ
+  isActive    Boolean  @default(true)
+  
+  records     ShiftRecord[]
+}
+
+model ShiftRecord {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  shiftId     String   @db.ObjectId
+  shift       Shift    @relation(fields: [shiftId], references: [id])
+  
+  checkIn     DateTime
+  checkOut    DateTime?
+  totalHours  Float?
+  totalSalary Float?
+  status      String   @default("ACTIVE") // ACTIVE, COMPLETED
+  createdAt   DateTime @default(now())
 }

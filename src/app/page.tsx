@@ -15,6 +15,8 @@ const StaffTab = dynamic(() => import("@/components/admin/StaffTab"));
 const VouchersTab = dynamic(() => import("@/components/admin/VouchersTab"));
 const InventoryTab = dynamic(() => import("@/components/admin/InventoryTab"));
 const CashbookTab = dynamic(() => import("@/components/admin/CashbookTab"));
+const ShiftsAdminTab = dynamic(() => import("@/components/admin/ShiftsAdminTab"));
+const ShiftsStaffTab = dynamic(() => import("@/components/admin/ShiftsStaffTab"));
 
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Package, PosCartItem, Session } from "@/types";
@@ -295,6 +297,14 @@ export default function Dashboard() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
                 Quản lý Kho
               </button>
+              <button onClick={() => setActiveTab("orders")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                Đơn Hàng
+              </button>
+              <button onClick={() => setActiveTab("shifts")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "shifts" ? "bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Chấm Công
+              </button>
               <button onClick={() => setActiveTab("packages")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "packages" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 Cài đặt Gói cước
@@ -309,7 +319,11 @@ export default function Dashboard() {
               </button>
               <button onClick={() => setActiveTab("staff")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "staff" ? "bg-blue-600/20 text-blue-500 font-bold border border-blue-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Quản lý Tài khoản
+                Tài Khoản
+              </button>
+              <button onClick={() => setActiveTab("shifts")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "shifts" ? "bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                Nhân Sự & Ca
               </button>
             </>
           )}
@@ -813,6 +827,9 @@ export default function Dashboard() {
                 </div>
                 <div className={activeTab === "cashbook" ? "block" : "hidden"}>
                   <CashbookTab />
+                </div>
+                <div className={activeTab === "shifts" ? "block" : "hidden"}>
+                  {currentUserRole === 'ADMIN' ? <ShiftsAdminTab /> : <ShiftsStaffTab />}
                 </div>
               </>
             )}
