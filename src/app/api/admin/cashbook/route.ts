@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         amount: parseFloat(amount),
         category,
         description,
-        userId: session.id
+        userId: session.userId
       }
     });
 
