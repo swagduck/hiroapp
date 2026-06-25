@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { pusherServer } from "@/lib/pusher";
 
 export const dynamic = 'force-dynamic';
 
@@ -127,6 +128,13 @@ export async function POST(request: Request) {
           }
         });
       }
+    }
+
+    // Trigger Pusher for POS
+    await pusherServer.trigger('pos-channel', 'session-update', {});
+    if (orderItems && orderItems.length > 0) {
+      await pusherServer.trigger('orders-channel', 'new-order', {});
+      await pusherServer.trigger('pos-channel', 'order-update', {});
     }
 
     return NextResponse.json(session, { status: 201 });

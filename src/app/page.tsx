@@ -102,25 +102,25 @@ export default function Dashboard() {
 
   const confirmPauseSession = async () => {
     if (!sessionToPause || !pausePhone) return;
-    setIsPausing(true);
+    const sessionId = sessionToPause;
+    setSessionToPause(null); // Close modal immediately
+    toast.loading("Đang bảo lưu phiên...", { id: `pause-${sessionId}` });
+
     try {
-      const res = await fetch(`/api/sessions/${sessionToPause}/pause`, {
+      const res = await fetch(`/api/sessions/${sessionId}/pause`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: pausePhone })
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(`Bảo lưu thành công ${data.savedMinutes} phút!`);
-        setSessionToPause(null);
+        toast.success(`Bảo lưu thành công ${data.savedMinutes} phút!`, { id: `pause-${sessionId}` });
         refreshData();
       } else {
-        toast.error(data.error || "Có lỗi xảy ra");
+        toast.error(data.error || "Có lỗi xảy ra", { id: `pause-${sessionId}` });
       }
     } catch (error) {
-      toast.error("Lỗi hệ thống khi bảo lưu");
-    } finally {
-      setIsPausing(false);
+      toast.error("Lỗi hệ thống khi bảo lưu", { id: `pause-${sessionId}` });
     }
   };
 

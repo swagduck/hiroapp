@@ -54,6 +54,7 @@ export async function PUT(request: NextRequest) {
 
     // Trigger Pusher event for POS and other KDS clients
     await pusherServer.trigger('orders-channel', 'order-updated', { orderId, itemId, status, newOrderStatus });
+    await pusherServer.trigger('pos-channel', 'order-update', {});
 
     return NextResponse.json({ success: true });
   } catch (error) {

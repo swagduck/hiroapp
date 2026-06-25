@@ -194,6 +194,7 @@ export async function POST(request: Request) {
 
     try {
       await pusherServer.trigger('orders-channel', 'new-order', newOrder);
+      await pusherServer.trigger('pos-channel', 'order-update', {});
     } catch (e) {
       console.error("Pusher error:", e);
     }

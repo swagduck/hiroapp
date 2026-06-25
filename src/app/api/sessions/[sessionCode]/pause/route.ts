@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { pusherServer } from "@/lib/pusher";
 
 export async function POST(
   request: Request,
@@ -78,9 +79,14 @@ export async function POST(
           userId: user.id 
         }
       });
+
+      // Trigger real-time update
+      await pusherServer.trigger('pos-channel', 'session-update', {});
+
+      return { user, session: updatedSession, savedMinutes: remainingMinutes };
     });
 
-    return NextResponse.json({ success: true, savedMinutes: remainingMinutes });
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Lỗi bảo lưu giờ:", error);
     return NextResponse.json({ error: "Lỗi hệ thống khi bảo lưu giờ" }, { status: 500 });

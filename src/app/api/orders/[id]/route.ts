@@ -93,6 +93,11 @@ export async function PUT(
     }
 
     await pusherServer.trigger('orders-channel', 'order-updated', { orderId: id, status });
+    await pusherServer.trigger('pos-channel', 'order-update', {});
+    
+    if (status === "SERVED") {
+      await pusherServer.trigger('pos-channel', 'inventory-update', {});
+    }
 
     return NextResponse.json(updatedOrder);
   } catch (error) {

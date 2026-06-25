@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { pusherServer } from "@/lib/pusher";
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,7 @@ export async function PUT(
           endTime: new Date()
         }
       });
+      await pusherServer.trigger('pos-channel', 'session-update', {});
       return NextResponse.json(updatedSession);
     }
 
@@ -62,6 +64,7 @@ export async function PUT(
           paymentStatus: "PAID"
         }
       });
+      await pusherServer.trigger('pos-channel', 'session-update', {});
       return NextResponse.json(updatedSession);
     }
 
