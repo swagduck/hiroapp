@@ -78,20 +78,25 @@ export default function Dashboard() {
 
   const confirmEndSession = async () => {
     if (!sessionToEnd) return;
+    const sessionId = sessionToEnd;
+    setSessionToEnd(null); // Close modal immediately
+    toast.loading("Đang kết thúc phiên...", { id: `end-${sessionId}` });
+
     try {
-      const res = await fetch(`/api/sessions/${sessionToEnd}`, {
+      const res = await fetch(`/api/sessions/${sessionId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'end' })
       });
       if (res.ok) {
         refreshData();
-        setSessionToEnd(null);
+        toast.success("Kết thúc phiên thành công!", { id: `end-${sessionId}` });
       } else {
-        toast.error("Có lỗi khi kết thúc phiên!");
+        toast.error("Có lỗi khi kết thúc phiên!", { id: `end-${sessionId}` });
       }
     } catch (error) {
       console.error(error);
+      toast.error("Lỗi kết nối!", { id: `end-${sessionId}` });
     }
   };
 

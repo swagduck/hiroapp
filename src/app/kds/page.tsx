@@ -28,11 +28,13 @@ interface Order {
 export default function KDSPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const isUpdatingRef = useRef<boolean>(false);
   const previousOrdersCount = useRef<number>(0);
 
   const fetchOrders = async () => {
+    if (isUpdatingRef.current) return; // Prevent overwriting optimistic state
     try {
-      const res = await fetch('/api/staff/kds', { cache: 'no-store' });
+      const res = await fetch(`/api/staff/kds?t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data: Order[] = await res.json();
         setOrders(data);
@@ -91,7 +93,7 @@ export default function KDSPage() {
     }
   };
 
-  const updateItemStatus = async (itemId: string, newStatus: string) => {
+  const updateItemStatus = async (orderId: string, itemId: string, newStatus: string) => {
     try {
       // Optimistic UI update
       setOrders(prev => prev.map(o => ({
@@ -99,17 +101,24 @@ export default function KDSPage() {
         items: o.items.map(i => i.id === itemId ? { ...i, status: newStatus as any } : i)
       })));
 
-      const res = await fetch('/api/staff/kds/item', {
+      isUpdatingRef.current = true;
+      const res = await fetch(`/api/staff/kds/item?t=${Date.now()}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId, status: newStatus })
+        body: JSON.stringify({ orderId, itemId, status: newStatus })
       });
       if (!res.ok) {
-        toast.error("Lỗi cập nhật trạng thái");
-        fetchOrders(); // revert
+        toast.error("Lỗi cập nhật");
+        isUpdatingRef.current = false;
+        fetchOrders(); // Revert on error
+      } else {
+        isUpdatingRef.current = false;
       }
-    } catch (error) {
-      toast.error("Mất kết nối");
+    } catch (e) {
+      console.error(e);
+      toast.error("Lỗi kết nối");
+      isUpdatingRef.current = false;
+      fetchOrders(); // Revert on error
     }
   };
 
@@ -195,7 +204,7 @@ export default function KDSPage() {
                       {/* Explicit Status Buttons */}
                       <div className="grid grid-cols-3 gap-2">
                         <button 
-                          onClick={() => updateItemStatus(item.id, "PENDING")}
+                          onClick={() => updateItemStatus(order.id, item.id, "PENDING")}
                           className={`py-2 px-1 text-xs font-bold rounded-lg transition-colors border ${
                             item.status === "PENDING" ? 'bg-stone-700 text-white border-stone-500' : 'bg-transparent text-stone-500 border-white/10 hover:bg-white/5'
                           }`}
@@ -203,7 +212,7 @@ export default function KDSPage() {
                           Chờ
                         </button>
                         <button 
-                          onClick={() => updateItemStatus(item.id, "PREPARING")}
+                          onClick={() => updateItemStatus(order.id, item.id, "PREPARING")}
                           className={`py-2 px-1 text-xs font-bold rounded-lg transition-colors border ${
                             item.status === "PREPARING" ? 'bg-amber-500 text-stone-950 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-transparent text-stone-500 border-white/10 hover:bg-white/5'
                           }`}
@@ -211,7 +220,7 @@ export default function KDSPage() {
                           Đang làm
                         </button>
                         <button 
-                          onClick={() => updateItemStatus(item.id, "SERVED")}
+                          onClick={() => updateItemStatus(order.id, item.id, "SERVED")}
                           className="py-2 px-1 text-xs font-bold rounded-lg transition-colors border bg-transparent text-stone-500 border-white/10 hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/50"
                         >
                           Xong ✓
