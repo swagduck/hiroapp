@@ -5,6 +5,7 @@ import { Session, Package, MenuItem, Order, Ingredient } from '@/types';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
+export function useDashboardData() {
   const { data: sessions, mutate: mutateSessions } = useSWR<Session[]>('/api/sessions', fetcher, { 
     revalidateOnFocus: true
   });
