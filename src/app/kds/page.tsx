@@ -20,6 +20,7 @@ interface Order {
   items: OrderItem[];
   user?: { name: string; phone: string };
   session?: {
+    accessCode: string;
     user?: { name: string; phone: string };
   };
 }
