@@ -857,11 +857,12 @@ export default function Dashboard() {
                 <div className={activeTab === "cashbook" ? "block" : "hidden"}>
                   <CashbookTab />
                 </div>
-                <div className={activeTab === "personnel" ? "block" : "hidden"}>
-                  {currentUserRole === 'ADMIN' ? <PersonnelTab /> : <ShiftsStaffTab />}
-                </div>
               </>
             )}
+
+            <div className={activeTab === "personnel" ? "block" : "hidden"}>
+              {currentUserRole === 'ADMIN' ? <PersonnelTab /> : <ShiftsStaffTab />}
+            </div>
 
             <div className={activeTab === "settings" ? "block" : "hidden"}>
               <div className="flex flex-col gap-4 max-w-md mx-auto w-full pt-4 pb-24">
