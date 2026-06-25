@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Package, MenuItem, PosCartItem } from '@/types';
 
 interface PosModalProps {
@@ -34,9 +34,32 @@ export default function PosModal({
 }: PosModalProps) {
   if (!isPosOpen) return null;
 
+  const [showOrderConfirm, setShowOrderConfirm] = useState(false);
+  const [dontAskAgainConfirm, setDontAskAgainConfirm] = useState(false);
+
+  const handlePreCompleteOrder = () => {
+    const isSnoozed = typeof window !== 'undefined' 
+      ? (localStorage.getItem('skipOrderConfirmUntil') && parseInt(localStorage.getItem('skipOrderConfirmUntil') as string) > Date.now())
+      : false;
+      
+    if (isSnoozed) {
+      handleCompleteOrder();
+    } else {
+      setShowOrderConfirm(true);
+    }
+  };
+
+  const handleConfirmAction = () => {
+    if (dontAskAgainConfirm) {
+      localStorage.setItem('skipOrderConfirmUntil', (Date.now() + 3600000).toString());
+    }
+    setShowOrderConfirm(false);
+    handleCompleteOrder();
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c16]/90 backdrop-blur-md p-2 md:p-6 pb-20 md:pb-6">
-      <div className="bg-stone-950 border border-white/10 rounded-2xl w-full max-w-6xl h-full flex flex-col shadow-2xl overflow-hidden animate-page-transition">
+      <div className="bg-stone-950 border border-white/10 rounded-2xl w-full max-w-6xl h-full flex flex-col shadow-2xl overflow-hidden animate-page-transition relative">
         {/* Header */}
         <div className="h-14 md:h-16 border-b border-white/10 flex items-center justify-between px-4 md:px-6 bg-white/5">
           <div className="flex items-center gap-4">
@@ -342,7 +365,7 @@ export default function PosModal({
                   
                   <button 
                     disabled={posLoading}
-                    onClick={handleCompleteOrder}
+                    onClick={handlePreCompleteOrder}
                     className="w-full py-5 rounded-2xl bg-gradient-to-r from-emerald-600 to-amber-500 text-white font-bold text-xl shadow-[0_0_30px_rgba(5,150,105,0.4)] disabled:opacity-50 hover:opacity-90 transition-all active:scale-95 flex justify-center items-center gap-3 shrink-0"
                   >
                     {posLoading ? (
@@ -360,6 +383,44 @@ export default function PosModal({
           )}
 
         </div>
+
+        {showOrderConfirm && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-stone-900 border border-white/10 rounded-3xl w-full max-w-md p-6 shadow-2xl animate-slide-up flex flex-col">
+              <div className="w-16 h-16 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto mb-4 border border-amber-500/30">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+              <h3 className="text-xl font-bold text-white text-center mb-2">Xác nhận chốt đơn?</h3>
+              <p className="text-stone-400 text-sm text-center mb-6">Bạn có chắc chắn muốn tạo đơn hàng này? Khách hàng sẽ được cấp mã vào cổng ngay lập tức.</p>
+              
+              <label className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition-colors mb-6 border border-white/5">
+                <input 
+                  type="checkbox" 
+                  checked={dontAskAgainConfirm}
+                  onChange={(e) => setDontAskAgainConfirm(e.target.checked)}
+                  className="w-5 h-5 rounded border-stone-600 text-amber-500 focus:ring-amber-500 bg-stone-950 accent-amber-500 shrink-0" 
+                />
+                <span className="text-sm text-stone-300 font-medium">Không hiện lại thông báo này trong 1 tiếng tới</span>
+              </label>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setShowOrderConfirm(false)}
+                  className="flex-1 py-3.5 rounded-xl bg-stone-800 text-white font-bold hover:bg-stone-700 transition-colors text-sm border border-white/10"
+                >
+                  Hủy bỏ
+                </button>
+                <button 
+                  onClick={handleConfirmAction}
+                  className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold hover:from-amber-500 hover:to-amber-400 transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)] text-sm"
+                >
+                  Chắc chắn
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
