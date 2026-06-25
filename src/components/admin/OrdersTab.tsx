@@ -143,12 +143,19 @@ export default function OrdersTab() {
                       >
                         Hủy
                       </button>
-                      <button 
-                        onClick={() => updateOrderStatus(order.id, "SERVED")}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-[0_0_15px_rgba(5,150,105,0.3)]"
-                      >
-                        ✓ Hoàn thành
-                      </button>
+                      {order.items && order.items.length > 0 ? (
+                        <div className="bg-stone-800 border border-amber-500/30 text-amber-500 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                          Pha chế...
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => updateOrderStatus(order.id, "SERVED")}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-[0_0_15px_rgba(5,150,105,0.3)]"
+                        >
+                          ✓ Hoàn thành
+                        </button>
+                      )}
                     </div>
                   </div>
                   <ul className="space-y-2 mt-4">

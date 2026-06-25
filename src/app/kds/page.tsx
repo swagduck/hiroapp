@@ -109,22 +109,17 @@ export default function KDSPage() {
     <div className="min-h-screen bg-stone-950 text-white p-4 font-sans flex flex-col h-screen overflow-hidden">
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10 shrink-0">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">KITCHEN DISPLAY</h1>
-          <p className="text-stone-400 text-sm mt-1">Màn hình Barista - Đơn hàng đang chờ pha chế</p>
+          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-500">MÀN HÌNH PHA CHẾ (KDS)</h1>
+          <p className="text-stone-400 text-sm mt-1">Dành cho Barista - Cập nhật trạng thái từng món nước</p>
         </div>
         <div className="flex gap-4 items-center">
           <div className="flex items-center gap-2 text-stone-400 text-sm">
             <span className="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse"></span>
-            Chờ làm
+            Chờ lâu (>10p)
           </div>
-          <div className="flex items-center gap-2 text-stone-400 text-sm">
-            <span className="w-3 h-3 rounded-full bg-amber-500"></span>
-            Đang làm
-          </div>
-          <div className="flex items-center gap-2 text-stone-400 text-sm">
-            <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-            Xong
-          </div>
+          <button onClick={fetchOrders} className="ml-4 p-2 bg-stone-900 border border-white/10 rounded-lg hover:bg-stone-800 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-400"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 2v6h6"/></svg>
+          </button>
         </div>
       </div>
 
@@ -158,29 +153,51 @@ export default function KDSPage() {
                 </div>
 
                 {/* Items */}
-                <div className="p-4 flex-1 overflow-y-auto space-y-3 custom-scrollbar">
+                <div className="p-4 flex-1 overflow-y-auto space-y-4 custom-scrollbar">
                   {activeItems.map((item, index) => (
                     <div 
                       key={item.id} 
-                      onClick={() => {
-                        const nextStatus = item.status === "PENDING" ? "PREPARING" : "SERVED";
-                        updateItemStatus(item.id, nextStatus);
-                      }}
-                      className={`p-4 rounded-xl border-2 cursor-pointer select-none transition-all duration-300 transform active:scale-95 ${
+                      className={`p-4 rounded-xl border-2 transition-all duration-300 ${
                         item.status === "PREPARING" 
-                          ? 'bg-amber-500/10 border-amber-500/50 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]' 
-                          : 'bg-stone-950 border-white/10 text-stone-200 hover:border-white/30 hover:bg-white/5'
+                          ? 'bg-amber-500/10 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.15)]' 
+                          : 'bg-stone-950 border-white/10'
                       }`}
                     >
-                      <div className="flex gap-3 items-center">
+                      <div className="flex gap-3 items-center mb-3">
                         <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-lg border ${
-                          item.status === "PREPARING" ? 'bg-amber-500/20 border-amber-500' : 'bg-white/10 border-white/20'
+                          item.status === "PREPARING" ? 'bg-amber-500 text-stone-950 border-amber-500' : 'bg-stone-800 text-white border-white/20'
                         }`}>
                           {item.quantity}
                         </div>
-                        <span className="font-medium text-lg leading-tight flex-1">
+                        <span className={`font-medium text-lg leading-tight flex-1 ${item.status === "PREPARING" ? "text-amber-400" : "text-white"}`}>
                           {item.menuItem.name}
                         </span>
+                      </div>
+
+                      {/* Explicit Status Buttons */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <button 
+                          onClick={() => updateItemStatus(item.id, "PENDING")}
+                          className={`py-2 px-1 text-xs font-bold rounded-lg transition-colors border ${
+                            item.status === "PENDING" ? 'bg-stone-700 text-white border-stone-500' : 'bg-transparent text-stone-500 border-white/10 hover:bg-white/5'
+                          }`}
+                        >
+                          Chờ
+                        </button>
+                        <button 
+                          onClick={() => updateItemStatus(item.id, "PREPARING")}
+                          className={`py-2 px-1 text-xs font-bold rounded-lg transition-colors border ${
+                            item.status === "PREPARING" ? 'bg-amber-500 text-stone-950 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-transparent text-stone-500 border-white/10 hover:bg-white/5'
+                          }`}
+                        >
+                          Đang làm
+                        </button>
+                        <button 
+                          onClick={() => updateItemStatus(item.id, "SERVED")}
+                          className="py-2 px-1 text-xs font-bold rounded-lg transition-colors border bg-transparent text-stone-500 border-white/10 hover:bg-emerald-500/20 hover:text-emerald-400 hover:border-emerald-500/50"
+                        >
+                          Xong ✓
+                        </button>
                       </div>
                     </div>
                   ))}
