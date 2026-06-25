@@ -30,7 +30,7 @@ export default function KDSPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/staff/kds');
+      const res = await fetch('/api/staff/kds', { cache: 'no-store' });
       if (res.ok) {
         const data: Order[] = await res.json();
         setOrders(data);
