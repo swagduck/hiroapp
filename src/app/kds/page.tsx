@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { pusherClient } from "@/lib/pusherClient";
 
 interface OrderItem {
   id: string;
@@ -50,33 +51,23 @@ export default function KDSPage() {
 
   useEffect(() => {
     fetchOrders();
+    const interval = setInterval(fetchOrders, 5000); // 5s fallback polling
     
-    let channel: any;
-    let pusherClientInstance: any;
+    if (!pusherClient) return;
 
-    const initPusher = async () => {
-      const pc = await import('@/lib/pusherClient');
-      pusherClientInstance = pc.pusherClient;
-      
-      channel = pusherClientInstance.subscribe('orders-channel');
-      channel.bind('new-order', () => {
-        fetchOrders();
-      });
-      channel.bind('order-updated', () => {
-        fetchOrders();
-      });
-    };
-
-    initPusher();
+    const channel = pusherClient.subscribe('orders-channel');
+    channel.bind('new-order', () => {
+      fetchOrders();
+    });
+    channel.bind('order-updated', () => {
+      fetchOrders();
+    });
 
     return () => {
-      if (channel) {
-        channel.unbind('new-order');
-        channel.unbind('order-updated');
-      }
-      if (pusherClientInstance) {
-        pusherClientInstance.unsubscribe('orders-channel');
-      }
+      clearInterval(interval);
+      channel.unbind('new-order');
+      channel.unbind('order-updated');
+      pusherClient.unsubscribe('orders-channel');
     };
   }, []);
 
