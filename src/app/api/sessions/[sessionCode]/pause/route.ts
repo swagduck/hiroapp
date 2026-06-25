@@ -71,7 +71,7 @@ export async function POST(
       }
 
       // 2. Kết thúc phiên và lưu userId để tracking
-      await tx.session.update({
+      const updatedSession = await tx.session.update({
         where: { id: sessionCode },
         data: { 
           status: "COMPLETED", 
