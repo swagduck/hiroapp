@@ -15,7 +15,7 @@ const StaffTab = dynamic(() => import("@/components/admin/StaffTab"));
 const VouchersTab = dynamic(() => import("@/components/admin/VouchersTab"));
 const InventoryTab = dynamic(() => import("@/components/admin/InventoryTab"));
 const CashbookTab = dynamic(() => import("@/components/admin/CashbookTab"));
-const ShiftsAdminTab = dynamic(() => import("@/components/admin/ShiftsAdminTab"));
+const PersonnelTab = dynamic(() => import("@/components/admin/PersonnelTab"));
 const ShiftsStaffTab = dynamic(() => import("@/components/admin/ShiftsStaffTab"));
 
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -297,35 +297,30 @@ export default function Dashboard() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
                 Quản lý Kho
               </button>
-              <button onClick={() => setActiveTab("orders")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                Đơn Hàng
-              </button>
-              <button onClick={() => setActiveTab("shifts")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "shifts" ? "bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Chấm Công
-              </button>
               <button onClick={() => setActiveTab("packages")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "packages" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 Cài đặt Gói cước
               </button>
               <button onClick={() => setActiveTab("vouchers")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "vouchers" ? "bg-purple-600/20 text-purple-400 font-bold border border-purple-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                Mã giảm giá
+                Khuyến Mãi
               </button>
               <button onClick={() => setActiveTab("cashbook")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "cashbook" ? "bg-amber-500/20 text-amber-400 font-bold premium-shadow border border-amber-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                Sổ Quỹ
+                Sổ Quỹ Thu Chi
               </button>
-              <button onClick={() => setActiveTab("staff")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "staff" ? "bg-blue-600/20 text-blue-500 font-bold border border-blue-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+              <button onClick={() => setActiveTab("personnel")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "personnel" ? "bg-blue-600/20 text-blue-500 font-bold border border-blue-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Tài Khoản
-              </button>
-              <button onClick={() => setActiveTab("shifts")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "shifts" ? "bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
                 Nhân Sự & Ca
               </button>
             </>
+          )}
+
+          {currentUserRole === 'STAFF' && (
+            <button onClick={() => setActiveTab("personnel")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "personnel" ? "bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Chấm Công
+            </button>
           )}
 
           <div className="pt-4 mt-2 border-t border-white/5">
@@ -828,8 +823,8 @@ export default function Dashboard() {
                 <div className={activeTab === "cashbook" ? "block" : "hidden"}>
                   <CashbookTab />
                 </div>
-                <div className={activeTab === "shifts" ? "block" : "hidden"}>
-                  {currentUserRole === 'ADMIN' ? <ShiftsAdminTab /> : <ShiftsStaffTab />}
+                <div className={activeTab === "personnel" ? "block" : "hidden"}>
+                  {currentUserRole === 'ADMIN' ? <PersonnelTab /> : <ShiftsStaffTab />}
                 </div>
               </>
             )}
@@ -896,14 +891,14 @@ export default function Dashboard() {
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
                   </button>
 
-                  <button onClick={() => setActiveTab('staff')} className="bg-stone-900 border border-white/10 p-5 rounded-2xl flex items-center justify-between text-left hover:bg-stone-800 transition-colors">
+                  <button onClick={() => setActiveTab('personnel')} className="bg-stone-900 border border-white/10 p-5 rounded-2xl flex items-center justify-between text-left hover:bg-stone-800 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                       </div>
                       <div>
-                        <h4 className="font-bold text-white text-lg">Quản lý Tài khoản</h4>
-                        <p className="text-sm text-stone-400">Danh sách nhân viên</p>
+                        <h4 className="font-bold text-white text-lg">Nhân Sự & Ca Làm</h4>
+                        <p className="text-sm text-stone-400">Tài khoản & Chấm công</p>
                       </div>
                     </div>
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-stone-500"><path d="m9 18 6-6-6-6"/></svg>
