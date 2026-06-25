@@ -160,7 +160,7 @@ export default function KDSPage() {
                 {/* Header */}
                 <div className={`p-4 rounded-t-xl border-b flex justify-between items-start ${isUrgent ? 'bg-red-500/20 border-red-500/50' : 'bg-stone-950 border-white/10'}`}>
                   <div>
-                    <h3 className="font-bold text-lg text-white">#{order.id.slice(-4).toUpperCase()}</h3>
+                    <h3 className="font-bold text-lg text-white">Mã: {order.session?.accessCode || `#${order.id.slice(-4).toUpperCase()}`}</h3>
                     <p className="text-stone-300 text-sm mt-0.5">{customerName}</p>
                   </div>
                   <div className="text-right">
