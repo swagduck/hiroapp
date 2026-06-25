@@ -181,10 +181,10 @@ export default function KDSPage() {
                       }`}
                     >
                       <div className="flex gap-3 items-center mb-3">
-                        <div className={`flex items-center justify-center w-8 h-8 rounded-lg font-bold text-lg border ${
+                        <div className={`flex items-center justify-center min-w-[2.5rem] px-2 h-8 rounded-lg font-bold text-lg border ${
                           item.status === "PREPARING" ? 'bg-amber-500 text-stone-950 border-amber-500' : 'bg-stone-800 text-white border-white/20'
                         }`}>
-                          {item.quantity}
+                          {item.quantity}<span className="text-xs ml-0.5 opacity-70">x</span>
                         </div>
                         <span className={`font-medium text-lg leading-tight flex-1 ${item.status === "PREPARING" ? "text-amber-400" : "text-white"}`}>
                           {item.menuItem.name}
