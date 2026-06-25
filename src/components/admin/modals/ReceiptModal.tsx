@@ -10,32 +10,41 @@ interface ReceiptModalProps {
 }
 
 export default function ReceiptModal({ receiptData, onClose, onApprove, autoPrint = true }: ReceiptModalProps) {
-  const [showConfirm, setShowConfirm] = useState(false);
   const [dontAskAgain, setDontAskAgain] = useState(false);
+  const [userAction, setUserAction] = useState<'CONFIRMED' | 'SKIPPED' | null>(null);
 
   useEffect(() => {
-    if (receiptData && autoPrint) {
-      const skipUntil = localStorage.getItem('skipPrintConfirmUntil');
-      if (skipUntil && parseInt(skipUntil) > Date.now()) {
+    if (!receiptData) {
+      setUserAction(null);
+    }
+  }, [receiptData]);
+
+  const isSnoozed = typeof window !== 'undefined' 
+    ? (localStorage.getItem('skipPrintConfirmUntil') && parseInt(localStorage.getItem('skipPrintConfirmUntil') as string) > Date.now())
+    : false;
+
+  const showConfirm = Boolean(receiptData && autoPrint && !isSnoozed && userAction === null);
+
+  useEffect(() => {
+    if (receiptData && autoPrint && !showConfirm) {
+      if (isSnoozed || userAction === 'CONFIRMED') {
         const timer = setTimeout(() => {
           window.print();
         }, 500);
         return () => clearTimeout(timer);
-      } else {
-        const timer = setTimeout(() => {
-          setShowConfirm(true);
-        }, 300);
-        return () => clearTimeout(timer);
       }
     }
-  }, [receiptData, autoPrint]);
+  }, [receiptData, autoPrint, showConfirm, isSnoozed, userAction]);
 
   const handlePrint = () => {
     if (dontAskAgain) {
       localStorage.setItem('skipPrintConfirmUntil', (Date.now() + 3600000).toString());
     }
-    setShowConfirm(false);
-    setTimeout(() => window.print(), 100);
+    setUserAction('CONFIRMED');
+  };
+
+  const handleSkip = () => {
+    setUserAction('SKIPPED');
   };
 
   if (!receiptData) return null;
@@ -139,7 +148,7 @@ export default function ReceiptModal({ receiptData, onClose, onApprove, autoPrin
 
           <div className="flex gap-3">
             <button 
-              onClick={() => setShowConfirm(false)}
+              onClick={handleSkip}
               className="flex-1 py-3.5 rounded-xl bg-stone-800 text-white font-bold hover:bg-stone-700 transition-colors text-sm border border-white/10"
             >
               Bỏ qua
