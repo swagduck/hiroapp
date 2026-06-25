@@ -86,6 +86,18 @@ export async function POST(request: Request) {
           }
         });
 
+        if (paymentStatus === "PAID") {
+          await tx.cashTransaction.create({
+            data: {
+              type: "IN",
+              amount: totalAmount,
+              category: "BÁN_HÀNG",
+              description: `Khách mở phiên ${accessCode} (Gói + Nước)`,
+              referenceId: newSession.id
+            }
+          });
+        }
+
         return newSession;
       });
     } else {
@@ -103,6 +115,18 @@ export async function POST(request: Request) {
           package: true
         }
       });
+
+      if (paymentStatus === "PAID") {
+        await prisma.cashTransaction.create({
+          data: {
+            type: "IN",
+            amount: totalAmount,
+            category: "BÁN_HÀNG",
+            description: `Khách mở phiên ${accessCode} (Chỉ Gói)`,
+            referenceId: session.id
+          }
+        });
+      }
     }
 
     return NextResponse.json(session, { status: 201 });

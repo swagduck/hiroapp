@@ -25,13 +25,28 @@ export async function PUT(
     }
 
     const updatedOrder = await prisma.$transaction(async (tx) => {
+      const wasUnpaid = existingOrder.paymentStatus === "UNPAID";
+      const becomesPaid = (status === 'PREPARING' || status === 'SERVED');
+
       const updated = await tx.order.update({
         where: { id },
         data: { 
           status,
-          ...(status === 'PREPARING' || status === 'SERVED' ? { paymentStatus: "PAID" } : {})
+          ...(becomesPaid ? { paymentStatus: "PAID" } : {})
         }
       });
+
+      if (wasUnpaid && becomesPaid && existingOrder.totalAmount > 0) {
+        await tx.cashTransaction.create({
+          data: {
+            type: "IN",
+            amount: existingOrder.totalAmount,
+            category: "BÁN_HÀNG",
+            description: `Thu ngân duyệt đơn hàng món #${existingOrder.id.substring(existingOrder.id.length - 6)}`,
+            referenceId: existingOrder.id
+          }
+        });
+      }
 
       // Nếu trạng thái chuyển thành SERVED, tiến hành trừ kho
       if (status === "SERVED" && existingOrder.status !== "SERVED") {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { recordCashTransaction } from "@/lib/cashbook";
 
 export async function POST(request: Request, context: { params: Promise<{ sessionCode: string }> }) {
   try {
@@ -39,6 +40,14 @@ export async function POST(request: Request, context: { params: Promise<{ sessio
         }
       });
     }
+
+    await recordCashTransaction({
+      type: "IN",
+      amount: session.totalAmount || session.package.price,
+      category: "BÁN_HÀNG",
+      description: `Thu ngân duyệt phiên chờ ${session.accessCode}`,
+      referenceId: session.id,
+    });
 
     return NextResponse.json({ success: true, session: updatedSession, earnedPoints });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyCallbackMac } from "@/lib/zalopay";
 import { prisma } from "@/lib/prisma";
+import { recordCashTransaction } from "@/lib/cashbook";
 
 export async function POST(request: Request) {
   try {
@@ -18,17 +19,25 @@ export async function POST(request: Request) {
         const dataJson = JSON.parse(dataStr);
         const appTransId = dataJson.app_trans_id;
 
-        // Cập nhật trạng thái Session từ PENDING_PAYMENT sang PRE_BOOKED
-        const updateSession = await prisma.session.updateMany({
-          where: { transId: appTransId, status: "PENDING_PAYMENT" },
-          data: {
-            status: "PRE_BOOKED",
-            paymentStatus: "PAID"
-          }
-        });
+        const sessionToUpdate = await prisma.session.findFirst({ where: { transId: appTransId, status: "PENDING_PAYMENT" }});
+        
+        if (sessionToUpdate) {
+          await prisma.session.update({
+            where: { id: sessionToUpdate.id },
+            data: {
+              status: "PRE_BOOKED",
+              paymentStatus: "PAID"
+            }
+          });
 
-        // Nếu không có session nào được update, thử tìm trong bảng Order
-        if (updateSession.count === 0) {
+          await recordCashTransaction({
+            type: "IN",
+            amount: sessionToUpdate.totalAmount || 0,
+            category: "CHUYỂN_KHOẢN",
+            description: `Thanh toán ZaloPay đặt trước ${sessionToUpdate.accessCode}`,
+            referenceId: sessionToUpdate.id
+          });
+        } else {
           const order = await prisma.order.findFirst({ where: { transId: appTransId, paymentStatus: "UNPAID" }});
           if (order) {
             await prisma.order.update({
@@ -53,6 +62,14 @@ export async function POST(request: Request) {
                 });
               }
             }
+
+            await recordCashTransaction({
+              type: "IN",
+              amount: order.totalAmount,
+              category: "CHUYỂN_KHOẢN",
+              description: `Thanh toán ZaloPay đơn hàng ${order.id}`,
+              referenceId: order.id
+            });
           }
         }
 
