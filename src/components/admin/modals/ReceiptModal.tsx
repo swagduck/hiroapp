@@ -42,8 +42,10 @@ export default function ReceiptModal({ receiptData, onClose, onApprove, autoPrin
 
   return (
     <>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#141c16]/80 backdrop-blur-md p-4 animate-page-transition">
-        <div id="print-receipt" className="bg-white text-black w-full max-w-sm rounded-xl overflow-hidden shadow-2xl relative">
+      {/* Hide receipt when confirm dialog is shown */}
+      {!showConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#141c16]/80 backdrop-blur-md p-4 animate-page-transition">
+          <div id="print-receipt" className="bg-white text-black w-full max-w-sm rounded-xl overflow-hidden shadow-2xl relative">
         <button 
           onClick={() => window.print()}
           className="absolute top-4 right-4 p-2 bg-stone-100 hover:bg-stone-200 rounded-full text-stone-600 transition-colors print-hidden"
@@ -114,6 +116,7 @@ export default function ReceiptModal({ receiptData, onClose, onApprove, autoPrin
         </div>
       </div>
     </div>
+    )}
 
     {showConfirm && (
       <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in print-hidden">
