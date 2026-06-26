@@ -37,6 +37,9 @@ export default function Dashboard() {
 
   const [sessionToEnd, setSessionToEnd] = useState<string | null>(null);
   
+  // Mobile Sidebar State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   // POS States
   const [isPosOpen, setIsPosOpen] = useState(false);
   const [posStep, setPosStep] = useState<number>(1);
@@ -255,35 +258,46 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-[#0a0f0d] overflow-hidden text-stone-200">
-      {/* Sidebar (Desktop only) */}
-      <aside className="hidden md:flex w-64 glass border-r border-white/10 flex-col transition-all duration-300">
-        <div className="h-16 flex items-center justify-center border-b border-white/10 px-2">
-          <h1 className="text-lg text-center font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-amber-600">
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-72 md:w-64 glass border-r border-white/10 flex flex-col`}>
+        <div className="h-16 flex items-center justify-between md:justify-center border-b border-white/10 px-4 md:px-2">
+          <h1 className="text-lg text-center font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-amber-600 truncate">
             Hiro coffee and Study space
           </h1>
+          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-2 text-stone-400 hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <button onClick={() => setActiveTab("overview")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "overview" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+          <button onClick={() => { setActiveTab("overview"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "overview" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Tổng quan (POS)
           </button>
           
           {currentUserRole === 'ADMIN' && (
-            <button onClick={() => setActiveTab("analytics")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "analytics" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+            <button onClick={() => { setActiveTab("analytics"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "analytics" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
               Báo cáo doanh thu
             </button>
           )}
 
-          <button onClick={() => setActiveTab("sessions")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "sessions" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+          <button onClick={() => { setActiveTab("sessions"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "sessions" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Phiên sử dụng
           </button>
-          <button onClick={() => setActiveTab("activity")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "activity" ? "bg-amber-600/20 text-amber-500 font-bold border border-amber-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+          <button onClick={() => { setActiveTab("activity"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "activity" ? "bg-amber-600/20 text-amber-500 font-bold border border-amber-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             Nhật ký Giao dịch
           </button>
-          <button onClick={() => setActiveTab("orders")} className={`w-full flex justify-between items-center px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+          <button onClick={() => { setActiveTab("orders"); setIsSidebarOpen(false); }} className={`w-full flex justify-between items-center px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "orders" ? "bg-emerald-600/20 text-emerald-500 font-bold border border-emerald-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
             <div className="flex items-center gap-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
               <span>Đơn pha chế</span>
@@ -292,14 +306,14 @@ export default function Dashboard() {
               <span className="bg-emerald-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse">{pendingOrdersCount}</span>
             )}
           </button>
-          <button onClick={() => setActiveTab("menu")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "menu" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+          <button onClick={() => { setActiveTab("menu"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "menu" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
             Menu Đồ uống
           </button>
           
           {currentUserRole === 'ADMIN' && (
             <>
-              <button onClick={() => setActiveTab("inventory")} className={`w-full flex items-center justify-between px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "inventory" ? "bg-rose-600/20 text-rose-500 font-bold border border-rose-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+              <button onClick={() => { setActiveTab("inventory"); setIsSidebarOpen(false); }} className={`w-full flex items-center justify-between px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "inventory" ? "bg-rose-600/20 text-rose-500 font-bold border border-rose-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <div className="flex items-center gap-3">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
                   Quản lý Kho
@@ -310,23 +324,23 @@ export default function Dashboard() {
                   </span>
                 )}
               </button>
-              <button onClick={() => setActiveTab("packages")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "packages" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+              <button onClick={() => { setActiveTab("packages"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "packages" ? "bg-emerald-500/20 text-emerald-400 font-bold premium-shadow border border-emerald-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 Cài đặt Gói cước
               </button>
-              <button onClick={() => setActiveTab("vouchers")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "vouchers" ? "bg-purple-600/20 text-purple-400 font-bold border border-purple-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+              <button onClick={() => { setActiveTab("vouchers"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "vouchers" ? "bg-purple-600/20 text-purple-400 font-bold border border-purple-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
                 <span>Khuyến Mãi</span>
               </button>
-              <button onClick={() => setActiveTab("crm")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "crm" ? "bg-pink-600/20 text-pink-500 font-bold border border-pink-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+              <button onClick={() => { setActiveTab("crm"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "crm" ? "bg-pink-600/20 text-pink-500 font-bold border border-pink-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <span>Khách Hàng</span>
               </button>
-              <button onClick={() => setActiveTab("cashbook")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "cashbook" ? "bg-amber-500/20 text-amber-400 font-bold premium-shadow border border-amber-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+              <button onClick={() => { setActiveTab("cashbook"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "cashbook" ? "bg-amber-500/20 text-amber-400 font-bold premium-shadow border border-amber-500/30" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                 Sổ Quỹ Thu Chi
               </button>
-              <button onClick={() => setActiveTab("personnel")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "personnel" ? "bg-blue-600/20 text-blue-500 font-bold border border-blue-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+              <button onClick={() => { setActiveTab("personnel"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "personnel" ? "bg-blue-600/20 text-blue-500 font-bold border border-blue-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 Nhân Sự & Ca
               </button>
@@ -334,7 +348,7 @@ export default function Dashboard() {
           )}
 
           {currentUserRole === 'STAFF' && (
-            <button onClick={() => setActiveTab("personnel")} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "personnel" ? "bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
+            <button onClick={() => { setActiveTab("personnel"); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-300 ${activeTab === "personnel" ? "bg-cyan-600/20 text-cyan-400 font-bold border border-cyan-500/30 premium-shadow" : "text-stone-400 hover:bg-white/5 hover:text-white hover:translate-x-1"}`}>
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               Chấm Công
             </button>
@@ -382,14 +396,22 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative w-full">
         <header className="sticky top-0 h-auto py-3 md:h-16 glass-panel border-b border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 z-30 relative gap-3 md:gap-0 backdrop-blur-xl">
-          <div className="w-full md:w-auto flex justify-between items-center">
-            <h2 className="text-xl font-bold text-white capitalize tracking-tight">
-              {activeTab === "overview" ? "Tổng quan hoạt động" : 
-               activeTab === "settings" ? "Cài đặt & Khác" : 
-               activeTab === "personnel" ? (currentUserRole === 'ADMIN' ? "Nhân Sự & Ca Làm" : "Chấm Công") : 
-               activeTab}
-            </h2>
-            <button onClick={handleLogout} className="md:hidden p-2 bg-red-500/10 text-red-400 text-sm rounded-full font-medium">Đăng xuất</button>
+          <div className="w-full md:w-auto flex justify-between items-center gap-3">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setIsSidebarOpen(true)} 
+                className="md:hidden p-2 bg-white/5 hover:bg-white/10 rounded-lg text-stone-300 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+              </button>
+              <h2 className="text-xl font-bold text-white capitalize tracking-tight flex-1 truncate max-w-[200px] md:max-w-none">
+                {activeTab === "overview" ? "Tổng quan hoạt động" : 
+                 activeTab === "settings" ? "Cài đặt & Khác" : 
+                 activeTab === "personnel" ? (currentUserRole === 'ADMIN' ? "Nhân Sự & Ca Làm" : "Chấm Công") : 
+                 activeTab}
+              </h2>
+            </div>
+            <button onClick={handleLogout} className="md:hidden p-2 bg-red-500/10 text-red-400 text-sm rounded-full font-medium whitespace-nowrap">Đăng xuất</button>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <a href="/staff/check-in" target="_blank" rel="noreferrer" className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-stone-300 rounded-full text-xs md:text-sm font-medium transition-all flex items-center gap-2 hover-glow">

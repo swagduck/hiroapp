@@ -149,8 +149,8 @@ export default function ShiftsStaffTab() {
         {/* Lịch Sử Gần Đây */}
         <div className="lg:col-span-2">
           <h3 className="text-lg font-bold text-white mb-4">Lịch Sử (Hôm Nay)</h3>
-          <div className="bg-stone-900 border border-white/5 rounded-2xl overflow-hidden">
-            <table className="w-full text-left border-collapse">
+          <div className="bg-stone-900 border border-white/5 rounded-2xl overflow-hidden overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-stone-900/80 text-stone-400 text-sm border-b border-white/5">
                   <th className="p-4 font-medium">Ca</th>

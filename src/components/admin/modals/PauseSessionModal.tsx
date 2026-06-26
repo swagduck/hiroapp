@@ -20,8 +20,8 @@ export default function PauseSessionModal({
   if (!sessionToPause) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c16]/60 backdrop-blur-sm">
-      <div className="bg-stone-950 border border-amber-500/30 rounded-2xl p-6 w-[400px] shadow-2xl transform transition-all animate-page-transition">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141c16]/60 backdrop-blur-sm">
+      <div className="bg-stone-950 border border-amber-500/30 rounded-2xl p-6 w-full max-w-[400px] shadow-2xl transform transition-all animate-page-transition">
         <h3 className="text-xl font-bold text-amber-500 mb-2 flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Bảo lưu thời gian

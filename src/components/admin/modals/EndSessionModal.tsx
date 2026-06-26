@@ -10,8 +10,8 @@ export default function EndSessionModal({ sessionToEnd, onClose, onConfirm }: En
   if (!sessionToEnd) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#141c16]/60 backdrop-blur-sm">
-      <div className="bg-stone-950 border border-white/10 rounded-2xl p-6 w-[400px] shadow-2xl transform transition-all animate-page-transition">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141c16]/60 backdrop-blur-sm">
+      <div className="bg-stone-950 border border-white/10 rounded-2xl p-6 w-full max-w-[400px] shadow-2xl transform transition-all animate-page-transition">
         <h3 className="text-xl font-bold text-white mb-2">Kết thúc phiên</h3>
         <p className="text-stone-400 mb-6">Bạn có chắc chắn muốn kết thúc phiên sử dụng này không? Khách hàng sẽ không thể truy cập mã này nữa.</p>
         <div className="flex justify-end gap-3">
